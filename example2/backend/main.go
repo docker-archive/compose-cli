@@ -109,6 +109,6 @@ type backend struct {
 
 func (b *backend) BackendInformation(ctx context.Context, _ *types.Empty) (*v1.BackendInformationResponse, error) {
 	return &v1.BackendInformationResponse{
-		ID: "com.docker.api.backend.example.v1",
+		ID: "com.docker.api.backend.example-d2.v1",
 	}, nil
 }

@@ -29,7 +29,7 @@ GOOS ?= $(shell go env GOOS)
 
 export GO111MODULE=off
 
-all: protos example cli
+all: protos example-aci example-d2 cli
 
 cli:
 	cd cmd && go build -v -o ../bin/docker
@@ -37,8 +37,11 @@ cli:
 protos:
 	@protobuild --quiet ${PACKAGES}
 
-example:
-	cd example/backend && go build -v -o ../../bin/backend-example
+example-aci:
+	cd example/backend && go build -v -o ../../bin/backend-example-azure_aci
+
+example-d2:
+	cd example2/backend && go build -v -o ../../bin/backend-example-d2
 
 FORCE:
 

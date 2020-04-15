@@ -34,6 +34,7 @@ import (
 	"os/exec"
 	"time"
 
+	contextstore "github.com/docker/api/context"
 	"github.com/docker/api/client"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
@@ -48,10 +49,7 @@ var exampleCommand = cli.Command{
 		ctx, cancel := client.NewContext()
 		defer cancel()
 
-		// get our current context
-		ctx = current(ctx)
-
-		client, err := connect(ctx)
+		client, err := connect()
 		if err != nil {
 			return errors.Wrap(err, "cannot connect to backend")
 		}
@@ -67,31 +65,25 @@ var exampleCommand = cli.Command{
 	},
 }
 
-// mock information for getting context
-// factor out this into a context store package
-func current(ctx context.Context) context.Context {
-	// test backend address
-	return context.WithValue(ctx, backendAddressKey{}, "127.0.0.1:7654")
-}
-
-func connect(ctx context.Context) (*client.Client, error) {
-	address, err := BackendAddress(ctx)
+func connect() (*client.Client, error) {
+	current, err := contextstore.GetContext()
 	if err != nil {
-		return nil, errors.Wrap(err, "no backend address")
+		return nil, err
 	}
-	c, err := client.New(address, 500*time.Millisecond)
+	address := "/tmp/api-backend-" + current.Metadata.Type
+	c, err := client.New("unix://"+address, 500*time.Millisecond)
 	if err != nil {
 		if err != context.DeadlineExceeded {
 			return nil, errors.Wrap(err, "connect to backend")
 		}
 		// the backend is not running so start it
-		cmd := exec.Command("backend-example", "--address", address)
+		cmd := exec.Command("backend-example-" + current.Metadata.Type, "--address", address)
 		go cmd.Wait()
 
 		if err := cmd.Start(); err != nil {
 			return nil, errors.Wrap(err, "start backend")
 		}
-		return client.New(address, 2*time.Second)
+		return client.New("unix://"+address, 2*time.Second)
 	}
 	return c, nil
 }
