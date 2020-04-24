@@ -31,10 +31,12 @@ import (
 	"context"
 	"time"
 
+	backendv1 "github.com/docker/api/backend/v1"
+	containersv1 "github.com/docker/api/containers/v1"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
-
-	v1 "github.com/docker/api/backend/v1"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // New returns a GRPC client
@@ -58,14 +60,49 @@ func New(address string, timeout time.Duration) (*Client, error) {
 	}
 
 	return &Client{
-		conn:          conn,
-		BackendClient: v1.NewBackendClient(conn),
+		conn:             conn,
+		backendClient:    backendv1.NewBackendClient(conn),
+		containersClient: containersv1.NewContainersClient(conn),
 	}, nil
 }
 
 type Client struct {
-	conn *grpc.ClientConn
-	v1.BackendClient
+	conn             *grpc.ClientConn
+	backendClient    backendv1.BackendClient
+	containersClient containersv1.ContainersClient
+}
+
+type BackendInformation struct {
+	ID string
+}
+
+func (c *Client) BackendInformation(ctx context.Context) (BackendInformation, error) {
+	info, err := c.backendClient.BackendInformation(ctx, &emptypb.Empty{})
+
+	return BackendInformation{
+		ID: info.Id,
+	}, err
+}
+
+type Container struct {
+	ID     string
+	Status string
+}
+
+func (c *Client) List(ctx context.Context) ([]Container, error) {
+	resp, err := c.containersClient.List(ctx, &containersv1.ListRequest{})
+	if err != nil {
+		// TODO: convert GRPC error
+		return []Container{}, err
+	}
+	result := []Container{}
+	for _, r := range resp.Containers {
+		result = append(result, Container{
+			ID:     r.Id,
+			Status: r.Status,
+		})
+	}
+	return result, nil
 }
 
 func (c *Client) Close() error {

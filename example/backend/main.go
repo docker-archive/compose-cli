@@ -33,14 +33,14 @@ import (
 	"net"
 	"os"
 
+	backendv1 "github.com/docker/api/backend/v1"
+	containersv1 "github.com/docker/api/containers/v1"
+	"github.com/docker/api/server"
+	apiUtil "github.com/docker/api/util"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-
-	v1 "github.com/docker/api/backend/v1"
-	"github.com/docker/api/server"
-	apiUtil "github.com/docker/api/util"
 )
 
 func main() {
@@ -84,8 +84,8 @@ func main() {
 		backend := &backend{}
 
 		// register our instance with the GRPC server
-		v1.RegisterBackendServer(s, backend)
-
+		backendv1.RegisterBackendServer(s, backend)
+		containersv1.RegisterContainersServer(s, backend)
 		// handle context being closed or canceled
 		go func() {
 			<-ctx.Done()
@@ -107,8 +107,51 @@ func main() {
 type backend struct {
 }
 
-func (b *backend) BackendInformation(ctx context.Context, _ *empty.Empty) (*v1.BackendInformationResponse, error) {
-	return &v1.BackendInformationResponse{
+func (b *backend) BackendInformation(ctx context.Context, _ *empty.Empty) (*backendv1.BackendInformationResponse, error) {
+	return &backendv1.BackendInformationResponse{
 		Id: "com.docker.api.backend.example.v1",
 	}, nil
+}
+
+func (b *backend) List(context.Context, *containersv1.ListRequest) (*containersv1.ListResponse, error) {
+	return &containersv1.ListResponse{
+		Containers: []*containersv1.Container{
+			{
+				Id:     "first",
+				Status: "stopped",
+			},
+			{
+				Id:     "second",
+				Status: "running",
+			},
+		},
+	}, nil
+}
+
+func (b *backend) Create(context.Context, *containersv1.CreateRequest) (*containersv1.CreateResponse, error) {
+	return &containersv1.CreateResponse{}, nil
+}
+
+func (b *backend) Start(context.Context, *containersv1.StartRequest) (*containersv1.StartResponse, error) {
+	return &containersv1.StartResponse{}, nil
+}
+
+func (b *backend) Stop(context.Context, *containersv1.StopRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
+func (b *backend) Kill(context.Context, *containersv1.KillRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
+func (b *backend) Delete(context.Context, *containersv1.DeleteRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
+func (b *backend) Update(context.Context, *containersv1.UpdateRequest) (*containersv1.UpdateResponse, error) {
+	return &containersv1.UpdateResponse{}, nil
+}
+
+func (b *backend) Exec(context.Context, *containersv1.ExecRequest) (*containersv1.ExecResponse, error) {
+	return &containersv1.ExecResponse{}, nil
 }

@@ -37,7 +37,6 @@ import (
 	"github.com/docker/api/client"
 	"github.com/docker/api/util"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -59,7 +58,7 @@ var exampleCommand = cli.Command{
 		}
 		defer client.Close()
 
-		info, err := client.BackendInformation(ctx, &empty.Empty{})
+		info, err := client.BackendInformation(ctx)
 		if err != nil {
 			return errors.Wrap(err, "fetch backend information")
 		}

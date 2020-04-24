@@ -49,7 +49,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := os.Setenv("PATH", fmt.Sprintf("%s:%s", os.Getenv("PATH"),path)); err != nil {
+	if err := os.Setenv("PATH", fmt.Sprintf("%s:%s", os.Getenv("PATH"), path)); err != nil {
 		panic(err)
 	}
 }
@@ -103,6 +103,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		&contextCommand,
 		&exampleCommand,
+		&psCommand,
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
