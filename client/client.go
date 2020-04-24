@@ -29,9 +29,11 @@ package client
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	backendv1 "github.com/docker/api/backend/v1"
+	"github.com/docker/api/containers"
 	containersv1 "github.com/docker/api/containers/v1"
 
 	"google.golang.org/grpc"
@@ -60,16 +62,16 @@ func New(address string, timeout time.Duration) (*Client, error) {
 	}
 
 	return &Client{
-		conn:             conn,
-		backendClient:    backendv1.NewBackendClient(conn),
-		containersClient: containersv1.NewContainersClient(conn),
+		conn:          conn,
+		backendClient: backendv1.NewBackendClient(conn),
 	}, nil
 }
 
 type Client struct {
-	conn             *grpc.ClientConn
-	backendClient    backendv1.BackendClient
-	containersClient containersv1.ContainersClient
+	conn              *grpc.ClientConn
+	backendClient     backendv1.BackendClient
+	containersService containers.ContainerService
+	connMu            sync.Mutex
 }
 
 type BackendInformation struct {
@@ -84,25 +86,13 @@ func (c *Client) BackendInformation(ctx context.Context) (BackendInformation, er
 	}, err
 }
 
-type Container struct {
-	ID     string
-	Status string
-}
-
-func (c *Client) List(ctx context.Context) ([]Container, error) {
-	resp, err := c.containersClient.List(ctx, &containersv1.ListRequest{})
-	if err != nil {
-		// TODO: convert GRPC error
-		return []Container{}, err
+func (c *Client) ContainersService() containers.ContainerService {
+	if c.containersService != nil {
+		return c.containersService
 	}
-	result := []Container{}
-	for _, r := range resp.Containers {
-		result = append(result, Container{
-			ID:     r.Id,
-			Status: r.Status,
-		})
-	}
-	return result, nil
+	c.connMu.Lock()
+	defer c.connMu.Unlock()
+	return containers.NewContainerApi(containersv1.NewContainersClient(c.conn))
 }
 
 func (c *Client) Close() error {

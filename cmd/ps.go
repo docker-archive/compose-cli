@@ -35,18 +35,19 @@ var psCommand = cli.Command{
 		}
 		defer client.Close()
 
-		containers, err := client.List(ctx)
+		containers, err := client.ContainersService().List(ctx)
 		if err != nil {
 			return err
 		}
 		w := tabwriter.NewWriter(os.Stdout, 10, 1, 3, ' ', 0)
-		const tfmt = "%s\t%s\n"
-		fmt.Fprint(w, "ID\tSTATUS\n")
+		const tfmt = "%s\t%s\t%s\n"
+		fmt.Fprint(w, "ID\tIMAGE\tSTATUS\n")
 
 		for _, c := range containers {
 			if all || c.Status != "stopped" {
 				fmt.Fprintf(w, tfmt,
 					c.ID,
+					c.Image,
 					c.Status,
 				)
 			}

@@ -118,10 +118,12 @@ func (b *backend) List(context.Context, *containersv1.ListRequest) (*containersv
 		Containers: []*containersv1.Container{
 			{
 				Id:     "first",
+				Image:  "nginx",
 				Status: "stopped",
 			},
 			{
 				Id:     "second",
+				Image:  "alpine",
 				Status: "running",
 			},
 		},
