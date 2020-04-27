@@ -34,7 +34,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
 
-	v1 "github.com/docker/api/backend/v1"
+	backendV1 "github.com/docker/api/backend/v1"
+	containersV1 "github.com/docker/api/containers/v1"
 )
 
 // New returns a GRPC client
@@ -59,13 +60,15 @@ func New(address string, timeout time.Duration) (*Client, error) {
 
 	return &Client{
 		conn:          conn,
-		BackendClient: v1.NewBackendClient(conn),
+		BackendClient: backendV1.NewBackendClient(conn),
+		ContainersClient : containersV1.NewContainersClient(conn),
 	}, nil
 }
 
 type Client struct {
 	conn *grpc.ClientConn
-	v1.BackendClient
+	backendV1.BackendClient
+	containersV1.ContainersClient
 }
 
 func (c *Client) Close() error {
