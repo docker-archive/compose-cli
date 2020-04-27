@@ -30,14 +30,17 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"github.com/docker/api"
 	"os"
 	"os/exec"
 	"time"
 
 	"github.com/docker/api/client"
+	apicontext "github.com/docker/api/context"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/metadata"
 )
 
 var ExampleCommand = cobra.Command{
@@ -68,6 +71,9 @@ var ExampleCommand = cobra.Command{
 // mock information for getting context
 // factor out this into a context store package
 func current(ctx context.Context) context.Context {
+	currentContext := apicontext.CurrentContext(ctx)
+	ctx = metadata.AppendToOutgoingContext(ctx, api.DockerContextKey, currentContext)
+
 	// test backend address
 	return context.WithValue(ctx, backendAddressKey{}, "/tmp/backend.sock")
 }
