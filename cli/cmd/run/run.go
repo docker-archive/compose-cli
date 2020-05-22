@@ -30,11 +30,15 @@ package run
 import (
 	"context"
 	"fmt"
+	"os"
 
+	"github.com/containerd/console"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/docker/api/cli/options/run"
 	"github.com/docker/api/client"
+	"github.com/docker/api/progress"
 )
 
 // Command runs a container
@@ -63,14 +67,35 @@ func runRun(ctx context.Context, image string, opts run.Opts) error {
 		return err
 	}
 
-	containerConfig, err := opts.ToContainerConfig(image)
+	cf, err := console.ConsoleFromFile(os.Stderr)
 	if err != nil {
 		return err
 	}
+	ch := make(chan progress.Event)
+	writer := progress.NewWriter(cf)
 
-	if err = c.ContainerService().Run(ctx, containerConfig); err != nil {
+	eg, ctx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		containerConfig, err := opts.ToContainerConfig(image)
+		if err != nil {
+			return err
+		}
+
+		if err = c.ContainerService().Run(ctx, ch, containerConfig); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	eg.Go(func() error {
+		return writer.Start(context.TODO(), ch)
+	})
+
+	if err := eg.Wait(); err != nil {
 		return err
 	}
+
 	fmt.Println(opts.Name)
 
 	return nil

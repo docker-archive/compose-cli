@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/docker/api/context/cloud"
+	"github.com/docker/api/progress"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -79,11 +80,11 @@ func (ms *mobyService) List(ctx context.Context, all bool) ([]containers.Contain
 	return result, nil
 }
 
-func (ms *mobyService) Run(ctx context.Context, r containers.ContainerConfig) error {
+func (ms *mobyService) Run(ctx context.Context, channel chan<- progress.Event, config containers.ContainerConfig) error {
 	create, err := ms.apiClient.ContainerCreate(ctx, &container.Config{
-		Image:  r.Image,
-		Labels: r.Labels,
-	}, nil, nil, r.ID)
+		Image:  config.Image,
+		Labels: config.Labels,
+	}, nil, nil, config.ID)
 	if err != nil {
 		return err
 	}

@@ -27,7 +27,8 @@ require (
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
-	github.com/morikuni/aec v1.0.0 // indirect
+	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
+	github.com/morikuni/aec v1.0.0
 	github.com/onsi/gomega v1.9.0
 	github.com/opencontainers/go-digest v1.0.0-rc1
 	github.com/opencontainers/image-spec v1.0.1 // indirect
@@ -40,8 +41,8 @@ require (
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299 // indirect
-	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.22.0
 	gotest.tools v2.2.0+incompatible

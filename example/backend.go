@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/docker/api/context/cloud"
+	"github.com/docker/api/progress"
 
 	"github.com/docker/api/backend"
 	"github.com/docker/api/compose"
@@ -60,8 +61,8 @@ func (cs *containerService) List(ctx context.Context, all bool) ([]containers.Co
 	return result, nil
 }
 
-func (cs *containerService) Run(ctx context.Context, r containers.ContainerConfig) error {
-	fmt.Printf("Running container %q with name %q\n", r.Image, r.ID)
+func (cs *containerService) Run(ctx context.Context, channel chan<- progress.Event, config containers.ContainerConfig) error {
+	fmt.Printf("Running container %q with name %q\n", config.Image, config.ID)
 	return nil
 }
 
@@ -86,7 +87,7 @@ func (cs *containerService) Delete(ctx context.Context, id string, force bool) e
 
 type composeService struct{}
 
-func (cs *composeService) Up(ctx context.Context, opts compose.ProjectOptions) error {
+func (cs *composeService) Up(ctx context.Context, opts compose.ProjectOptions, channel chan<- progress.Event) error {
 	prj, err := compose.ProjectFromOptions(&opts)
 	if err != nil {
 		return err

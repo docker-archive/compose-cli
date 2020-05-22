@@ -10,6 +10,7 @@ import (
 
 	"github.com/docker/api/context/cloud"
 	"github.com/docker/api/errdefs"
+	"github.com/docker/api/progress"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
 	"github.com/compose-spec/compose-go/types"
@@ -144,7 +145,7 @@ func (cs *aciContainerService) List(ctx context.Context, _ bool) ([]containers.C
 	return res, nil
 }
 
-func (cs *aciContainerService) Run(ctx context.Context, r containers.ContainerConfig) error {
+func (cs *aciContainerService) Run(ctx context.Context, c chan<- progress.Event, r containers.ContainerConfig) error {
 	var ports []types.ServicePortConfig
 	for _, p := range r.Ports {
 		ports = append(ports, types.ServicePortConfig{
@@ -180,7 +181,7 @@ func (cs *aciContainerService) Run(ctx context.Context, r containers.ContainerCo
 		return err
 	}
 
-	return createACIContainers(ctx, cs.ctx, groupDefinition)
+	return createACIContainers(ctx, cs.ctx, c, groupDefinition)
 }
 
 func (cs *aciContainerService) Stop(ctx context.Context, containerName string, timeout *uint32) error {
@@ -254,7 +255,7 @@ type aciComposeService struct {
 	ctx store.AciContext
 }
 
-func (cs *aciComposeService) Up(ctx context.Context, opts compose.ProjectOptions) error {
+func (cs *aciComposeService) Up(ctx context.Context, opts compose.ProjectOptions, ch chan<- progress.Event) error {
 	project, err := compose.ProjectFromOptions(&opts)
 	if err != nil {
 		return err
@@ -265,7 +266,7 @@ func (cs *aciComposeService) Up(ctx context.Context, opts compose.ProjectOptions
 	if err != nil {
 		return err
 	}
-	return createACIContainers(ctx, cs.ctx, groupDefinition)
+	return createACIContainers(ctx, cs.ctx, ch, groupDefinition)
 }
 
 func (cs *aciComposeService) Down(ctx context.Context, opts compose.ProjectOptions) error {

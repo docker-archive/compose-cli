@@ -3,6 +3,8 @@ package containers
 import (
 	"context"
 	"io"
+
+	"github.com/docker/api/progress"
 )
 
 // Container represents a created container
@@ -60,7 +62,7 @@ type Service interface {
 	// Stop stops the running container
 	Stop(ctx context.Context, containerID string, timeout *uint32) error
 	// Run creates and starts a container
-	Run(ctx context.Context, config ContainerConfig) error
+	Run(ctx context.Context, channel chan<- progress.Event, config ContainerConfig) error
 	// Exec executes a command inside a running container
 	Exec(ctx context.Context, containerName string, command string, reader io.Reader, writer io.Writer) error
 	// Logs returns all the logs of a container

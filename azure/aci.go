@@ -21,18 +21,33 @@ import (
 
 	"github.com/docker/api/azure/login"
 	"github.com/docker/api/errdefs"
+	"github.com/docker/api/progress"
 
 	"github.com/docker/api/context/store"
 )
 
-func createACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {
+func createACIContainers(ctx context.Context, aciContext store.AciContext, c chan<- progress.Event, group containerinstance.ContainerGroup) error {
+	defer close(c)
+	c <- progress.Event{
+		ID:         *group.Name,
+		Status:     progress.Working,
+		StatusText: "Creating",
+	}
+	defer func() {
+		c <- progress.Event{
+			ID:         *group.Name,
+			Status:     progress.Done,
+			StatusText: "Running",
+		}
+	}()
+
 	containerGroupsClient, err := getContainerGroupsClient(aciContext.SubscriptionID)
 	if err != nil {
 		return errors.Wrapf(err, "cannot get container group client")
 	}
 
 	// Check if the container group already exists
-	_, err = containerGroupsClient.Get(ctx, aciContext.ResourceGroup, *groupDefinition.Name)
+	_, err = containerGroupsClient.Get(ctx, aciContext.ResourceGroup, *group.Name)
 	if err != nil {
 		if err, ok := err.(autorest.DetailedError); ok {
 			if err.StatusCode != http.StatusNotFound {
@@ -42,24 +57,25 @@ func createACIContainers(ctx context.Context, aciContext store.AciContext, group
 			return err
 		}
 	} else {
-		return fmt.Errorf("container group %q already exists", *groupDefinition.Name)
+		return fmt.Errorf("container group %q already exists", *group.Name)
 	}
 
-	future, err := containerGroupsClient.CreateOrUpdate(
+	_, err = containerGroupsClient.CreateOrUpdate(
 		ctx,
 		aciContext.ResourceGroup,
-		*groupDefinition.Name,
-		groupDefinition,
+		*group.Name,
+		group,
 	)
 	if err != nil {
 		return err
 	}
-
-	err = future.WaitForCompletionRef(ctx, containerGroupsClient.Client)
-	if err != nil {
-		return err
+	c <- progress.Event{
+		ID:         *group.Name,
+		Status:     progress.Working,
+		StatusText: "Waiting",
 	}
-	containerGroup, err := future.Result(containerGroupsClient)
+
+	containerGroup, err := waitGroup(ctx, aciContext, group, c)
 	if err != nil {
 		return err
 	}
@@ -89,6 +105,60 @@ func createACIContainers(ctx context.Context, aciContext store.AciContext, group
 	}
 
 	return err
+}
+
+func waitGroup(ctx context.Context, aciContext store.AciContext, group containerinstance.ContainerGroup, c chan<- progress.Event) (containerinstance.ContainerGroup, error) {
+	containerGroupsClient, err := getContainerGroupsClient(aciContext.SubscriptionID)
+	if err != nil {
+		return containerinstance.ContainerGroup{}, errors.Wrapf(err, "cannot get container group client")
+	}
+
+	for _, co := range *group.Containers {
+		c <- progress.Event{
+			ID:         *co.Name,
+			StatusText: "Creating",
+			Status:     progress.Working,
+			Text:       *co.Image,
+		}
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			return containerinstance.ContainerGroup{}, ctx.Err()
+		default:
+			cg, err := containerGroupsClient.Get(ctx, aciContext.ResourceGroup, *group.Name)
+			if err != nil {
+				return containerinstance.ContainerGroup{}, err
+			}
+
+			done := true
+			for _, container := range *cg.Containers {
+				state := ""
+				if container.InstanceView != nil && container.InstanceView.CurrentState != nil {
+					state = *container.InstanceView.CurrentState.State
+					status := progress.Working
+					if state == "Running" {
+						status = progress.Done
+					}
+					c <- progress.Event{
+						ID:         *container.Name,
+						Status:     status,
+						StatusText: state,
+						Text:       *container.Image,
+					}
+				}
+
+				if state != "Running" {
+					done = false
+				}
+			}
+			if done {
+				return cg, nil
+			}
+
+			time.Sleep(1 * time.Second)
+		}
+	}
 }
 
 func deleteACIContainerGroup(ctx context.Context, aciContext store.AciContext, containerGroupName string) (containerinstance.ContainerGroup, error) {

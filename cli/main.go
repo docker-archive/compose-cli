@@ -38,6 +38,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -158,11 +159,11 @@ func main() {
 	if err = root.ExecuteContext(ctx); err != nil {
 		// Context should always be handled by new CLI
 		if runningOwnCommand {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, aurora.Sprintf(aurora.Red("Error: %s"), err))
 			os.Exit(1)
 		}
 		execMoby(ctx)
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, aurora.Sprintf(aurora.Red("Error: %s"), err))
 		os.Exit(1)
 	}
 }

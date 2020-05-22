@@ -30,11 +30,15 @@ package compose
 import (
 	"context"
 	"errors"
+	"os"
 
+	"github.com/containerd/console"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/docker/api/client"
 	"github.com/docker/api/compose"
+	"github.com/docker/api/progress"
 )
 
 func upCommand() *cobra.Command {
@@ -58,11 +62,28 @@ func runUp(ctx context.Context, opts compose.ProjectOptions) error {
 	if err != nil {
 		return err
 	}
-
-	composeService := c.ComposeService()
-	if composeService == nil {
-		return errors.New("compose not implemented in current context")
+	cf, err := console.ConsoleFromFile(os.Stderr)
+	if err != nil {
+		return err
 	}
+	ch := make(chan progress.Event)
+	writer := progress.NewWriter(cf)
 
-	return composeService.Up(ctx, opts)
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.Go(func() error {
+		composeService := c.ComposeService()
+		if composeService == nil {
+			return errors.New("compose not implemented in current context")
+		}
+
+		return composeService.Up(ctx, opts, ch)
+	})
+	eg.Go(func() error {
+		return writer.Start(context.TODO(), ch)
+	})
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+	return nil
 }

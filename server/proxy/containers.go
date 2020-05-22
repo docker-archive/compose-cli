@@ -5,6 +5,7 @@ import (
 
 	"github.com/docker/api/containers"
 	v1 "github.com/docker/api/containers/v1"
+	"github.com/docker/api/progress"
 )
 
 // NewContainerAPI creates a proxy container server
@@ -62,7 +63,9 @@ func (p *proxyContainerAPI) List(ctx context.Context, request *v1.ListRequest) (
 func (p *proxyContainerAPI) Create(ctx context.Context, request *v1.CreateRequest) (*v1.CreateResponse, error) {
 	client := Client(ctx)
 
-	err := client.ContainerService().Run(ctx, containers.ContainerConfig{
+	c := make(chan progress.Event)
+
+	err := client.ContainerService().Run(ctx, c, containers.ContainerConfig{
 		ID:    request.Id,
 		Image: request.Image,
 	})
