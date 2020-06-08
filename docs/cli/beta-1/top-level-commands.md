@@ -4,13 +4,14 @@ In order for the new CLI to feel familiar to existing Docker users while we are
 developing it, we need to ensure that we communicate which existing commands
 are not yet implemented and which have been removed.
 
-There are three possible states for existing commands:
+There are four possible states for existing commands:
 
 | State | Description |
 |:------|:------------|
-| Implemented | Implemented but may not include all subcommands or flags |
-| Not yet implemented | Command returns "not yet implemented" error |
-| Removed | Command returns "please use a legacy context for this command" error |
+| Implemented         | Shown in help, implemented but may not include all subcommands or flags |
+| Hidden              | Not shown in help, implemented |
+| Not yet implemented | Shown in help, command returns "not yet implemented" error |
+| Removed             | Not shown in help, command returns "please use a legacy context for this command" error |
 
 ## Existing management commands
 
@@ -18,9 +19,7 @@ There are three possible states for existing commands:
 |:------------|:---------|
 | `builder`   | Not yet implemented |
 | `config`    | Not yet implemented |
-| `container` | Not yet implemented |
 | `context`   | Implemented |
-| `image`     | Not yet implemented |
 | `manifest`  | Removed |
 | `network`   | Removed |
 | `node`      | Removed |
@@ -32,6 +31,13 @@ There are three possible states for existing commands:
 | `system`    | Removed |
 | `trust`     | Not yet implemented |
 | `volume`    | Not yet implemented |
+
+## Existing restructuring commands
+
+| Command     | Behavior |
+|:------------|:---------|
+| `container` | Hidden |
+| `image`     | Not yet implemented |
 
 ## Existing commands
 
