@@ -4,14 +4,16 @@ In order for the new CLI to feel familiar to existing Docker users while we are
 developing it, we need to ensure that we communicate which existing commands
 are not yet implemented and which have been removed.
 
-There are four possible states for existing commands:
+There are five possible states for existing commands, flags, or environment
+variables:
 
-| State | Description |
-|:------|:------------|
+| State               | Description |
+|:--------------------|:------------|
 | Implemented         | Shown in help, implemented but may not include all subcommands or flags |
 | Hidden              | Not shown in help, implemented |
 | Not yet implemented | Shown in help, command returns "not yet implemented" error |
 | Removed             | Not shown in help, command returns "please use a legacy context for this command" error |
+| Ignored             | Not shown in help, setting has no effect |
 
 ## Existing management commands
 
@@ -25,7 +27,7 @@ There are four possible states for existing commands:
 | `node`      | Removed |
 | `plugin`    | Removed |
 | `secret`    | Not yet implemented |
-| `service`   | Not yet implemented |
+| `service`   | Removed |
 | `stack`     | Removed |
 | `swarm`     | Removed |
 | `system`    | Removed |
@@ -34,10 +36,14 @@ There are four possible states for existing commands:
 
 ## Existing restructuring commands
 
-| Command     | Behavior |
-|:------------|:---------|
-| `container` | Hidden |
-| `image`     | Not yet implemented |
+These are commands that do not have different functionality but just restructure
+the help. e.g.: `docker run` (command) vs `docker container run` (restructured
+command).
+
+| Command     | Behavior            | Comment |
+|:------------|:--------------------|:--------|
+| `container` | Hidden              | Allow existing scripts to work |
+| `image`     | Not yet implemented | |
 
 ## Existing commands
 
@@ -47,7 +53,7 @@ There are four possible states for existing commands:
 | `build`   | Not yet implemented |
 | `commit`  | Removed |
 | `cp`      | Removed |
-| `create`  | Not yet implemented |
+| `create`  | Removed |
 | `diff`    | Removed |
 | `events`  | Removed |
 | `exec`    | Implemented |
@@ -76,7 +82,7 @@ There are four possible states for existing commands:
 | `search`  | Not yet implemented |
 | `start`   | Removed |
 | `stats`   | Removed |
-| `stop`    | Not yet implemented |
+| `stop`    | Removed |
 | `tag`     | Not yet implemented |
 | `top`     | Not yet implemented |
 | `unpause` | Removed |
@@ -86,26 +92,26 @@ There are four possible states for existing commands:
 
 ## Existing CLI plugins
 
-| Command  | Behavior |
-|:---------|:---------|
-| `app`    | Removed |
-| `buildx` | Removed |
+| Command  | Behavior | Comment |
+|:---------|:---------|:--------|
+| `app`    | Removed  | |
+| `buildx` | Removed  | New `build` command will be `buildx` based |
 
 ## Existing flags
 
-| Flag              | Behavior |
-|:------------------|:---------|
-| `--config`        | Implemented |
-| `-c, --context`   | Implemented |
-| `-D, --debug`     | Implemented |
-| `-H, --host`      | Removed |
-| `-l, --log-level` | Removed |
-| `--tls`           | Removed |
-| `--tlscacert`     | Removed |
-| `--tlscert`       | Removed |
-| `--tlskey`        | Removed |
-| `--tlsverify`     | Removed |
-| `-v, --version`   | Implemented |
+| Flag              | Behavior    | Comment |
+|:------------------|:------------|:--------|
+| `--config`        | Implemented | |
+| `-c, --context`   | Implemented | |
+| `-D, --debug`     | Implemented | |
+| `-H, --host`      | Removed     | Replaced by contexts |
+| `-l, --log-level` | Removed     | Replaced by `--debug` |
+| `--tls`           | Removed     | Replaced by contexts |
+| `--tlscacert`     | Removed     | Replaced by contexts |
+| `--tlscert`       | Removed     | Replaced by contexts |
+| `--tlskey`        | Removed     | Replaced by contexts |
+| `--tlsverify`     | Removed     | Replaced by contexts |
+| `-v, --version`   | Implemented | |
 
 ## New commands
 
@@ -117,6 +123,30 @@ There are four possible states for existing commands:
 
 ## New flags
 
-| Flag         | Behavior |
-|:-------------|:---------|
-| `-h, --help` | Implemented |
+| Flag         | Behavior    | Comment |
+|:-------------|:------------|:--------|
+| `-h, --help` | Implemented | |
+| `--verbose`  | Implemented | Same as `--debug` |
+
+## Environment variables
+
+| Variable                       | Behavior    |
+|:-------------------------------|:------------|
+| `DOCKER_API_VERSION`           | Ignored |
+| `DOCKER_BUILDKIT`              | Ignored |
+| `DOCKER_CONFIG`                | Implemented |
+| `DOCKER_CERT_PATH`             | Ignored |
+| `DOCKER_CLI_EXPERIMENTAL`      | Ignored |
+| `DOCKER_DRIVER`                | Ignored |
+| `DOCKER_HOST`                  | Ignored |
+| `DOCKER_NOWARN_KERNEL_VERSION` | Ignored |
+| `DOCKER_RAMDISK`               | Ignored |
+| `DOCKER_STACK_ORCHESTRATOR`    | Ignored |
+| `DOCKER_TLS`                   | Ignored |
+| `DOCKER_TLS_VERIFY`            | Ignored |
+| `DOCKER_CONTENT_TRUST`         | Ignored |
+| `DOCKER_CONTENT_TRUST_SERVER`  | Ignored |
+| `DOCKER_HIDE_LEGACY_COMMANDS`  | Ignored |
+| `DOCKER_TMPDIR`                | Ignored |
+| `DOCKER_CONTEXT`               | Implemented |
+| `DOCKER_DEFAULT_PLATFORM`      | Ignored |
