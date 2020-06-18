@@ -5,6 +5,7 @@ ARG GOLANGCI_LINT_VERSION=v1.27.0-alpine
 FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS base
 WORKDIR /api
 ENV GO111MODULE=on
+ENV GOPRIVATE=github.com/docker/ecs-plugin
 RUN apk add --no-cache \
     docker \
     make \
@@ -35,6 +36,7 @@ ARG TARGETARCH
 ARG BUILD_TAGS
 RUN --mount=target=. \
     --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=ssh \
     GOOS=${TARGETOS} \
     GOARCH=${TARGETARCH} \
     BUILD_TAGS=${BUILD_TAGS} \

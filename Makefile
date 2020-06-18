@@ -36,11 +36,11 @@ endif
 all: cli
 
 protos: ## Generate go code from .proto files
-	@docker build . --target protos \
+	@docker build . --ssh default --target protos \
 	--output ./protos
 
 cli: ## Compile the cli
-	@docker build . --target cli \
+	@docker build . --ssh default --target cli \
 	--platform local \
 	--build-arg BUILD_TAGS=example,local \
 	--output ./bin
@@ -55,12 +55,12 @@ e2e-aci: ## Run End to end ACI tests (requires azure login)
 	go test -v ./tests/aci-e2e
 
 cross: ## Compile the CLI for linux, darwin and windows
-	@docker build . --target cross \
+	@docker build . --ssh default --target cross \
 	--build-arg BUILD_TAGS \
 	--output ./bin \
 
 test: ## Run unit tests
-	@docker build . \
+	@docker build . --ssh default \
 	--build-arg BUILD_TAGS=example,local \
 	--target test
 
