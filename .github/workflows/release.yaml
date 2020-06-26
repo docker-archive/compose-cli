@@ -16,6 +16,14 @@ jobs:
 
       - name: Checkout code into the Go module directory
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+
+      - name: Generate changelog
+        run: make changelog-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/cache@v1
         with:
@@ -31,4 +39,5 @@ jobs:
         with:
           artifacts: "bin/*"
           prerelease: true
+          bodyFile: "CHANGELOG.md"
           token: ${{ secrets.GITHUB_TOKEN }}
