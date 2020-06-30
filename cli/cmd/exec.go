@@ -19,6 +19,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"os/signal"
 	"strings"
 
 	"github.com/containerd/console"
@@ -29,7 +32,9 @@ import (
 )
 
 type execOpts struct {
-	Tty bool
+	Tty         bool
+	Interactive bool
+	Command     string
 }
 
 // ExecCommand runs a command in a running container
@@ -38,14 +43,15 @@ func ExecCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "exec",
 		Short: "Run a command in a running container",
-		Args:  cobra.MinimumNArgs(2),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runExec(cmd.Context(), opts, args[0], strings.Join(args[1:], " "))
 		},
 	}
 
 	cmd.Flags().BoolVarP(&opts.Tty, "tty", "t", false, "Allocate a pseudo-TTY")
-	cmd.Flags().BoolP("interactive", "i", false, "Keep STDIN open even if not attached")
+	cmd.Flags().BoolVarP(&opts.Interactive, "interactive", "i", false, "Keep STDIN open even if not attached")
+	cmd.Flags().StringVar(&opts.Command, "command", "/bin/sh", "Shell used to exec the commands.")
 
 	return cmd
 }
@@ -69,5 +75,48 @@ func runExec(ctx context.Context, opts execOpts, name string, command string) er
 		}()
 	}
 
-	return c.ContainerService().Exec(ctx, name, command, con, con)
+	suffixCommand := ""
+	if !opts.Interactive {
+		// suffixCommand = "\nexit\n"
+		suffixCommand = " && exit\n"
+	}
+	rCon := &ComposedReader{
+		Pre: strings.NewReader(command + suffixCommand),
+	}
+
+	if opts.Interactive {
+		rCon.R = con
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+	go func() {
+		<-interrupt
+		cancel()
+		os.Exit(0)
+	}()
+
+	// for i, c := range opts.Command {
+	// 	fmt.Printf("%d opts.Command: %d -> %s\n", i, c, string(opts.Command[i]))
+	// }
+
+	return c.ContainerService().Exec(ctx, name, opts.Command, rCon, con)
+}
+
+// ComposedReader provides a prepended Reader
+type ComposedReader struct {
+	Pre io.Reader
+	R   io.Reader
+}
+
+func (c *ComposedReader) Read(p []byte) (int, error) {
+	n, err := c.Pre.Read(p)
+	if err == io.EOF {
+		if c.R == nil {
+			return n, err
+		}
+		return c.R.Read(p)
+	}
+	return n, err
 }

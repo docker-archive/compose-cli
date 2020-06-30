@@ -170,11 +170,16 @@ func exec(ctx context.Context, address string, password string, reader io.Reader
 
 	downstreamChannel := make(chan error, 10)
 	upstreamChannel := make(chan error, 10)
+	done := make(chan struct{})
 
+	var commandBuff string
 	go func() {
+		defer close(done)
 		for {
 			msg, _, err := wsutil.ReadServerData(conn)
+			msgStr := string(msg)
 			if err != nil {
+				// fmt.Print("return: ", err)
 				if err == io.EOF {
 					downstreamChannel <- nil
 					return
@@ -182,7 +187,32 @@ func exec(ctx context.Context, address string, password string, reader io.Reader
 				downstreamChannel <- err
 				return
 			}
-			fmt.Fprint(writer, string(msg))
+			// fmt.Print("From WS: ", string(msg), "\n")
+
+			// for i, c := range msg {
+			// 	fmt.Printf("%d msg        : %d -> %s\n", i, c, string(msg[i]))
+			// }
+			// for i, c := range commandBuff {
+			// 	fmt.Printf("%d commandBuff: %d -> %s\n", i, c, string(commandBuff[i]))
+			// }
+
+			// fmt.Printf("\n(%d, %d)\n(\"commandBuff\", \"msgStr\")\n(\"%s\", \"%s\")\n",
+			// 	len(commandBuff), len(msgStr),
+			// 	commandBuff, msgStr)
+
+			/*
+				if commandBuff != "" && strings.HasPrefix(msgStr, strings.TrimSpace(commandBuff)) {
+					// fmt.Println("GOOOOOOOOTTTTTTTTTT IT")
+					commandBuff = ""
+					msgStr = msgStr[len(commandBuff):]
+					continue
+				} else {
+					// fmt.Println("GOOOOOOOOTTTTTTTTTT AAAAAAT")
+				}
+			*/
+
+			commandBuff, msgStr = popCommonPrefix(commandBuff, msgStr)
+			_, _ = fmt.Fprint(writer, msgStr)
 		}
 	}()
 
@@ -197,13 +227,29 @@ func exec(ctx context.Context, address string, password string, reader io.Reader
 					upstreamChannel <- nil
 					return
 				}
+				// fmt.Println("return from upstreamChannel errorF", err)
 				upstreamChannel <- err
 				return
 			}
 
+			// fmt.Print(n, " To WS: ", string(buffer), "\n")
 			if n > 0 {
+				if buffer[0] == '\n' {
+					commandBuff += "\r"
+				}
+				commandBuff = commandBuff + string(buffer)
+				// if buffer[0] == '\n' {
+				// 	for i, c := range commandBuff {
+				// 		fmt.Printf("%d Before commandBuff: %d -> %s\n", i, c, string(commandBuff[i]))
+				// 	}
+				// 	commandBuff += "\r"
+				// 	for i, c := range commandBuff {
+				// 		fmt.Printf("%d After  commandBuff: %d -> %s\n", i, c, string(commandBuff[i]))
+				// 	}
+				// }
 				err := wsutil.WriteClientMessage(conn, ws.OpText, buffer)
 				if err != nil {
+					// fmt.Println("return from upstreamChannel", err)
 					upstreamChannel <- err
 					return
 				}
@@ -213,12 +259,28 @@ func exec(ctx context.Context, address string, password string, reader io.Reader
 
 	for {
 		select {
+		case <-done:
+			return nil
 		case err := <-downstreamChannel:
-			return errors.Wrap(err, "failed to read input from container")
+			if err != nil {
+				return errors.Wrap(err, "failed to read input from container")
+			}
 		case err := <-upstreamChannel:
-			return errors.Wrap(err, "failed to send input to container")
+			if err != nil {
+				return errors.Wrap(err, "failed to send input to container")
+			}
 		}
 	}
+}
+
+func popCommonPrefix(a, b string) (string, string) {
+	for len(a) > 0 && len(b) > 0 &&
+		a[0] == b[0] &&
+		a[0] != '\n' {
+		a = a[1:]
+		b = b[1:]
+	}
+	return a, b
 }
 
 func getACIContainerLogs(ctx context.Context, aciContext store.AciContext, containerGroupName, containerName string, tail *int32) (string, error) {
