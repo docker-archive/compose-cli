@@ -22,6 +22,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -57,7 +58,7 @@ func (suite *StoreTestSuite) TestCreate() {
 
 	err = suite.store.Create("test", "test", "descrsiption", ContextMetadata{})
 	require.EqualError(suite.T(), err, `context "test": already exists`)
-	require.True(suite.T(), errdefs.IsAlreadyExistsError(err))
+	require.True(suite.T(), errors.Is(err, errdefs.ErrAlreadyExists))
 }
 
 func (suite *StoreTestSuite) TestGetEndpoint() {
@@ -80,7 +81,7 @@ func (suite *StoreTestSuite) TestGetUnknown() {
 	meta, err := suite.store.Get("unknown")
 	require.Nil(suite.T(), meta)
 	require.EqualError(suite.T(), err, `context "unknown": not found`)
-	require.True(suite.T(), errdefs.IsNotFoundError(err))
+	require.True(suite.T(), errors.Is(err, errdefs.ErrNotFound))
 }
 
 func (suite *StoreTestSuite) TestGet() {
@@ -99,7 +100,7 @@ func (suite *StoreTestSuite) TestGet() {
 func (suite *StoreTestSuite) TestRemoveNotFound() {
 	err := suite.store.Remove("notfound")
 	require.EqualError(suite.T(), err, `context "notfound": not found`)
-	require.True(suite.T(), errdefs.IsNotFoundError(err))
+	require.True(suite.T(), errors.Is(err, errdefs.ErrNotFound))
 }
 
 func (suite *StoreTestSuite) TestRemove() {

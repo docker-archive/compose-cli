@@ -18,7 +18,6 @@ package convert
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -29,9 +28,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/containerinstance/mgmt/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/compose-spec/compose-go/types"
+	"github.com/pkg/errors"
 
 	"github.com/docker/api/containers"
 	"github.com/docker/api/context/store"
+	"github.com/docker/api/errdefs"
 )
 
 const (
@@ -94,9 +95,8 @@ func ToContainerGroup(aciContext store.AciContext, p types.Project) (containerin
 			var containerPorts []containerinstance.ContainerPort
 			for _, portConfig := range service.Ports {
 				if portConfig.Published != 0 && portConfig.Published != portConfig.Target {
-					msg := fmt.Sprintf("Port mapping is not supported with ACI, cannot map port %d to %d for container %s",
-						portConfig.Published, portConfig.Target, service.Name)
-					return groupDefinition, errors.New(msg)
+					err = errors.Wrapf(errdefs.ErrPortMappingUnsupported, "cannot map host port %v to %v for container %q", portConfig.Published, portConfig.Target, service.Name)
+					return groupDefinition, err
 				}
 				portNumber := int32(portConfig.Target)
 				containerPorts = append(containerPorts, containerinstance.ContainerPort{

@@ -183,22 +183,24 @@ func getContainer(containerID string, ipAddress *containerinstance.IPAddress, co
 
 func (cs *aciContainerService) Run(ctx context.Context, r containers.ContainerConfig) error {
 	if strings.Contains(r.ID, composeContainerSeparator) {
-		return errors.New(fmt.Sprintf("invalid container name. ACI container name cannot include %q", composeContainerSeparator))
+		err := errors.Wrapf(errdefs.ErrInvalidName, "container name cannot include %q", composeContainerSeparator)
+		return errors.Wrapf(err, "unable to run container %q", r.ID)
 	}
 
 	project, err := convert.ContainerToComposeProject(r)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "unable to run container %q", r.ID)
 	}
 
 	logrus.Debugf("Running container %q with name %q\n", r.Image, r.ID)
 	groupDefinition, err := convert.ToContainerGroup(cs.ctx, project)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "unable to run container %q", r.ID)
 	}
 	addTag(groupDefinition, singleContainerTag)
 
-	return createACIContainers(ctx, cs.ctx, groupDefinition)
+	err = createACIContainers(ctx, cs.ctx, groupDefinition)
+	return errors.Wrapf(err, "unable to run container %q", r.ID)
 }
 
 func addTag(groupDefinition containerinstance.ContainerGroup, tagName string) {
@@ -209,7 +211,7 @@ func addTag(groupDefinition containerinstance.ContainerGroup, tagName string) {
 }
 
 func (cs *aciContainerService) Stop(ctx context.Context, containerName string, timeout *uint32) error {
-	return errdefs.ErrNotImplemented
+	return errors.Wrapf(errdefs.ErrNotImplemented, "unable to stop %q", containerName)
 }
 
 func getGroupAndContainerName(containerID string) (string, string) {

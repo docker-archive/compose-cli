@@ -37,6 +37,7 @@ import (
 	"github.com/docker/api/azure/login"
 	"github.com/docker/api/containers"
 	"github.com/docker/api/context/store"
+	"github.com/docker/api/errdefs"
 	"github.com/docker/api/progress"
 )
 
@@ -45,7 +46,7 @@ const aciDockerUserAgent = "docker-cli"
 func createACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {
 	containerGroupsClient, err := getContainerGroupsClient(aciContext.SubscriptionID)
 	if err != nil {
-		return errors.Wrapf(err, "cannot get container group client")
+		return err
 	}
 
 	// Check if the container group already exists
@@ -59,24 +60,29 @@ func createACIContainers(ctx context.Context, aciContext store.AciContext, group
 			return err
 		}
 	} else {
-		return fmt.Errorf("container group %q already exists", *groupDefinition.Name)
+		return errdefs.ErrAlreadyExists
 	}
 
-	return createOrUpdateACIContainers(ctx, aciContext, groupDefinition)
+	err = createOrUpdateACIContainers(ctx, aciContext, groupDefinition)
+	return convert.FromAzureError(err, groupDefinition)
 }
 
 func createOrUpdateACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {
 	w := progress.ContextWriter(ctx)
 	containerGroupsClient, err := getContainerGroupsClient(aciContext.SubscriptionID)
 	if err != nil {
-		return errors.Wrapf(err, "cannot get container group client")
+		return err
 	}
-	groupDisplay := "Group " + *groupDefinition.Name
-	w.Event(progress.Event{
-		ID:         groupDisplay,
-		Status:     progress.Working,
-		StatusText: "Waiting",
-	})
+
+	updateGroupProgress := func(s progress.EventStatus, msg string) {
+		groupDisplay := "Group " + *groupDefinition.Name
+		w.Event(progress.Event{
+			ID:         groupDisplay,
+			Status:     s,
+			StatusText: msg,
+		})
+	}
+	updateGroupProgress(progress.Working, "Waiting")
 
 	future, err := containerGroupsClient.CreateOrUpdate(
 		ctx,
@@ -85,26 +91,28 @@ func createOrUpdateACIContainers(ctx context.Context, aciContext store.AciContex
 		groupDefinition,
 	)
 	if err != nil {
+		updateGroupProgress(progress.Error, "Error")
 		return err
 	}
 
-	w.Event(progress.Event{
-		ID:         groupDisplay,
-		Status:     progress.Done,
-		StatusText: "Created",
-	})
-	for _, c := range *groupDefinition.Containers {
-		if c.Name != nil && *c.Name != convert.ComposeDNSSidecarName {
-			w.Event(progress.Event{
-				ID:         *c.Name,
-				Status:     progress.Working,
-				StatusText: "Waiting",
-			})
-		}
-	}
+	updateGroupProgress(progress.Done, "Created")
 
-	err = future.WaitForCompletionRef(ctx, containerGroupsClient.Client)
-	if err != nil {
+	updateContainerProgress := func(s progress.EventStatus, msg string) {
+		for _, c := range *groupDefinition.Containers {
+			if c.Name != nil && *c.Name != convert.ComposeDNSSidecarName {
+				w.Event(progress.Event{
+					ID:         *c.Name,
+					Status:     s,
+					StatusText: msg,
+				})
+			}
+		}
+		fmt.Println(msg)
+	}
+	updateContainerProgress(progress.Working, "Waiting")
+
+	if err := future.WaitForCompletionRef(ctx, containerGroupsClient.Client); err != nil {
+		updateContainerProgress(progress.Error, "Error")
 		return err
 	}
 
@@ -118,13 +126,13 @@ func createOrUpdateACIContainers(ctx context.Context, aciContext store.AciContex
 		}
 	}
 
-	return err
+	return nil
 }
 
 func getACIContainerGroup(ctx context.Context, aciContext store.AciContext, containerGroupName string) (containerinstance.ContainerGroup, error) {
 	containerGroupsClient, err := getContainerGroupsClient(aciContext.SubscriptionID)
 	if err != nil {
-		return containerinstance.ContainerGroup{}, fmt.Errorf("cannot get container group client: %v", err)
+		return containerinstance.ContainerGroup{}, err
 	}
 
 	return containerGroupsClient.Get(ctx, aciContext.ResourceGroup, containerGroupName)
@@ -133,7 +141,7 @@ func getACIContainerGroup(ctx context.Context, aciContext store.AciContext, cont
 func deleteACIContainerGroup(ctx context.Context, aciContext store.AciContext, containerGroupName string) (containerinstance.ContainerGroup, error) {
 	containerGroupsClient, err := getContainerGroupsClient(aciContext.SubscriptionID)
 	if err != nil {
-		return containerinstance.ContainerGroup{}, fmt.Errorf("cannot get container group client: %v", err)
+		return containerinstance.ContainerGroup{}, err
 	}
 
 	return containerGroupsClient.Delete(ctx, aciContext.ResourceGroup, containerGroupName)
@@ -142,7 +150,7 @@ func deleteACIContainerGroup(ctx context.Context, aciContext store.AciContext, c
 func execACIContainer(ctx context.Context, aciContext store.AciContext, command, containerGroup string, containerName string) (c containerinstance.ContainerExecResponse, err error) {
 	containerClient, err := getContainerClient(aciContext.SubscriptionID)
 	if err != nil {
-		return c, errors.Wrapf(err, "cannot get container client")
+		return c, err
 	}
 	rows, cols := getTermSize()
 	containerExecRequest := containerinstance.ContainerExecRequest{
@@ -235,7 +243,7 @@ func exec(ctx context.Context, address string, password string, request containe
 func getACIContainerLogs(ctx context.Context, aciContext store.AciContext, containerGroupName, containerName string, tail *int32) (string, error) {
 	containerClient, err := getContainerClient(aciContext.SubscriptionID)
 	if err != nil {
-		return "", errors.Wrapf(err, "cannot get container client")
+		return "", err
 	}
 
 	logs, err := containerClient.ListLogs(ctx, aciContext.ResourceGroup, containerGroupName, containerName, tail)

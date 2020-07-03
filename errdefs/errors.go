@@ -26,55 +26,40 @@ const (
 	ExitCodeLoginRequired = 5
 )
 
+// Generic errors
 var (
-	// ErrNotFound is returned when an object is not found
-	ErrNotFound = errors.New("not found")
 	// ErrAlreadyExists is returned when an object already exists
 	ErrAlreadyExists = errors.New("already exists")
 	// ErrForbidden is returned when an operation is not permitted
 	ErrForbidden = errors.New("forbidden")
-	// ErrUnknown is returned when the error type is unmapped
-	ErrUnknown = errors.New("unknown")
-	// ErrLoginFailed is returned when login failed
-	ErrLoginFailed = errors.New("login failed")
-	// ErrLoginRequired is returned when login is required for a specific action
-	ErrLoginRequired = errors.New("login required")
+	// ErrNotFound is returned when an object is not found
+	ErrNotFound = errors.New("not found")
 	// ErrNotImplemented is returned when a backend doesn't implement
 	// an action
 	ErrNotImplemented = errors.New("not implemented")
 	// ErrParsingFailed is returned when a string cannot be parsed
 	ErrParsingFailed = errors.New("parsing failed")
+
+	// ErrUnknown is returned when the cause of the error is not known or
+	// handled
+	ErrUnknown = errors.New("unknown")
+)
+
+// Specific errors
+var (
+	// ErrImageInaccessible is returned when an image does not exist or there
+	// are permissions issues fetching it
+	ErrImageInaccessible = errors.New("image inaccessible")
+	// ErrInvalidName is returned when a object is given an invalid name
+	ErrInvalidName = errors.New("invalid name")
+	// ErrLoginFailed is returned when login failed
+	ErrLoginFailed = errors.New("login failed")
+	// ErrLoginRequired is returned when login is required for a specific action
+	ErrLoginRequired = errors.New("login required")
+	// ErrPortMappingUnsupported is returned when a backend does not support
+	// port mapping
+	ErrPortMappingUnsupported = errors.New("port mapping unsupported")
 	// ErrWrongContextType is returned when the caller tries to get a context
 	// with the wrong type
 	ErrWrongContextType = errors.New("wrong context type")
 )
-
-// IsNotFoundError returns true if the unwrapped error is ErrNotFound
-func IsNotFoundError(err error) bool {
-	return errors.Is(err, ErrNotFound)
-}
-
-// IsAlreadyExistsError returns true if the unwrapped error is ErrAlreadyExists
-func IsAlreadyExistsError(err error) bool {
-	return errors.Is(err, ErrAlreadyExists)
-}
-
-// IsForbiddenError returns true if the unwrapped error is ErrForbidden
-func IsForbiddenError(err error) bool {
-	return errors.Is(err, ErrForbidden)
-}
-
-// IsUnknownError returns true if the unwrapped error is ErrUnknown
-func IsUnknownError(err error) bool {
-	return errors.Is(err, ErrUnknown)
-}
-
-// IsErrNotImplemented returns true if the unwrapped error is ErrNotImplemented
-func IsErrNotImplemented(err error) bool {
-	return errors.Is(err, ErrNotImplemented)
-}
-
-// IsErrParsingFailed returns true if the unwrapped error is ErrParsingFailed
-func IsErrParsingFailed(err error) bool {
-	return errors.Is(err, ErrParsingFailed)
-}

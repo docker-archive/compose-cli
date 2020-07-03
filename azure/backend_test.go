@@ -58,7 +58,7 @@ func (suite *BackendSuiteTest) TestErrorMessageRunSingleContainerNameWithCompose
 	err := service.Run(context.TODO(), containers.ContainerConfig{ID: "container_name"})
 
 	Expect(err).NotTo(BeNil())
-	Expect(err.Error()).To(Equal("invalid container name. ACI container name cannot include \"_\""))
+	Expect(err.Error()).To(Equal("unable to run container \"container_name\": container name cannot include \"_\": invalid name"))
 }
 
 func (suite *BackendSuiteTest) TestVerifyCommand() {

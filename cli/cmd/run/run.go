@@ -23,12 +23,14 @@ import (
 	"os"
 
 	"github.com/containerd/console"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/api/containers"
-
+	clierrors "github.com/docker/api/cli/errors"
 	"github.com/docker/api/cli/options/run"
 	"github.com/docker/api/client"
+	"github.com/docker/api/containers"
+	"github.com/docker/api/errdefs"
 	"github.com/docker/api/progress"
 )
 
@@ -39,8 +41,10 @@ func Command() *cobra.Command {
 		Use:   "run",
 		Short: "Run a container",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runRun(cmd.Context(), args[0], opts)
+		Run: func(cmd *cobra.Command, args []string) {
+			err := runRun(cmd.Context(), args[0], opts)
+			clierrors.Output(err)
+			os.Exit(1)
 		},
 	}
 
@@ -68,7 +72,23 @@ func runRun(ctx context.Context, image string, opts run.Opts) error {
 	}
 
 	err = progress.Run(ctx, func(ctx context.Context) error {
-		return c.ContainerService().Run(ctx, containerConfig)
+		err := c.ContainerService().Run(ctx, containerConfig)
+		if errors.Is(err, errdefs.ErrImageInaccessible) {
+			return clierrors.NewImageInaccessibleError(err)
+		}
+		if errors.Is(err, errdefs.ErrAlreadyExists) {
+			return clierrors.Error{
+				Err: err,
+				Fix: "stop the running container with the same name or use `--name` to specify a different name",
+			}
+		}
+		if errors.Is(err, errdefs.ErrPortMappingUnsupported) {
+			return clierrors.Error{
+				Err: err,
+				Fix: "set the host port to be the same as the container port, e.g.: `--port 80:80`",
+			}
+		}
+		return err
 	})
 	if err != nil {
 		return err
