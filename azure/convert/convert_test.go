@@ -218,6 +218,10 @@ func (suite *ConvertTestSuite) TestComposeContainerGroupToContainerResourceLimit
 							NanoCPUs:    "0.1",
 							MemoryBytes: types.UnitBytes(_0_1Gb),
 						},
+						Reservations: &types.Resource{
+							NanoCPUs:    "0.2",
+							MemoryBytes: types.UnitBytes(_0_1Gb * 2),
+						},
 					},
 				},
 			},
@@ -229,8 +233,12 @@ func (suite *ConvertTestSuite) TestComposeContainerGroupToContainerResourceLimit
 
 	container1 := (*group.Containers)[0]
 	limits := *container1.Resources.Limits
-	Expect(*limits.CPU).To(Equal(float64(0.1)))
-	Expect(*limits.MemoryInGB).To(Equal(float64(0.1)))
+	Expect(*limits.CPU).To(Equal(0.1))
+	Expect(*limits.MemoryInGB).To(Equal(0.1))
+
+	reservations := *container1.Resources.Requests
+	Expect(*reservations.CPU).To(Equal(0.2))
+	Expect(*reservations.MemoryInGB).To(Equal(0.2))
 }
 
 func (suite *ConvertTestSuite) TestComposeContainerGroupToContainerResourceLimitsDefaults() {
@@ -242,6 +250,10 @@ func (suite *ConvertTestSuite) TestComposeContainerGroupToContainerResourceLimit
 				Deploy: &types.DeployConfig{
 					Resources: types.Resources{
 						Limits: &types.Resource{
+							NanoCPUs:    "",
+							MemoryBytes: 0,
+						},
+						Reservations: &types.Resource{
 							NanoCPUs:    "",
 							MemoryBytes: 0,
 						},
@@ -258,6 +270,10 @@ func (suite *ConvertTestSuite) TestComposeContainerGroupToContainerResourceLimit
 	limits := *container1.Resources.Limits
 	Expect(*limits.CPU).To(Equal(float64(1)))
 	Expect(*limits.MemoryInGB).To(Equal(float64(1)))
+
+	reservations := *container1.Resources.Requests
+	Expect(*reservations.CPU).To(Equal(float64(1)))
+	Expect(*reservations.MemoryInGB).To(Equal(float64(1)))
 }
 
 func TestConvertTestSuite(t *testing.T) {

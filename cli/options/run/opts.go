@@ -30,13 +30,15 @@ import (
 
 // Opts contain run command options
 type Opts struct {
-	Name    string
-	Publish []string
-	Labels  []string
-	Volumes []string
-	Cpus    float64
-	Memory  formatter.MemBytes
-	Detach  bool
+	Name              string
+	Publish           []string
+	Labels            []string
+	Volumes           []string
+	CPULimit          float64
+	MemoryLimit       formatter.MemBytes
+	CPUReservation    float64
+	MemoryReservation formatter.MemBytes
+	Detach            bool
 }
 
 // ToContainerConfig convert run options to a container configuration
@@ -56,13 +58,15 @@ func (r *Opts) ToContainerConfig(image string) (containers.ContainerConfig, erro
 	}
 
 	return containers.ContainerConfig{
-		ID:       r.Name,
-		Image:    image,
-		Ports:    publish,
-		Labels:   labels,
-		Volumes:  r.Volumes,
-		MemLimit: r.Memory,
-		CPULimit: r.Cpus,
+		ID:             r.Name,
+		Image:          image,
+		Ports:          publish,
+		Labels:         labels,
+		Volumes:        r.Volumes,
+		MemLimit:       r.MemoryLimit,
+		CPULimit:       r.CPULimit,
+		MemReservation: r.MemoryReservation,
+		CPUReservation: r.CPUReservation,
 	}, nil
 }
 

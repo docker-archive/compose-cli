@@ -25,19 +25,21 @@ import (
 
 // Container represents a created container
 type Container struct {
-	ID          string
-	Status      string
-	Image       string
-	Command     string
-	CPUTime     uint64
-	CPULimit    float64
-	MemoryUsage uint64
-	MemoryLimit uint64
-	PidsCurrent uint64
-	PidsLimit   uint64
-	Labels      []string
-	Ports       []Port
-	Platform    string
+	ID            string
+	Status        string
+	Image         string
+	Command       string
+	CPUTime       uint64
+	CPULimit      float64
+	MemoryUsage   uint64
+	MemoryLimit   uint64
+	PidsCurrent   uint64
+	PidsLimit     uint64
+	Labels        []string
+	Ports         []Port
+	Platform      string
+	CPURequest    float64
+	MemoryRequest uint64
 }
 
 // Port represents a published port of a container
@@ -68,6 +70,10 @@ type ContainerConfig struct {
 	MemLimit formatter.MemBytes
 	// CPUlimit
 	CPULimit float64
+	// MemReservation
+	MemReservation formatter.MemBytes
+	// CPUReservation
+	CPUReservation float64
 }
 
 // LogsRequest contains configuration about a log request

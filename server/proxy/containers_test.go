@@ -28,8 +28,10 @@ func TestGrpcContainerToContainerConfig(t *testing.T) {
 		Volumes: []string{
 			"myvolume",
 		},
-		MemoryLimit: 41,
-		CpuLimit:    42,
+		MemoryLimit:   41,
+		CpuLimit:      42,
+		MemoryRequest: 43,
+		CpuRequest:    44,
 	}
 
 	cc := grpcContainerToContainerConfig(r)
@@ -37,6 +39,8 @@ func TestGrpcContainerToContainerConfig(t *testing.T) {
 	assert.Equal(t, cc.Image, "myImage")
 	assert.Equal(t, cc.MemLimit, formatter.MemBytes(41))
 	assert.Equal(t, cc.CPULimit, float64(42))
+	assert.Equal(t, cc.MemReservation, formatter.MemBytes(43))
+	assert.Equal(t, cc.CPUReservation, float64(44))
 	assert.DeepEqual(t, cc.Volumes, []string{"myvolume"})
 	assert.DeepEqual(t, cc.Ports, []containers.Port{
 		{

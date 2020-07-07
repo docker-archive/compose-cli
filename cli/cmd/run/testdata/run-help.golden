@@ -4,10 +4,12 @@ Usage:
   run [flags]
 
 Flags:
-      --cpus float            Number of CPUs (default 1)
-  -d, --detach                Run container in background and print container ID
-  -l, --label stringArray     Set meta data on a container
-  -m, --memory bytes          Memory limit
-      --name string           Assign a name to the container
-  -p, --publish stringArray   Publish a container's port(s). [HOST_PORT:]CONTAINER_PORT
-  -v, --volume stringArray    Volume. Ex: user:key@my_share:/absolute/path/to/target
+      --cpus float                 Number of CPUs (default 1)
+      --cpus-reservation float     CPU reservation (default 1)
+  -d, --detach                     Run container in background and print container ID
+  -l, --label stringArray          Set meta data on a container
+  -m, --memory bytes               Memory limit
+      --memory-reservation bytes   Memory soft limit
+      --name string                Assign a name to the container
+  -p, --publish stringArray        Publish a container's port(s). [HOST_PORT:]CONTAINER_PORT
+  -v, --volume stringArray         Volume. Ex: user:key@my_share:/absolute/path/to/target

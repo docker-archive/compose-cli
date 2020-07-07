@@ -11,5 +11,7 @@
     "PidsLimit": 0,
     "Labels": null,
     "Ports": null,
-    "Platform": "Linux"
+    "Platform": "Linux",
+    "CPURequest": 0,
+    "MemoryRequest": 0
 }

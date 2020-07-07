@@ -190,6 +190,10 @@ func (cs *aciContainerService) Run(ctx context.Context, r containers.ContainerCo
 							NanoCPUs:    fmt.Sprintf("%f", r.CPULimit),
 							MemoryBytes: types.UnitBytes(r.MemLimit.Value()),
 						},
+						Reservations: &types.Resource{
+							NanoCPUs:    fmt.Sprintf("%f", r.CPUReservation),
+							MemoryBytes: types.UnitBytes(r.MemReservation.Value()),
+						},
 					},
 				},
 			},

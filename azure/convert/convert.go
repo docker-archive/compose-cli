@@ -265,15 +265,31 @@ func (s serviceConfigAciHelper) getAciContainer(volumesCache map[string]bool) (c
 	}
 
 	memLimit := 1. // Default 1 Gb
-	var cpuLimit float64 = 1
-	if s.Deploy != nil && s.Deploy.Resources.Limits != nil {
-		if s.Deploy.Resources.Limits.MemoryBytes != 0 {
-			memLimit = bytesToGb(s.Deploy.Resources.Limits.MemoryBytes)
+	cpuLimit := 1.
+	memReservation := memLimit
+	cpuReservation := cpuLimit
+	if s.Deploy != nil {
+		if s.Deploy.Resources.Limits != nil {
+			if s.Deploy.Resources.Limits.MemoryBytes != 0 {
+				memLimit = bytesToGb(s.Deploy.Resources.Limits.MemoryBytes)
+			}
+			if s.Deploy.Resources.Limits.NanoCPUs != "" {
+				cpuLimit, err = strconv.ParseFloat(s.Deploy.Resources.Limits.NanoCPUs, 0)
+				if err != nil {
+					return containerinstance.Container{}, err
+				}
+			}
 		}
-		if s.Deploy.Resources.Limits.NanoCPUs != "" {
-			cpuLimit, err = strconv.ParseFloat(s.Deploy.Resources.Limits.NanoCPUs, 0)
-			if err != nil {
-				return containerinstance.Container{}, err
+
+		if s.Deploy.Resources.Reservations != nil {
+			if s.Deploy.Resources.Reservations.MemoryBytes != 0 {
+				memReservation = bytesToGb(s.Deploy.Resources.Reservations.MemoryBytes)
+			}
+			if s.Deploy.Resources.Reservations.NanoCPUs != "" {
+				cpuReservation, err = strconv.ParseFloat(s.Deploy.Resources.Reservations.NanoCPUs, 0)
+				if err != nil {
+					return containerinstance.Container{}, err
+				}
 			}
 		}
 	}
@@ -287,8 +303,8 @@ func (s serviceConfigAciHelper) getAciContainer(volumesCache map[string]bool) (c
 					CPU:        to.Float64Ptr(cpuLimit),
 				},
 				Requests: &containerinstance.ResourceRequests{
-					MemoryInGB: to.Float64Ptr(memLimit), // TODO: use the memory requests here and not limits
-					CPU:        to.Float64Ptr(cpuLimit), // TODO: use the cpu requests here and not limits
+					MemoryInGB: to.Float64Ptr(memReservation),
+					CPU:        to.Float64Ptr(cpuReservation),
 				},
 			},
 			VolumeMounts: volumes,

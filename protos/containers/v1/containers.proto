@@ -49,6 +49,8 @@ message Container {
 	repeated string labels = 10;
 	repeated Port ports = 11;
 	uint64 cpu_limit = 12;
+	uint64 memory_request = 13;
+	uint64 cpu_request = 14;
 }
 
 message InspectRequest {
@@ -83,6 +85,8 @@ message RunRequest {
 	repeated string volumes = 5;
 	uint64 memory_limit = 6;
 	uint64 cpu_limit = 7;
+	uint64 memory_request = 8;
+	uint64 cpu_request = 9;
 }
 
 message RunResponse {
