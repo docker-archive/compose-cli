@@ -287,6 +287,13 @@ func (suite *ConvertTestSuite) TestComposeContainerGroupToContainerenvVar() {
 	Expect(envVars).To(ContainElement(containerinstance.EnvironmentVariable{Name: to.StringPtr("key2"), Value: to.StringPtr("value2")}))
 }
 
+func (suite *ConvertTestSuite) TestConvertAciRestartPolicyCondition() {
+	Expect(getAciRestartPolicy("")).To(Equal(containerinstance.Always))
+	Expect(getAciRestartPolicy(containers.Any)).To(Equal(containerinstance.Always))
+	Expect(getAciRestartPolicy(containers.None)).To(Equal(containerinstance.Never))
+	Expect(getAciRestartPolicy(containers.OnFailure)).To(Equal(containerinstance.OnFailure))
+}
+
 func TestConvertTestSuite(t *testing.T) {
 	RegisterTestingT(t)
 	suite.Run(t, new(ConvertTestSuite))

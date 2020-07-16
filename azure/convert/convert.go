@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/containerinstance/mgmt/containerinstance"
+	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/compose-spec/compose-go/types"
 
@@ -71,6 +71,13 @@ func ToContainerGroup(aciContext store.AciContext, p types.Project) (containerin
 		return containerinstance.ContainerGroup{}, err
 	}
 
+	var restartPolicyCondition containerinstance.ContainerGroupRestartPolicy
+	if len(p.Services) == 1 &&
+		p.Services[0].Deploy != nil &&
+		p.Services[0].Deploy.RestartPolicy != nil {
+		restartPolicyCondition = getAciRestartPolicy(containers.RestartPolicyCondition(p.Services[0].Deploy.RestartPolicy.Condition))
+	}
+
 	var containers []containerinstance.Container
 	groupDefinition := containerinstance.ContainerGroup{
 		Name:     &containerGroupName,
@@ -80,6 +87,7 @@ func ToContainerGroup(aciContext store.AciContext, p types.Project) (containerin
 			Containers:               &containers,
 			Volumes:                  volumes,
 			ImageRegistryCredentials: &registryCreds,
+			RestartPolicy:            restartPolicyCondition,
 		},
 	}
 
@@ -123,6 +131,13 @@ func ToContainerGroup(aciContext store.AciContext, p types.Project) (containerin
 	groupDefinition.ContainerGroupProperties.Containers = &containers
 
 	return groupDefinition, nil
+}
+
+func getAciRestartPolicy(r containers.RestartPolicyCondition) containerinstance.ContainerGroupRestartPolicy {
+	if r.String() == "" {
+		return containerinstance.Always
+	}
+	return containerinstance.PossibleContainerGroupRestartPolicyValues()[r.Value()]
 }
 
 func getDNSSidecar(containers []containerinstance.Container) containerinstance.Container {

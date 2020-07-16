@@ -70,6 +70,8 @@ type ContainerConfig struct {
 	CPULimit float64
 	// Environment variables
 	Environment []string
+	// Restart policy condition
+	RestartPolicyCondition RestartPolicyCondition
 }
 
 // ExecRequest contaiens configuration about an exec request
