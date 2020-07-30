@@ -113,6 +113,7 @@ github.com/cloudflare/cfssl v1.4.1/go.mod h1:KManx/OJPb5QY+y0+o/898AMcM128sF0bUR
 github.com/cloudflare/go-metrics v0.0.0-20151117154305-6a9aea36fb41/go.mod h1:eaZPlJWD+G9wseg1BuRXlHnjntPMrywMsyxf+LTOdP4=
 github.com/cloudflare/redoctober v0.0.0-20171127175943-746a508df14c/go.mod h1:6Se34jNoqrd8bTxrmJB2Bg2aoZ2CdSXonils9NsiNgo=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
+github.com/compose-spec/compose-go v0.0.0-20200624120600-614475470cd8/go.mod h1:ih9anT8po+49hrb+1j3ldIJ/YRAaBH52ErlQLTKE2Yo=
 github.com/compose-spec/compose-go v0.0.0-20200710075715-6fcc35384ee1 h1:F+YIkKDMHdgZBacawhFY1P9RAIgO+6uv2te6hjsjzF0=
 github.com/compose-spec/compose-go v0.0.0-20200710075715-6fcc35384ee1/go.mod h1:ArodJ6gsEB7iWKrbV3fSHZ08LlBvSVB0Oqg04fX86t4=
 github.com/containerd/cgroups v0.0.0-20190919134610-bf292b21730f h1:tSNMc+rJDfmYntojat8lljbt1mgKNpTxUZJsSzJ9Y1s=
@@ -174,6 +175,8 @@ github.com/docker/ecs-plugin v1.0.0-beta.2 h1:Z9Krz+7zKXusWzENXuskQg7n/3/ViC/cfU
 github.com/docker/ecs-plugin v1.0.0-beta.2/go.mod h1:1YaNZwrNr0dFjTP3v7zwepluaZgVNV94s0M6fL+i/iA=
 github.com/docker/ecs-plugin v1.0.0-beta.4 h1:hZKojW0tqsdhJjfMKPw6piMw/GJgfX6CVXd1YUuXLg4=
 github.com/docker/ecs-plugin v1.0.0-beta.4/go.mod h1:1YaNZwrNr0dFjTP3v7zwepluaZgVNV94s0M6fL+i/iA=
+github.com/docker/ecs-plugin v1.0.0-preview.2 h1:i9tIoRUn8/PJBXWHaBBoyhiLAvStOcpFFOrpbZELN0w=
+github.com/docker/ecs-plugin v1.0.0-preview.2/go.mod h1:xjxgmHlIedQi0BXuu9fXsrHJ6DkYj5FDizrnZcdrfX8=
 github.com/docker/go v1.5.1-1 h1:hr4w35acWBPhGBXlzPoHpmZ/ygPjnmFVxGxxGnMyP7k=
 github.com/docker/go v1.5.1-1/go.mod h1:CADgU4DSXK5QUlFslkQu2yW2TKzFZcXq/leZfM0UH5Q=
 github.com/docker/go-connections v0.4.0 h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=
