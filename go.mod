@@ -1,6 +1,7 @@
 module github.com/docker/api
 
 go 1.14
+
 // the distribution version from ecs plugin is quite old and it breaks containerd
 // we need to create a new release tag for docker/distribution
 replace github.com/docker/distribution => github.com/docker/distribution v0.0.0-20200708230824-53e18a9d9bfe
@@ -18,7 +19,7 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.2.0 // indirect
 	github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5
 	github.com/Microsoft/hcsshim v0.8.9 // indirect
-	github.com/aws/aws-sdk-go v1.33.5
+	github.com/aws/aws-sdk-go v1.33.16
 	github.com/buger/goterm v0.0.0-20200322175922-2f3e71b85129
 	github.com/compose-spec/compose-go v0.0.0-20200710075715-6fcc35384ee1
 	github.com/containerd/console v1.0.0
