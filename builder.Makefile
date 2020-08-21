@@ -53,8 +53,11 @@ cross:
 test:
 	go test $(TAGS) -cover $(shell go list ./... | grep -vE 'e2e')
 
-lint:
+lint-go:
 	golangci-lint run --timeout 10m0s ./...
+
+lint-proto:
+	buf check lint
 
 import-restrictions:
 	import-restrictions --configuration import-restrictions.yaml

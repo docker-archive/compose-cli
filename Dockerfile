@@ -16,6 +16,7 @@
 #   limitations under the License.
 ARG GO_VERSION=1.15.0-alpine
 ARG GOLANGCI_LINT_VERSION=v1.30.0-alpine
+ARG BUF_BUILD_VERSION=0.20.5
 
 FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS base
 WORKDIR /api
@@ -34,17 +35,24 @@ RUN go get github.com/golang/protobuf/protoc-gen-go@v1.4.1
 COPY . .
 RUN make -f builder.Makefile protos
 
-FROM golangci/golangci-lint:${GOLANGCI_LINT_VERSION} AS lint-base
+FROM golangci/golangci-lint:${GOLANGCI_LINT_VERSION} AS lint-go-base
 
-FROM base AS lint
+FROM base AS lint-go
 ENV CGO_ENABLED=0
-COPY --from=lint-base /usr/bin/golangci-lint /usr/bin/golangci-lint
+COPY --from=lint-go-base /usr/bin/golangci-lint /usr/bin/golangci-lint
 ARG GIT_TAG
 RUN --mount=target=. \
     --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/.cache/golangci-lint \
     GIT_TAG=${GIT_TAG} \
-    make -f builder.Makefile lint
+    make -f builder.Makefile lint-go
+
+FROM bufbuild/buf:${BUF_BUILD_VERSION} AS lint-proto-base
+
+FROM base AS lint-proto
+COPY --from=lint-proto-base /usr/local/bin/buf /usr/local/bin/buf
+RUN --mount=target=. \
+    make -f builder.Makefile lint-proto
 
 FROM base AS import-restrictions-base
 RUN go get github.com/docker/import-restrictions

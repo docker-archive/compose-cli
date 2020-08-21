@@ -70,10 +70,17 @@ test: ## Run unit tests
 cache-clear: ## Clear the builder cache
 	@docker builder prune --force --filter type=exec.cachemount --filter=unused-for=24h
 
-lint: ## run linter(s)
+lint: lint-go lint-proto ## run linter(s)
+
+lint-go: ## run go linters
 	@docker build . \
 	--build-arg GIT_TAG=$(GIT_TAG) \
-	--target lint
+	--target lint-go
+
+lint-proto: ## run protobuf linters
+	@docker build . \
+	--build-arg GIT_TAG=$(GIT_TAG) \
+	--target lint-proto
 
 import-restrictions: ## run import-restrictions script
 	@docker build . \

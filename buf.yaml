@@ -1,0 +1,6 @@
+lint:
+  except:
+    - PACKAGE_DIRECTORY_MATCH # produces the following error: Files with package "com.docker.api.protos.compose.v1" must be within a directory "com/docker/api/protos/compose/v1" relative to root but were in directory "protos/compose/v1".
+breaking:
+  use:
+    - PACKAGE
