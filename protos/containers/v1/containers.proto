@@ -19,7 +19,7 @@ package com.docker.api.protos.containers.v1;
 
 option go_package = "github.com/docker/api/protos/containers/v1;v1";
 
-service Containers {
+service ContainersService {
 	rpc List(ListRequest) returns (ListResponse);
 	rpc Start(StartRequest) returns (StartResponse);
 	rpc Stop(StopRequest) returns (StopResponse);

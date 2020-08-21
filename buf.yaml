@@ -1,6 +1,16 @@
 lint:
   except:
     - PACKAGE_DIRECTORY_MATCH # produces the following error: Files with package "com.docker.api.protos.compose.v1" must be within a directory "com/docker/api/protos/compose/v1" relative to root but were in directory "protos/compose/v1".
+  ignore_only:
+    ENUM_ZERO_VALUE_SUFFIX:
+      - protos/streams/v1/streams.proto # Moving STDIN to 1, STDOUT to 2 and STDERR to 3 would introduce a breaking change. protos/streams/v1/streams.proto:29:9:Enum zero value name "IO_STREAM_STDIN" should be suffixed with "_UNSPECIFIED".
+    RPC_REQUEST_RESPONSE_UNIQUE:
+      - protos/streams/v1/streams.proto # We want to keep Any/Any in this stream service. protos/streams/v1/streams.proto:25:9:RPC "NewStream" has the same type ".google.protobuf.Any" for the request and response.
+    RPC_REQUEST_STANDARD_NAME:
+      - protos/streams/v1/streams.proto # We don't want to introduce this new type and keep Any here. protos/streams/v1/streams.proto:25:30:RPC request type "Any" should be named "NewStreamRequest" or "StreamingServiceNewStreamRequest".
+    RPC_RESPONSE_STANDARD_NAME:
+      - protos/streams/v1/streams.proto # We don't want to introduce this new type and keep Any here. protos/streams/v1/streams.proto:25:67:RPC response type "Any" should be named "NewStreamResponse" or "StreamingServiceNewStreamResponse".
+
 breaking:
   use:
     - PACKAGE

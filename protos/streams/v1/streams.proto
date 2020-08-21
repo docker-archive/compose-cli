@@ -21,14 +21,14 @@ import "google/protobuf/any.proto";
 
 option go_package = "github.com/docker/api/protos/streams/v1;v1";
 
-service Streaming {
+service StreamingService {
 	rpc NewStream(stream google.protobuf.Any) returns (stream google.protobuf.Any);
 }
 
 enum IOStream {
-	STDIN = 0;
-	STDOUT = 1;
-	STDERR = 2;
+	IO_STREAM_STDIN = 0;
+	IO_STREAM_STDOUT = 1;
+	IO_STREAM_STDERR = 2;
 }
 
 message BytesMessage {

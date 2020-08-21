@@ -19,7 +19,7 @@ package com.docker.api.protos.context.v1;
 
 option go_package = "github.com/docker/api/protos/context/v1;v1";
 
-service Contexts {
+service ContextsService {
 	// Sets the current request for all calls
 	rpc SetCurrent(SetCurrentRequest) returns (SetCurrentResponse);
     // Returns the list of existing contexts
@@ -28,7 +28,7 @@ service Contexts {
 
 message Context {
     string name = 1;
-	string contextType = 2;
+	string context_type = 2;
 	bool current = 3;
 }
 

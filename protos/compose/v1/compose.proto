@@ -19,22 +19,22 @@ package com.docker.api.protos.compose.v1;
 
 option go_package = "github.com/docker/api/protos/compose/v1;v1";
 
-service Compose {
-  rpc Up(ComposeUpRequest) returns (ComposeUpResponse);
-  rpc Down(ComposeDownRequest) returns (ComposeDownResponse);
+service ComposeService {
+  rpc Up(ComposeServiceUpRequest) returns (ComposeServiceUpResponse);
+  rpc Down(ComposeServiceDownRequest) returns (ComposeServiceDownResponse);
 }
 
-message ComposeUpRequest {
-  string projectName = 1;
-  string workDir = 2;
+message ComposeServiceUpRequest {
+  string project_name = 1;
+  string work_dir = 2;
   repeated string files = 3;
 }
 
-message ComposeUpResponse {
+message ComposeServiceUpResponse {
 }
 
-message ComposeDownRequest {
+message ComposeServiceDownRequest {
 }
 
-message ComposeDownResponse {
+message ComposeServiceDownResponse {
 }
