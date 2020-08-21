@@ -48,22 +48,22 @@ const _ = proto.ProtoPackageIsVersion4
 type IOStream int32
 
 const (
-	IOStream_STDIN  IOStream = 0
-	IOStream_STDOUT IOStream = 1
-	IOStream_STDERR IOStream = 2
+	IOStream_IO_STREAM_STDIN  IOStream = 0
+	IOStream_IO_STREAM_STDOUT IOStream = 1
+	IOStream_IO_STREAM_STDERR IOStream = 2
 )
 
 // Enum value maps for IOStream.
 var (
 	IOStream_name = map[int32]string{
-		0: "STDIN",
-		1: "STDOUT",
-		2: "STDERR",
+		0: "IO_STREAM_STDIN",
+		1: "IO_STREAM_STDOUT",
+		2: "IO_STREAM_STDERR",
 	}
 	IOStream_value = map[string]int32{
-		"STDIN":  0,
-		"STDOUT": 1,
-		"STDERR": 2,
+		"IO_STREAM_STDIN":  0,
+		"IO_STREAM_STDOUT": 1,
+		"IO_STREAM_STDERR": 2,
 	}
 )
 
@@ -139,7 +139,7 @@ func (x *BytesMessage) GetType() IOStream {
 	if x != nil {
 		return x.Type
 	}
-	return IOStream_STDIN
+	return IOStream_IO_STREAM_STDIN
 }
 
 func (x *BytesMessage) GetValue() []byte {
@@ -272,18 +272,20 @@ var file_protos_streams_v1_streams_proto_rawDesc = []byte{
 	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x68, 0x65, 0x69,
 	0x67, 0x68, 0x74, 0x22, 0x25, 0x0a, 0x0b, 0x45, 0x78, 0x69, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61,
 	0x67, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0d, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2a, 0x2d, 0x0a, 0x08, 0x49, 0x4f,
-	0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x09, 0x0a, 0x05, 0x53, 0x54, 0x44, 0x49, 0x4e, 0x10,
-	0x00, 0x12, 0x0a, 0x0a, 0x06, 0x53, 0x54, 0x44, 0x4f, 0x55, 0x54, 0x10, 0x01, 0x12, 0x0a, 0x0a,
-	0x06, 0x53, 0x54, 0x44, 0x45, 0x52, 0x52, 0x10, 0x02, 0x32, 0x48, 0x0a, 0x09, 0x53, 0x74, 0x72,
-	0x65, 0x61, 0x6d, 0x69, 0x6e, 0x67, 0x12, 0x3b, 0x0a, 0x09, 0x4e, 0x65, 0x77, 0x53, 0x74, 0x72,
-	0x65, 0x61, 0x6d, 0x12, 0x14, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6e, 0x79, 0x1a, 0x14, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
-	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6e, 0x79, 0x28,
-	0x01, 0x30, 0x01, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x64, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x73, 0x2f, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x76,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x28, 0x0d, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2a, 0x4b, 0x0a, 0x08, 0x49, 0x4f,
+	0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x13, 0x0a, 0x0f, 0x49, 0x4f, 0x5f, 0x53, 0x54, 0x52,
+	0x45, 0x41, 0x4d, 0x5f, 0x53, 0x54, 0x44, 0x49, 0x4e, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x49,
+	0x4f, 0x5f, 0x53, 0x54, 0x52, 0x45, 0x41, 0x4d, 0x5f, 0x53, 0x54, 0x44, 0x4f, 0x55, 0x54, 0x10,
+	0x01, 0x12, 0x14, 0x0a, 0x10, 0x49, 0x4f, 0x5f, 0x53, 0x54, 0x52, 0x45, 0x41, 0x4d, 0x5f, 0x53,
+	0x54, 0x44, 0x45, 0x52, 0x52, 0x10, 0x02, 0x32, 0x4f, 0x0a, 0x10, 0x53, 0x74, 0x72, 0x65, 0x61,
+	0x6d, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x3b, 0x0a, 0x09, 0x4e,
+	0x65, 0x77, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x14, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
+	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6e, 0x79, 0x1a, 0x14,
+	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x41, 0x6e, 0x79, 0x28, 0x01, 0x30, 0x01, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x73,
+	0x2f, 0x76, 0x31, 0x3b, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -309,8 +311,8 @@ var file_protos_streams_v1_streams_proto_goTypes = []interface{}{
 }
 var file_protos_streams_v1_streams_proto_depIdxs = []int32{
 	0, // 0: com.docker.api.protos.streams.v1.BytesMessage.type:type_name -> com.docker.api.protos.streams.v1.IOStream
-	4, // 1: com.docker.api.protos.streams.v1.Streaming.NewStream:input_type -> google.protobuf.Any
-	4, // 2: com.docker.api.protos.streams.v1.Streaming.NewStream:output_type -> google.protobuf.Any
+	4, // 1: com.docker.api.protos.streams.v1.StreamingService.NewStream:input_type -> google.protobuf.Any
+	4, // 2: com.docker.api.protos.streams.v1.StreamingService.NewStream:output_type -> google.protobuf.Any
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -390,45 +392,45 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// StreamingClient is the client API for Streaming service.
+// StreamingServiceClient is the client API for StreamingService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type StreamingClient interface {
-	NewStream(ctx context.Context, opts ...grpc.CallOption) (Streaming_NewStreamClient, error)
+type StreamingServiceClient interface {
+	NewStream(ctx context.Context, opts ...grpc.CallOption) (StreamingService_NewStreamClient, error)
 }
 
-type streamingClient struct {
+type streamingServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewStreamingClient(cc grpc.ClientConnInterface) StreamingClient {
-	return &streamingClient{cc}
+func NewStreamingServiceClient(cc grpc.ClientConnInterface) StreamingServiceClient {
+	return &streamingServiceClient{cc}
 }
 
-func (c *streamingClient) NewStream(ctx context.Context, opts ...grpc.CallOption) (Streaming_NewStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Streaming_serviceDesc.Streams[0], "/com.docker.api.protos.streams.v1.Streaming/NewStream", opts...)
+func (c *streamingServiceClient) NewStream(ctx context.Context, opts ...grpc.CallOption) (StreamingService_NewStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_StreamingService_serviceDesc.Streams[0], "/com.docker.api.protos.streams.v1.StreamingService/NewStream", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &streamingNewStreamClient{stream}
+	x := &streamingServiceNewStreamClient{stream}
 	return x, nil
 }
 
-type Streaming_NewStreamClient interface {
+type StreamingService_NewStreamClient interface {
 	Send(*any.Any) error
 	Recv() (*any.Any, error)
 	grpc.ClientStream
 }
 
-type streamingNewStreamClient struct {
+type streamingServiceNewStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *streamingNewStreamClient) Send(m *any.Any) error {
+func (x *streamingServiceNewStreamClient) Send(m *any.Any) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *streamingNewStreamClient) Recv() (*any.Any, error) {
+func (x *streamingServiceNewStreamClient) Recv() (*any.Any, error) {
 	m := new(any.Any)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -436,42 +438,42 @@ func (x *streamingNewStreamClient) Recv() (*any.Any, error) {
 	return m, nil
 }
 
-// StreamingServer is the server API for Streaming service.
-type StreamingServer interface {
-	NewStream(Streaming_NewStreamServer) error
+// StreamingServiceServer is the server API for StreamingService service.
+type StreamingServiceServer interface {
+	NewStream(StreamingService_NewStreamServer) error
 }
 
-// UnimplementedStreamingServer can be embedded to have forward compatible implementations.
-type UnimplementedStreamingServer struct {
+// UnimplementedStreamingServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedStreamingServiceServer struct {
 }
 
-func (*UnimplementedStreamingServer) NewStream(Streaming_NewStreamServer) error {
+func (*UnimplementedStreamingServiceServer) NewStream(StreamingService_NewStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method NewStream not implemented")
 }
 
-func RegisterStreamingServer(s *grpc.Server, srv StreamingServer) {
-	s.RegisterService(&_Streaming_serviceDesc, srv)
+func RegisterStreamingServiceServer(s *grpc.Server, srv StreamingServiceServer) {
+	s.RegisterService(&_StreamingService_serviceDesc, srv)
 }
 
-func _Streaming_NewStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(StreamingServer).NewStream(&streamingNewStreamServer{stream})
+func _StreamingService_NewStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StreamingServiceServer).NewStream(&streamingServiceNewStreamServer{stream})
 }
 
-type Streaming_NewStreamServer interface {
+type StreamingService_NewStreamServer interface {
 	Send(*any.Any) error
 	Recv() (*any.Any, error)
 	grpc.ServerStream
 }
 
-type streamingNewStreamServer struct {
+type streamingServiceNewStreamServer struct {
 	grpc.ServerStream
 }
 
-func (x *streamingNewStreamServer) Send(m *any.Any) error {
+func (x *streamingServiceNewStreamServer) Send(m *any.Any) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *streamingNewStreamServer) Recv() (*any.Any, error) {
+func (x *streamingServiceNewStreamServer) Recv() (*any.Any, error) {
 	m := new(any.Any)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -479,14 +481,14 @@ func (x *streamingNewStreamServer) Recv() (*any.Any, error) {
 	return m, nil
 }
 
-var _Streaming_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "com.docker.api.protos.streams.v1.Streaming",
-	HandlerType: (*StreamingServer)(nil),
+var _StreamingService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "com.docker.api.protos.streams.v1.StreamingService",
+	HandlerType: (*StreamingServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "NewStream",
-			Handler:       _Streaming_NewStream_Handler,
+			Handler:       _StreamingService_NewStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

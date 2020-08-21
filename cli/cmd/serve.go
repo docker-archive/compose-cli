@@ -63,9 +63,9 @@ func runServe(ctx context.Context, opts serveOpts) error {
 
 	p := proxy.New(ctx)
 
-	containersv1.RegisterContainersServer(s, p)
-	streamsv1.RegisterStreamingServer(s, p)
-	contextsv1.RegisterContextsServer(s, p.ContextsProxy())
+	containersv1.RegisterContainersServiceServer(s, p)
+	streamsv1.RegisterStreamingServiceServer(s, p)
+	contextsv1.RegisterContextsServiceServer(s, p.ContextsProxy())
 
 	go func() {
 		<-ctx.Done()

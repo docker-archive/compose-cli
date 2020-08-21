@@ -106,7 +106,7 @@ func (p *proxy) Exec(ctx context.Context, request *containersv1.ExecRequest) (*c
 	})
 }
 
-func (p *proxy) Logs(request *containersv1.LogsRequest, stream containersv1.Containers_LogsServer) error {
+func (p *proxy) Logs(request *containersv1.LogsRequest, stream containersv1.ContainersService_LogsServer) error {
 	return Client(stream.Context()).ContainerService().Logs(stream.Context(), request.GetContainerId(), containers.LogsRequest{
 		Follow: request.Follow,
 		Writer: &streams.Log{

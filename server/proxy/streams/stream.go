@@ -24,7 +24,7 @@ import (
 
 // Stream is a bidirectional stream for container IO
 type Stream struct {
-	streamsv1.Streaming_NewStreamServer
+	streamsv1.StreamingService_NewStreamServer
 
 	errm    sync.Mutex
 	ErrChan chan<- error

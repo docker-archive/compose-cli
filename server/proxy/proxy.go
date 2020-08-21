@@ -44,9 +44,9 @@ func Client(ctx context.Context) *client.Client {
 // Proxy implements the gRPC server and forwards the actions
 // to the right backend
 type Proxy interface {
-	containersv1.ContainersServer
-	streamsv1.StreamingServer
-	ContextsProxy() contextsv1.ContextsServer
+	containersv1.ContainersServiceServer
+	streamsv1.StreamingServiceServer
+	ContextsProxy() contextsv1.ContextsServiceServer
 }
 
 type proxy struct {
@@ -68,6 +68,6 @@ func New(ctx context.Context) Proxy {
 	}
 }
 
-func (p *proxy) ContextsProxy() contextsv1.ContextsServer {
+func (p *proxy) ContextsProxy() contextsv1.ContextsServiceServer {
 	return p.contextsProxy
 }

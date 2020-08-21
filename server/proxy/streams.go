@@ -25,7 +25,7 @@ import (
 	"github.com/docker/api/server/proxy/streams"
 )
 
-func (p *proxy) NewStream(stream streamsv1.Streaming_NewStreamServer) error {
+func (p *proxy) NewStream(stream streamsv1.StreamingService_NewStreamServer) error {
 	var (
 		ctx = stream.Context()
 		id  = uuid.New().String()
@@ -43,7 +43,7 @@ func (p *proxy) NewStream(stream streamsv1.Streaming_NewStreamServer) error {
 
 	p.mu.Lock()
 	p.streams[id] = &streams.Stream{
-		Streaming_NewStreamServer: stream,
+		StreamingService_NewStreamServer: stream,
 		ErrChan:                   errc,
 	}
 	p.mu.Unlock()

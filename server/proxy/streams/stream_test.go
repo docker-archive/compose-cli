@@ -73,7 +73,7 @@ func (bs *byteStream) RecvMsg(m interface{}) error {
 
 func getReader(t *testing.T, in []byte, errResult error) IO {
 	message := streamsv1.BytesMessage{
-		Type:  streamsv1.IOStream_STDOUT,
+		Type:  streamsv1.IOStream_IO_STREAM_STDOUT,
 		Value: in,
 	}
 	m, err := ptypes.MarshalAny(&message)
@@ -81,7 +81,7 @@ func getReader(t *testing.T, in []byte, errResult error) IO {
 
 	return IO{
 		Stream: &Stream{
-			Streaming_NewStreamServer: &byteStream{
+			StreamingService_NewStreamServer: &byteStream{
 				recvResult: m,
 				recvErr:    errResult,
 			},
@@ -91,7 +91,7 @@ func getReader(t *testing.T, in []byte, errResult error) IO {
 
 func getAny(t *testing.T, in []byte) *any.Any {
 	value, err := ptypes.MarshalAny(&streamsv1.BytesMessage{
-		Type:  streamsv1.IOStream_STDOUT,
+		Type:  streamsv1.IOStream_IO_STREAM_STDOUT,
 		Value: in,
 	})
 	assert.NilError(t, err)
@@ -128,7 +128,7 @@ func TestStreamWriter(t *testing.T) {
 	bs := byteStream{}
 	w := IO{
 		Stream: &Stream{
-			Streaming_NewStreamServer: &bs,
+			StreamingService_NewStreamServer: &bs,
 		},
 	}
 

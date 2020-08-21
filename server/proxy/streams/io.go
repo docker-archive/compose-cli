@@ -48,7 +48,7 @@ func (io *IO) Write(p []byte) (n int, err error) {
 	}
 
 	message := streamsv1.BytesMessage{
-		Type:  streamsv1.IOStream_STDOUT,
+		Type:  streamsv1.IOStream_IO_STREAM_STDOUT,
 		Value: p,
 	}
 
