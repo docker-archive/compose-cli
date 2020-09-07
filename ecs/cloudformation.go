@@ -152,7 +152,6 @@ func (b *ecsAPIService) convert(project *types.Project) (*cloudformation.Templat
 		Description: "Name of the LoadBalancer to connect to (optional)",
 	}
 
-	// Createmount.nfs4: Connection timed out : unsuccessful EFS utils command execution; code: 32 Cluster is `ParameterClusterName` parameter is not set
 	template.Conditions["CreateCluster"] = cloudformation.Equals("", cloudformation.Ref(parameterClusterName))
 
 	cluster := createCluster(project, template)
@@ -258,6 +257,11 @@ func (b *ecsAPIService) convert(project *types.Project) (*cloudformation.Templat
 			return nil, err
 		}
 
+		launchType := ecsapi.LaunchTypeFargate
+		if requireEC2(service) {
+			launchType = ecsapi.LaunchTypeEc2
+		}
+
 		template.Resources[serviceResourceName(service.Name)] = &ecs.Service{
 			AWSCloudFormationDependsOn: dependsOn,
 			Cluster:                    cluster,
@@ -269,7 +273,8 @@ func (b *ecsAPIService) convert(project *types.Project) (*cloudformation.Templat
 				MaximumPercent:        maxPercent,
 				MinimumHealthyPercent: minPercent,
 			},
-			LaunchType:    ecsapi.LaunchTypeFargate,
+			LaunchType: launchType,
+			// TODO we miss support for https://github.com/aws/containers-roadmap/issues/631 to select a capacity provider
 			LoadBalancers: serviceLB,
 			NetworkConfiguration: &ecs.Service_NetworkConfiguration{
 				AwsvpcConfiguration: &ecs.Service_AwsVpcConfiguration{

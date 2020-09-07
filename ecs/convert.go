@@ -139,18 +139,25 @@ func convert(project *types.Project, service types.ServiceConfig) (*ecs.TaskDefi
 		WorkingDirectory:       service.WorkingDir,
 	})
 
+	launchType := ecsapi.LaunchTypeFargate
+	if requireEC2(service) {
+		launchType = ecsapi.LaunchTypeEc2
+	}
+
 	return &ecs.TaskDefinition{
-		ContainerDefinitions:    containers,
-		Cpu:                     cpu,
-		Family:                  fmt.Sprintf("%s-%s", project.Name, service.Name),
-		IpcMode:                 service.Ipc,
-		Memory:                  mem,
-		NetworkMode:             ecsapi.NetworkModeAwsvpc, // FIXME could be set by service.NetworkMode, Fargate only supports network mode ‘awsvpc’.
-		PidMode:                 service.Pid,
-		PlacementConstraints:    toPlacementConstraints(service.Deploy),
-		ProxyConfiguration:      nil,
-		RequiresCompatibilities: []string{ecsapi.LaunchTypeFargate},
-		Volumes:                 volumes,
+		ContainerDefinitions: containers,
+		Cpu:                  cpu,
+		Family:               fmt.Sprintf("%s-%s", project.Name, service.Name),
+		IpcMode:              service.Ipc,
+		Memory:               mem,
+		NetworkMode:          ecsapi.NetworkModeAwsvpc, // FIXME could be set by service.NetworkMode, Fargate only supports network mode ‘awsvpc’.
+		PidMode:              service.Pid,
+		PlacementConstraints: toPlacementConstraints(service.Deploy),
+		ProxyConfiguration:   nil,
+		RequiresCompatibilities: []string{
+			launchType,
+		},
+		Volumes: volumes,
 	}, nil
 }
 
@@ -489,4 +496,14 @@ func getRepoCredentials(service types.ServiceConfig) *ecs.TaskDefinition_Reposit
 		}
 	}
 	return nil
+}
+func requireEC2(s types.ServiceConfig) bool {
+	if deploy := s.Deploy; deploy != nil {
+		for _, constraint := range deploy.Placement.Constraints {
+			if constraint == "lanchtype=ec2" {
+				return true
+			}
+		}
+	}
+	return false
 }
