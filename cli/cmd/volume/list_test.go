@@ -23,6 +23,7 @@ import (
 	"gotest.tools/v3/golden"
 
 	"github.com/docker/compose-cli/api/volumes"
+	"github.com/docker/compose-cli/formatter"
 )
 
 func TestPrintList(t *testing.T) {
@@ -33,6 +34,6 @@ func TestPrintList(t *testing.T) {
 		},
 	}
 	out := &bytes.Buffer{}
-	printList(out, secrets)
+	printList(formatter.PRETTY, out, secrets)
 	golden.Assert(t, out.String(), "volumes-out.golden")
 }

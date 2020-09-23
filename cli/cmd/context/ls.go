@@ -17,18 +17,19 @@
 package context
 
 import (
-	"errors"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
-	"text/tabwriter"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/docker/compose-cli/cli/mobycli"
 	apicontext "github.com/docker/compose-cli/context"
 	"github.com/docker/compose-cli/context/store"
+	"github.com/docker/compose-cli/errdefs"
 	"github.com/docker/compose-cli/formatter"
 )
 
@@ -58,7 +59,7 @@ func listCommand() *cobra.Command {
 	}
 	cmd.Flags().BoolVarP(&opts.quiet, "quiet", "q", false, "Only show context names")
 	cmd.Flags().BoolVar(&opts.json, "json", false, "Format output as JSON")
-	cmd.Flags().StringVar(&opts.format, "format", "", "Format output as JSON")
+	cmd.Flags().StringVar(&opts.format, "format", formatter.PRETTY, "Format the output. Values: [json | pretty]")
 
 	return cmd
 }
@@ -101,27 +102,39 @@ func runList(cmd *cobra.Command, opts lsOpts) error {
 		return nil
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 20, 1, 3, ' ', 0)
-	fmt.Fprintln(w, "NAME\tTYPE\tDESCRIPTION\tDOCKER ENDPOINT\tKUBERNETES ENDPOINT\tORCHESTRATOR")
-	format := "%s\t%s\t%s\t%s\t%s\t%s\n"
+	return printContextLsFormatted(opts.format, currentContext, os.Stdout, contexts)
+}
 
-	for _, c := range contexts {
-		contextName := c.Name
-		if c.Name == currentContext {
-			contextName += " *"
+func printContextLsFormatted(format string, currContext string, out io.Writer, contexts []*store.DockerContext) error {
+	var err error
+	switch strings.ToLower(format) {
+	case formatter.JSON:
+		out, err := formatter.ToStandardJSON(contexts)
+		if err != nil {
+			return err
 		}
+		fmt.Println(out)
+	case formatter.PRETTY:
+		err = formatter.PrintPrettySection(out, func(w io.Writer) {
+			for _, c := range contexts {
+				contextName := c.Name
+				if c.Name == currContext {
+					contextName += " *"
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+					contextName,
+					c.Type(),
+					c.Metadata.Description,
+					getEndpoint("docker", c.Endpoints),
+					getEndpoint("kubernetes", c.Endpoints),
+					c.Metadata.StackOrchestrator)
+			}
+		}, "NAME", "TYPE", "DESCRIPTION", "DOCKER ENDPOINT", "KUBERNETES ENDPOINT", "ORCHESTRATOR")
 
-		fmt.Fprintf(w,
-			format,
-			contextName,
-			c.Type(),
-			c.Metadata.Description,
-			getEndpoint("docker", c.Endpoints),
-			getEndpoint("kubernetes", c.Endpoints),
-			c.Metadata.StackOrchestrator)
+	default:
+		err = errors.Wrapf(errdefs.ErrParsingFailed, "format value %q could not be parsed", format)
 	}
-
-	return w.Flush()
+	return err
 }
 
 func getEndpoint(name string, meta map[string]interface{}) string {

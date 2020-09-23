@@ -18,15 +18,18 @@ package cmd
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
+	"gotest.tools/assert"
 	"gotest.tools/v3/golden"
 
 	"github.com/docker/compose-cli/api/secrets"
+	"github.com/docker/compose-cli/formatter"
 )
 
 func TestPrintList(t *testing.T) {
-	secrets := []secrets.Secret{
+	secretList := []secrets.Secret{
 		{
 			ID:          "123",
 			Name:        "secret123",
@@ -34,6 +37,6 @@ func TestPrintList(t *testing.T) {
 		},
 	}
 	out := &bytes.Buffer{}
-	printList(out, secrets)
+	assert.NilError(t, printSecretList(formatter.PRETTY, os.Stdout, secretList))
 	golden.Assert(t, out.String(), "secrets-out.golden")
 }
