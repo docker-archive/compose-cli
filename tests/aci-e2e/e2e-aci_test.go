@@ -465,19 +465,19 @@ func TestComposeUpUpdate(t *testing.T) {
 	_, groupID := setupTestResourceGroup(t, c)
 
 	const (
-		composeFile              = "../composefiles/aci-demo/aci_demo_port.yaml"
-		composeFileMultiplePorts = "../composefiles/aci-demo/aci_demo_multi_port.yaml"
-		composeProjectName       = "acidemo"
-		serverContainer          = composeProjectName + "_web"
-		wordsContainer           = composeProjectName + "_words"
-		dbContainer              = composeProjectName + "_db"
+		composeFileVolumes              = "../composefiles/aci-demo/aci_demo_port_secrets_volumes.yaml"
+		composeFileVolumesMultiplePorts = "../composefiles/aci-demo/aci_demo_multiport_secrets_volumes.yaml"
+		composeProjectName              = "acidemo"
+		serverContainer                 = composeProjectName + "_web"
+		wordsContainer                  = composeProjectName + "_words"
+		dbContainer                     = composeProjectName + "_db"
 	)
 
 	t.Run("compose up", func(t *testing.T) {
 		dnsLabelName := "nginx-" + groupID
 		fqdn := dnsLabelName + "." + location + ".azurecontainer.io"
 		// Name of Compose project is taken from current folder "acie2e"
-		c.RunDockerCmd("compose", "up", "-f", composeFile, "--domainname", dnsLabelName)
+		c.RunDockerCmd("compose", "up", "-f", composeFileVolumes, "--domainname", dnsLabelName)
 
 		res := c.RunDockerCmd("ps")
 		out := lines(res.Stdout())
@@ -553,7 +553,7 @@ func TestComposeUpUpdate(t *testing.T) {
 	})
 
 	t.Run("update", func(t *testing.T) {
-		c.RunDockerCmd("compose", "up", "-f", composeFileMultiplePorts, "--project-name", composeProjectName)
+		c.RunDockerCmd("compose", "up", "-f", composeFileVolumesMultiplePorts, "--project-name", composeProjectName)
 		res := c.RunDockerCmd("ps")
 		out := lines(res.Stdout())
 		// Check three containers are running
