@@ -510,6 +510,13 @@ func TestComposeUpUpdate(t *testing.T) {
 		r, err = HTTPGetWithRetry(endpoint+"/words/noun", 3)
 		assert.NilError(t, err)
 		assert.Equal(t, r.StatusCode, http.StatusOK)
+
+		r, err = HTTPGetWithRetry(endpoint+"/volume_test/msg.txt", 3)
+		assert.NilError(t, err)
+		assert.Equal(t, r.StatusCode, http.StatusOK)
+		b, err = ioutil.ReadAll(r.Body)
+		assert.NilError(t, err)
+		assert.Assert(t, strings.Contains(string(b), "VOLUME_OK"))
 	})
 
 	t.Run("compose ps", func(t *testing.T) {
