@@ -118,11 +118,6 @@ jobs:
       - name: Checkout code into the Go module directory
         uses: actions/checkout@v2
 
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: go-${{ hashFiles('**/go.sum') }}
-
       - name: Test
         env:
           BUILD_TAGS: example,local
