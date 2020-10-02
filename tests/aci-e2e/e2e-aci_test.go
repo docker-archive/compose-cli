@@ -465,8 +465,8 @@ func TestComposeUpUpdate(t *testing.T) {
 	_, groupID := setupTestResourceGroup(t, c)
 
 	const (
-		composeFileVolumes              = "../composefiles/aci-demo/aci_demo_port_secrets_volumes.yaml"
-		composeFileVolumesMultiplePorts = "../composefiles/aci-demo/aci_demo_multiport_secrets_volumes.yaml"
+		composeFileVolumes              = "../composefiles/aci-demo/aci_demo_port_volumes.yaml"
+		composeFileVolumesMultiplePorts = "../composefiles/aci-demo/aci_demo_multiport_volumes.yaml"
 		composeProjectName              = "acidemo"
 		serverContainer                 = composeProjectName + "_web"
 		wordsContainer                  = composeProjectName + "_words"
