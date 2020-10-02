@@ -511,7 +511,7 @@ func TestComposeUpUpdate(t *testing.T) {
 		assert.NilError(t, err)
 		assert.Equal(t, r.StatusCode, http.StatusOK)
 
-		r, err = HTTPGetWithRetry(endpoint+"/volume_test/msg.txt", 3)
+		r, err = HTTPGetWithRetry(endpoint+"/volume_test/msg-wrong.txt", 3)
 		assert.NilError(t, err)
 		assert.Equal(t, r.StatusCode, http.StatusOK)
 		b, err = ioutil.ReadAll(r.Body)
