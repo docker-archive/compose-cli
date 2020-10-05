@@ -57,8 +57,9 @@ const (
 )
 
 var (
-	binDir   string
-	location = []string{"eastus2"}
+	binDir string
+
+	location = []string{"westcentralus", "westus2", "eastus2", "southeastasia"}
 )
 
 func TestMain(m *testing.M) {
