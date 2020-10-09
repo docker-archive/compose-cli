@@ -35,6 +35,7 @@ import (
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/context/store"
+	"github.com/docker/compose-cli/internal"
 	"github.com/docker/compose-cli/utils/formatter"
 )
 
@@ -44,7 +45,6 @@ const (
 	// ComposeDNSSidecarName name of the dns sidecar container
 	ComposeDNSSidecarName = "aci--dns--sidecar"
 
-	dnsSidecarImage                = "busybox:1.31.1"
 	azureFileDriverName            = "azure_file"
 	volumeDriveroptsShareNameKey   = "share_name"
 	volumeDriveroptsAccountNameKey = "storage_account_name"
@@ -173,7 +173,7 @@ func getDNSSidecar(containers []containerinstance.Container) containerinstance.C
 	dnsSideCar := containerinstance.Container{
 		Name: to.StringPtr(ComposeDNSSidecarName),
 		ContainerProperties: &containerinstance.ContainerProperties{
-			Image:   to.StringPtr(dnsSidecarImage),
+			Image:   to.StringPtr(internal.ACIDNSSidecarImage),
 			Command: &alpineCmd,
 			Resources: &containerinstance.ResourceRequirements{
 				Requests: &containerinstance.ResourceRequests{

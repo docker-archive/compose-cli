@@ -12,6 +12,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+include vars.mk
+
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
 
@@ -28,7 +30,10 @@ STATIC_FLAGS=CGO_ENABLED=0
 
 GIT_TAG?=$(shell git describe --tags --match "v[0-9]*")
 
-LDFLAGS="-s -w -X $(PKG_NAME)/internal.Version=${GIT_TAG}"
+INJECTED_VARS:=${INJECTED_VARS} -X $(PKG_NAME)/internal.Version=${GIT_TAG}
+INJECTED_VARS:=${INJECTED_VARS} -X $(PKG_NAME)/internal.ACIDNSSidecarImage=${ACI_DNS_SIDECAR_IMAGE}
+
+LDFLAGS="-s -w $(INJECTED_VARS)"
 GO_BUILD=$(STATIC_FLAGS) go build -trimpath -ldflags=$(LDFLAGS)
 
 BINARY?=bin/docker

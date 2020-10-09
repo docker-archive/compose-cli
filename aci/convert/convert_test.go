@@ -32,6 +32,7 @@ import (
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/context/store"
+	"github.com/docker/compose-cli/internal"
 )
 
 var (
@@ -185,7 +186,7 @@ func TestComposeContainerGroupToContainerWithDnsSideCarSide(t *testing.T) {
 
 	assert.Equal(t, *(*group.Containers)[0].Image, "image1")
 	assert.Equal(t, *(*group.Containers)[1].Image, "image2")
-	assert.Equal(t, *(*group.Containers)[2].Image, dnsSidecarImage)
+	assert.Equal(t, *(*group.Containers)[2].Image, internal.ACIDNSSidecarImage)
 }
 
 func TestComposeSingleContainerGroupToContainerNoDnsSideCarSide(t *testing.T) {

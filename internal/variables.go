@@ -16,6 +16,9 @@
 
 package internal
 
+// UNDEFINED is the placeholder to variables that have to be specified at build time
+const UNDEFINED = `Undefined! To be injected in the build. Please check "vars.mk" and "builder.Makefile"`
+
 const (
 	// UserAgentName is the default user agent used by the cli
 	UserAgentName = "docker-cli"
@@ -23,7 +26,10 @@ const (
 	ECSUserAgentName = "Docker CLI"
 )
 
+// The variables below are injected on build time
 var (
 	// Version is the version of the CLI injected in compilation time
 	Version = "dev"
+	// ACIDNSSidecarImage is the image used by the side car container in ACI
+	ACIDNSSidecarImage = UNDEFINED
 )
