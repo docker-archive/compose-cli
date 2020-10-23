@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -35,6 +36,30 @@ var delegatedContextTypes = []string{store.DefaultContextType}
 
 // ComDockerCli name of the classic cli binary
 const ComDockerCli = "com.docker.cli"
+
+// Adds the directory of this executable to the path if classic cli is not found necessary
+func init() {
+	_, err := exec.LookPath(ComDockerCli)
+	if err != nil {
+		executable, _ := os.Executable()
+		dirToPath := filepath.Dir(executable)
+		if !isInPath(dirToPath) {
+			newPath := fmt.Sprintf("%s%c%s", os.Getenv("PATH"), os.PathListSeparator, dirToPath)
+			_ = os.Setenv("PATH", newPath)
+		}
+	}
+}
+
+func isInPath(dir string) bool {
+	dir = filepath.Clean(dir)
+	paths := strings.Split(os.Getenv("PATH"), string(os.PathListSeparator))
+	for _, p := range paths {
+		if filepath.Clean(p) == dir {
+			return true
+		}
+	}
+	return false
+}
 
 // ExecIfDefaultCtxType delegates to com.docker.cli if on moby context
 func ExecIfDefaultCtxType(ctx context.Context, root *cobra.Command) {
