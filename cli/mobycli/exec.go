@@ -38,16 +38,18 @@ var delegatedContextTypes = []string{store.DefaultContextType}
 const ComDockerCli = "com.docker.cli"
 
 // Adds the directory of this executable to the path if classic cli is not found necessary
-func init() {
+func comDockerCliPath() string {
+	path := os.Getenv("PATH")
 	_, err := exec.LookPath(ComDockerCli)
 	if err != nil {
 		executable, _ := os.Executable()
 		dirToPath := filepath.Dir(executable)
 		if !isInPath(dirToPath) {
-			newPath := fmt.Sprintf("%s%c%s", os.Getenv("PATH"), os.PathListSeparator, dirToPath)
-			_ = os.Setenv("PATH", newPath)
+			newPath := fmt.Sprintf("%s%c%s", path, os.PathListSeparator, dirToPath)
+			path = newPath
 		}
 	}
+	return path
 }
 
 func isInPath(dir string) bool {
@@ -89,6 +91,10 @@ func Exec(root *cobra.Command) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	env := append(os.Environ(),
+		"PATH="+comDockerCliPath(),
+	)
+	cmd.Env = env
 
 	signals := make(chan os.Signal, 1)
 	childExit := make(chan bool)
