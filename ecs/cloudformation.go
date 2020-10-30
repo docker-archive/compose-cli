@@ -19,8 +19,11 @@ package ecs
 import (
 	"context"
 	"fmt"
+	"hash/crc32"
 	"io/ioutil"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 
 	ecsapi "github.com/aws/aws-sdk-go/service/ecs"
@@ -123,6 +126,7 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		serviceLB []ecs.Service_LoadBalancer
 	)
 	for _, port := range service.Ports {
+		fmt.Printf(">>>>%v", port)
 		for net := range service.Networks {
 			b.createIngress(service, net, port, template, resources)
 		}
@@ -132,14 +136,37 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 			// we don't set Https as a certificate must be specified for HTTPS listeners
 			protocol = elbv2.ProtocolEnumHttp
 		}
+
 		targetGroupName := b.createTargetGroup(project, service, port, template, protocol, resources.vpc)
-		listenerName := b.createListener(service, port, template, targetGroupName, resources.loadBalancer, protocol)
-		dependsOn = append(dependsOn, listenerName)
 		serviceLB = append(serviceLB, ecs.Service_LoadBalancer{
 			ContainerName:  service.Name,
 			ContainerPort:  int(port.Target),
 			TargetGroupArn: cloudformation.Ref(targetGroupName),
 		})
+
+		fmt.Printf(">>>>%v", port.Extensions)
+		urls, hasURLExtension := port.Extensions[extensionURLs]
+		if hasURLExtension {
+			if resources.loadBalancerType != elbv2.LoadBalancerTypeEnumApplication {
+				return fmt.Errorf("%s:%d has extension x-aws-loadbalancer_urls, so the loadbalancer must be of type 'application'", service.Name, port.Target)
+			}
+
+			urlss := urls.(string)
+			for _, url0 := range strings.Split(urlss, " ") {
+				//create listener and url rules if not created yet
+				listenerName, created, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, protocol, url0)
+				if err != nil {
+					return err
+				}
+				if created {
+					dependsOn = append(dependsOn, listenerName)
+				}
+			}
+
+		} else {
+			listenerName := b.createListener(service, port, template, targetGroupName, resources.loadBalancer, protocol)
+			dependsOn = append(dependsOn, listenerName)
+		}
 	}
 
 	desiredCount := 1
@@ -210,11 +237,11 @@ func (b *ecsAPIService) createIngress(service types.ServiceConfig, net string, p
 	ingress := fmt.Sprintf("%s%dIngress", normalizeResourceName(net), port.Target)
 	template.Resources[ingress] = &ec2.SecurityGroupIngress{
 		CidrIp:      "0.0.0.0/0",
-		Description: fmt.Sprintf("%s:%d/%s on %s nextwork", service.Name, port.Target, port.Protocol, net),
+		Description: fmt.Sprintf("%s:%d/%s on %s network", service.Name, port.Target, port.Protocol, net),
 		GroupId:     resources.securityGroups[net],
-		FromPort:    int(port.Target),
-		IpProtocol:  protocol,
-		ToPort:      int(port.Target),
+		// FromPort:    int(port.Target),
+		IpProtocol: protocol,
+		ToPort:     int(port.Target),
 	}
 }
 
@@ -319,6 +346,103 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 		Port:            int(port.Target),
 	}
 	return listenerName
+}
+
+func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConfig, port types.ServicePortConfig,
+	template *cloudformation.Template,
+	targetGroupName string, loadBalancer awsResource, protocol string, url0 string) (string, bool, error) {
+
+	//parse url
+	p, err := url.Parse(url0)
+	if err != nil {
+		return "", false, fmt.Errorf("%s:%d/%s invalid url. Must be in format 'http://example.com:8880'. err=%s", service.Name, port.Target, url0, err)
+	}
+
+	switch p.Scheme {
+	case "http":
+		port.Published = 80
+	case "https":
+		port.Published = 443
+	default:
+		return "", false, fmt.Errorf("%s:%d/%s url scheme must be either 'http' or 'https'", service.Name, port.Target, url0)
+	}
+
+	hp := strings.Split(p.Host, ":")
+	hhost := hp[0]
+	if len(hp) == 2 {
+		//found custom port in url
+		hport, err := strconv.ParseUint(hp[1], 10, 32)
+		if err != nil {
+			return "", false, fmt.Errorf("%s:%d/%s invalid url port", service.Name, port.Target, url0)
+		}
+		port.Published = uint32(hport)
+	}
+
+	listenerName := fmt.Sprintf(
+		"%s%s%dListener",
+		normalizeResourceName(service.Name),
+		strings.ToUpper(port.Protocol),
+		port.Published,
+	)
+
+	//create listener for this url scheme if it doesn't exist yet
+	//https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
+	listener, ok := template.Resources[listenerName]
+	if !ok {
+		listener = &elasticloadbalancingv2.Listener{
+			DefaultActions: []elasticloadbalancingv2.Listener_Action{
+				{
+					Type: elbv2.ActionTypeEnumFixedResponse,
+					FixedResponseConfig: &elasticloadbalancingv2.Listener_FixedResponseConfig{
+						StatusCode:  "404",
+						ContentType: "text/plain",
+						MessageBody: "Page not found",
+					},
+				},
+			},
+			LoadBalancerArn: loadBalancer.ARN(),
+			Protocol:        protocol,
+			Port:            int(port.Published),
+		}
+		template.Resources[listenerName] = listener
+	}
+
+	//add forward rules for this url
+	listenerRuleName := fmt.Sprintf(
+		"%s%s%dListenerRule%s%s",
+		normalizeResourceName(service.Name),
+		strings.ToUpper(port.Protocol),
+		port.Published,
+		normalizeResourceName(p.Host),
+		normalizeResourceName(p.Path),
+	)
+
+	template.Resources[listenerRuleName] = &elasticloadbalancingv2.ListenerRule{
+		ListenerArn: cloudformation.Ref(listenerName),
+		Priority:    100,
+		Conditions: []elasticloadbalancingv2.ListenerRule_RuleCondition{
+			{
+				Field: "host-header",
+				HostHeaderConfig: &elasticloadbalancingv2.ListenerRule_HostHeaderConfig{
+					Values: []string{hhost},
+				},
+			},
+			{
+				Field: "path-pattern",
+				PathPatternConfig: &elasticloadbalancingv2.ListenerRule_PathPatternConfig{
+					Values: []string{fmt.Sprintf(p.Path, "*")},
+				},
+			},
+		},
+		Actions: []elasticloadbalancingv2.ListenerRule_Action{
+			{
+				Type:           "forward",
+				TargetGroupArn: cloudformation.Ref(targetGroupName),
+			},
+		},
+	}
+
+	return listenerName, !ok, nil
 }
 
 func (b *ecsAPIService) createTargetGroup(project *types.Project, service types.ServiceConfig, port types.ServicePortConfig, template *cloudformation.Template, protocol string, vpc string) string {
@@ -461,5 +585,7 @@ func volumeResourceName(service string) string {
 }
 
 func normalizeResourceName(s string) string {
-	return strings.Title(regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(s, ""))
+	chk := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(s)))
+	ts := strings.Title(regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(s, ""))
+	return fmt.Sprintf("%s-%s", ts, chk)
 }

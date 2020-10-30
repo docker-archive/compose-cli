@@ -171,6 +171,7 @@ func (s sdk) GetDefaultVPC(ctx context.Context) (string, error) {
 
 func (s sdk) GetSubNets(ctx context.Context, vpcID string) ([]awsResource, error) {
 	logrus.Debug("Retrieve SubNets")
+	logrus.Infof(">>>> vpcID %v", vpcID)
 	subnets, err := s.EC2.DescribeSubnetsWithContext(ctx, &ec2.DescribeSubnetsInput{
 		DryRun: nil,
 		Filters: []*ec2.Filter{
