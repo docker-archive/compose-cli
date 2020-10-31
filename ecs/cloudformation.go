@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -82,8 +83,13 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 
 	b.createAccessPoints(project, resources, template)
 
+	//order services for idempotence between calls (because of following rule orders)
+	sort.Slice(project.Services, func(i, j int) bool {
+		return project.Services[i].Name < project.Services[j].Name
+	})
+
 	for i, service := range project.Services {
-		err := b.createService(project, service, template, resources, i)
+		err := b.createService(project, service, template, resources, i+1)
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +131,6 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		dependsOn []string
 		serviceLB []ecs.Service_LoadBalancer
 	)
-	redirOrder := (serviceOrder + 2) * 100
 	for _, port := range service.Ports {
 		for net := range service.Networks {
 			b.createIngress(net, port, template, resources)
@@ -151,7 +156,9 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 			}
 
 			urlss := urls.(string)
-			for _, url0 := range strings.Split(urlss, " ") {
+			for i, url0 := range strings.Split(urlss, " ") {
+				ruleOrder := serviceOrder*1000 + i
+				redirOrder := serviceOrder*1000 + 100 + i
 				httpcertArn := ""
 				httpcert, ok := project.Extensions[extensionHTTPSCert]
 				if ok {
@@ -159,12 +166,11 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 				}
 
 				//create listener and url rules if not created yet
-				listenerName, additionalListenerName, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, url0, httpcertArn, serviceOrder, redirOrder)
+				listenerName, additionalListenerName, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, url0, httpcertArn, ruleOrder, redirOrder)
 				if err != nil {
 					return err
 				}
 				if additionalListenerName != "" {
-					redirOrder++
 					if !elementExists(dependsOn, additionalListenerName) {
 						dependsOn = append(dependsOn, additionalListenerName)
 					}
@@ -365,7 +371,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 	loadBalancer awsResource,
 	url0 string,
 	httpcertArn string,
-	serviceOrder int,
+	ruleOrder int,
 	redirOrder int) (string, string, error) {
 
 	//parse url
@@ -450,7 +456,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 
 	template.Resources[listenerRuleName] = &elasticloadbalancingv2.ListenerRule{
 		ListenerArn: cloudformation.Ref(listenerName),
-		Priority:    100 + serviceOrder,
+		Priority:    ruleOrder,
 		Conditions: []elasticloadbalancingv2.ListenerRule_RuleCondition{
 			{
 				Field: "host-header",
