@@ -31,4 +31,5 @@ const (
 	extensionManagedPolicies = "x-aws-policies"
 	extensionAutoScaling     = "x-aws-autoscaling"
 	extensionURLs            = "x-aws-loadbalancer_urls"
+	extensionHTTPSCert       = "x-aws-loadbalancer_https_certificate"
 )
