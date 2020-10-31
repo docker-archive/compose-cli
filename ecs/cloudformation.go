@@ -82,8 +82,8 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 
 	b.createAccessPoints(project, resources, template)
 
-	for _, service := range project.Services {
-		err := b.createService(project, service, template, resources)
+	for i, service := range project.Services {
+		err := b.createService(project, service, template, resources, i)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +102,7 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 	return template, nil
 }
 
-func (b *ecsAPIService) createService(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources) error {
+func (b *ecsAPIService) createService(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources, serviceOrder int) error {
 	taskExecutionRole := b.createTaskExecutionRole(project, service, template)
 	taskRole := b.createTaskRole(project, service, template, resources)
 
@@ -125,9 +125,10 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		dependsOn []string
 		serviceLB []ecs.Service_LoadBalancer
 	)
+	redirOrder := (serviceOrder + 2) * 100
 	for _, port := range service.Ports {
 		for net := range service.Networks {
-			b.createIngress(service, net, port, template, resources)
+			b.createIngress(net, port, template, resources)
 		}
 
 		protocol := strings.ToUpper(port.Protocol)
@@ -156,12 +157,19 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 				if ok {
 					httpcertArn = httpcert.(string)
 				}
+
 				//create listener and url rules if not created yet
-				listenerName, created, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, url0, httpcertArn)
+				listenerName, additionalListenerName, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, url0, httpcertArn, serviceOrder, redirOrder)
 				if err != nil {
 					return err
 				}
-				if created {
+				if additionalListenerName != "" {
+					redirOrder++
+					if !elementExists(dependsOn, additionalListenerName) {
+						dependsOn = append(dependsOn, additionalListenerName)
+					}
+				}
+				if !elementExists(dependsOn, listenerName) {
 					dependsOn = append(dependsOn, listenerName)
 				}
 			}
@@ -232,7 +240,7 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 
 const allProtocols = "-1"
 
-func (b *ecsAPIService) createIngress(service types.ServiceConfig, net string, port types.ServicePortConfig, template *cloudformation.Template, resources awsResources) {
+func (b *ecsAPIService) createIngress(net string, port types.ServicePortConfig, template *cloudformation.Template, resources awsResources) {
 	protocol := strings.ToUpper(port.Protocol)
 	if protocol == "" {
 		protocol = allProtocols
@@ -240,7 +248,7 @@ func (b *ecsAPIService) createIngress(service types.ServiceConfig, net string, p
 	ingress := fmt.Sprintf("%s%dIngress", normalizeResourceName(net), port.Target)
 	template.Resources[ingress] = &ec2.SecurityGroupIngress{
 		CidrIp:      "0.0.0.0/0",
-		Description: fmt.Sprintf("%s:%d/%s on %s network", service.Name, port.Target, port.Protocol, net),
+		Description: fmt.Sprintf("%d/%s on %s network", port.Target, port.Protocol, net),
 		GroupId:     resources.securityGroups[net],
 		FromPort:    int(port.Target),
 		IpProtocol:  protocol,
@@ -353,12 +361,17 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 
 func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConfig, port types.ServicePortConfig,
 	template *cloudformation.Template,
-	targetGroupName string, loadBalancer awsResource, url0 string, httpcertArn string) (string, bool, error) {
+	targetGroupName string,
+	loadBalancer awsResource,
+	url0 string,
+	httpcertArn string,
+	serviceOrder int,
+	redirOrder int) (string, string, error) {
 
 	//parse url
 	p, err := url.Parse(url0)
 	if err != nil {
-		return "", false, fmt.Errorf("%s:%d/%s invalid url. Must be in format 'http://example.com:8880'. err=%s", service.Name, port.Target, url0, err)
+		return "", "", fmt.Errorf("%s:%d/%s invalid url. Must be in format 'http://example.com:8880'. err=%s", service.Name, port.Target, url0, err)
 	}
 
 	proto := elbv2.ProtocolEnumHttp
@@ -369,7 +382,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 		port.Published = 443
 		proto = elbv2.ProtocolEnumHttps
 	default:
-		return "", false, fmt.Errorf("%s:%d/%s url scheme must be either 'http' or 'https'", service.Name, port.Target, url0)
+		return "", "", fmt.Errorf("%s:%d/%s url scheme must be either 'http' or 'https'", service.Name, port.Target, url0)
 	}
 
 	hp := strings.Split(p.Host, ":")
@@ -378,7 +391,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 		//found custom port in url
 		hport, err := strconv.ParseUint(hp[1], 10, 32)
 		if err != nil {
-			return "", false, fmt.Errorf("%s:%d/%s invalid url port", service.Name, port.Target, url0)
+			return "", "", fmt.Errorf("%s:%d/%s invalid url port", service.Name, port.Target, url0)
 		}
 		port.Published = uint32(hport)
 	}
@@ -394,7 +407,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 	certs := []elasticloadbalancingv2.Listener_Certificate{}
 	if proto == elbv2.ProtocolEnumHttps {
 		if httpcertArn == "" {
-			return "", false, fmt.Errorf("%s:%d a valid https certificate is required. check x-aws-loadbalancer_https_certificate", service.Name, port.Target)
+			return "", "", fmt.Errorf("%s:%d a valid https certificate is required. check x-aws-loadbalancer_https_certificate", service.Name, port.Target)
 		}
 		certs = []elasticloadbalancingv2.Listener_Certificate{
 			{
@@ -437,7 +450,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 
 	template.Resources[listenerRuleName] = &elasticloadbalancingv2.ListenerRule{
 		ListenerArn: cloudformation.Ref(listenerName),
-		Priority:    100 + len(template.Resources),
+		Priority:    100 + serviceOrder,
 		Conditions: []elasticloadbalancingv2.ListenerRule_RuleCondition{
 			{
 				Field: "host-header",
@@ -460,8 +473,9 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 		},
 	}
 
+	//http->https redirect rule
+	additionalListenerName := ""
 	if proto == elbv2.ProtocolEnumHttps {
-		//add a http->https redirect rule
 		listenerName80 := fmt.Sprintf(
 			"%s%dListener",
 			strings.ToUpper(port.Protocol),
@@ -476,10 +490,11 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 			normalizeResourceName(p.Host),
 			normalizeResourceName(p.Path),
 		)
+		additionalListenerName = listenerName80
 
 		template.Resources[listenerRedirRuleName] = &elasticloadbalancingv2.ListenerRule{
 			ListenerArn: cloudformation.Ref(listenerName80),
-			Priority:    100 + len(template.Resources),
+			Priority:    redirOrder,
 			Conditions: []elasticloadbalancingv2.ListenerRule_RuleCondition{
 				{
 					Field: "host-header",
@@ -509,7 +524,7 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 		}
 	}
 
-	return listenerName, !ok, nil
+	return listenerName, additionalListenerName, nil
 }
 
 func (b *ecsAPIService) createTargetGroup(project *types.Project, service types.ServiceConfig, port types.ServicePortConfig, template *cloudformation.Template, protocol string, vpc string) string {
@@ -658,4 +673,15 @@ func normalizeResourceName(s string) string {
 		ts = ts[:6]
 	}
 	return fmt.Sprintf("%s%s", ts, chk)
+}
+
+func elementExists(source []string, elem string) bool {
+	found := false
+	for _, do := range source {
+		if do == elem {
+			found = true
+			break
+		}
+	}
+	return found
 }
