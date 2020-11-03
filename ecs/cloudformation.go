@@ -151,34 +151,12 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 
 		urls, hasURLExtension := port.Extensions[extensionURLs]
 		if hasURLExtension {
-			if resources.loadBalancerType != elbv2.LoadBalancerTypeEnumApplication {
-				return fmt.Errorf("%s:%d has extension x-aws-loadbalancer_urls, so the loadbalancer must be of type 'application'", service.Name, port.Target)
-			}
-
 			urlss := urls.(string)
-			for i, url0 := range strings.Split(urlss, " ") {
-				ruleOrder := serviceOrder*1000 + i
-				redirOrder := serviceOrder*1000 + 100 + i
-				httpcertArn := ""
-				httpcert, ok := project.Extensions[extensionHTTPSCert]
-				if ok {
-					httpcertArn = httpcert.(string)
-				}
-
-				//create listener and url rules if not created yet
-				listenerName, additionalListenerName, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, url0, httpcertArn, ruleOrder, redirOrder)
-				if err != nil {
-					return err
-				}
-				if additionalListenerName != "" {
-					if !elementExists(dependsOn, additionalListenerName) {
-						dependsOn = append(dependsOn, additionalListenerName)
-					}
-				}
-				if !elementExists(dependsOn, listenerName) {
-					dependsOn = append(dependsOn, listenerName)
-				}
+			depends, err := b.createListenersForURLs(project, service, port, template, targetGroupName, resources, urlss, serviceOrder)
+			if err != nil {
+				return err
 			}
+			dependsOn = append(dependsOn, depends...)
 
 		} else {
 			listenerName := b.createListener(service, port, template, targetGroupName, resources.loadBalancer, protocol)
@@ -365,7 +343,51 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 	return listenerName
 }
 
-func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConfig, port types.ServicePortConfig,
+func (b *ecsAPIService) createListenersForURLs(
+	project *types.Project,
+	service types.ServiceConfig,
+	port types.ServicePortConfig,
+	template *cloudformation.Template,
+	targetGroupName string,
+	resources awsResources,
+	urls string,
+	serviceOrder int) ([]string, error) {
+
+	if resources.loadBalancerType != elbv2.LoadBalancerTypeEnumApplication {
+		return nil, fmt.Errorf("%s:%d has extension x-aws-loadbalancer_urls, so the loadbalancer must be of type 'application'", service.Name, port.Target)
+	}
+
+	dependsOn := []string{}
+	for i, url0 := range strings.Split(urls, " ") {
+		ruleOrder := serviceOrder*1000 + i
+		redirOrder := serviceOrder*1000 + 100 + i
+		httpcertArn := ""
+		httpcert, ok := project.Extensions[extensionHTTPSCert]
+		if ok {
+			httpcertArn = httpcert.(string)
+		}
+
+		//create listener and url rules if not created yet
+		listenerName, additionalListenerName, err := b.createOrUpdateListenerURLRules(service, port, template, targetGroupName, resources.loadBalancer, url0, httpcertArn, ruleOrder, redirOrder)
+		if err != nil {
+			return nil, err
+		}
+		if additionalListenerName != "" {
+			if !elementExists(dependsOn, additionalListenerName) {
+				dependsOn = append(dependsOn, additionalListenerName)
+			}
+		}
+		if !elementExists(dependsOn, listenerName) {
+			dependsOn = append(dependsOn, listenerName)
+		}
+	}
+
+	return dependsOn, nil
+}
+
+func (b *ecsAPIService) createOrUpdateListenerURLRules(
+	service types.ServiceConfig,
+	port types.ServicePortConfig,
 	template *cloudformation.Template,
 	targetGroupName string,
 	loadBalancer awsResource,
@@ -441,8 +463,8 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(service types.ServiceConf
 			Certificates:    certs,
 			Port:            int(port.Published),
 		}
-		template.Resources[listenerName] = listener
 	}
+	template.Resources[listenerName] = listener
 
 	//add forward rules for this url
 	listenerRuleName := fmt.Sprintf(
