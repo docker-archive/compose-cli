@@ -149,6 +149,9 @@ func lineText(event Event, terminalWidth, statusPadding int, color bool) string 
 	// calculate the max length for the status text, on errors it
 	// is 2-3 lines long and breaks the line formating
 	maxStatusLen := terminalWidth - textLen - statusPadding - 15
+	if maxStatusLen < 0 {
+		maxStatusLen = 0
+	}
 	status := event.StatusText
 	if len(status) > maxStatusLen {
 		status = status[:maxStatusLen] + "..."
