@@ -20,14 +20,15 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/cli/opts"
 	"github.com/docker/docker/pkg/namesgenerator"
 	"github.com/docker/go-connections/nat"
 
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/formatter"
-	"github.com/docker/compose-cli/utils"
 )
 
 // Opts contain run command options
@@ -45,6 +46,11 @@ type Opts struct {
 	RestartPolicyCondition string
 	DomainName             string
 	Rm                     bool
+	HealthCmd              string
+	HealthInterval         time.Duration
+	HealthRetries          int
+	HealthStartPeriod      time.Duration
+	HealthTimeout          time.Duration
 }
 
 // ToContainerConfig convert run options to a container configuration
@@ -77,6 +83,13 @@ func (r *Opts) ToContainerConfig(image string) (containers.ContainerConfig, erro
 		envVars = append(envVars, vars...)
 	}
 
+	var healthCmd []string
+	var healthInterval types.Duration
+	if len(r.HealthCmd) > 0 {
+		healthCmd = strings.Split(r.HealthCmd, " ")
+		healthInterval = types.Duration(r.HealthInterval)
+	}
+
 	return containers.ContainerConfig{
 		ID:                     r.Name,
 		Image:                  image,
@@ -90,18 +103,30 @@ func (r *Opts) ToContainerConfig(image string) (containers.ContainerConfig, erro
 		RestartPolicyCondition: restartPolicy,
 		DomainName:             r.DomainName,
 		AutoRemove:             r.Rm,
+		Healthcheck: containers.Healthcheck{
+			Disable:  len(healthCmd) == 0,
+			Test:     healthCmd,
+			Interval: healthInterval,
+		},
 	}, nil
 }
 
-func toRestartPolicy(value string) (string, error) {
-	if value == "" {
-		return containers.RestartPolicyNone, nil
-	}
-	if utils.StringContains(containers.RestartPolicyList, value) {
-		return value, nil
-	}
+var restartPolicyMap = map[string]string{
+	"":                                containers.RestartPolicyNone,
+	containers.RestartPolicyNone:      containers.RestartPolicyNone,
+	containers.RestartPolicyAny:       containers.RestartPolicyAny,
+	containers.RestartPolicyOnFailure: containers.RestartPolicyOnFailure,
 
-	return "", fmt.Errorf("invalid restart value, must be one of %s", strings.Join(containers.RestartPolicyList, ", "))
+	containers.RestartPolicyRunNo:     containers.RestartPolicyNone,
+	containers.RestartPolicyRunAlways: containers.RestartPolicyAny,
+}
+
+func toRestartPolicy(value string) (string, error) {
+	value, ok := restartPolicyMap[value]
+	if !ok {
+		return "", fmt.Errorf("invalid restart value, must be one of %s", strings.Join(containers.RestartPolicyList, ", "))
+	}
+	return value, nil
 }
 
 func (r *Opts) toPorts() ([]containers.Port, error) {
