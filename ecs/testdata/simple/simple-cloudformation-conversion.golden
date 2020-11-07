@@ -16,7 +16,7 @@ Resources:
   Default80Ingress:
     Properties:
       CidrIp: 0.0.0.0/0
-      Description: simple:80/tcp on default network
+      Description: 80/tcp on default network
       FromPort: 80
       GroupId:
         Ref: DefaultNetwork
