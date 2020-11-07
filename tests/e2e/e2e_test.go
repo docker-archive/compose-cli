@@ -425,7 +425,7 @@ func TestLegacy(t *testing.T) {
 		}
 		res := c.RunDockerCmd("-H", endpoint, "ps")
 		// Example backend's ps output includes these strings
-		assert.Assert(t, !strings.Contains(res.Stdout(), "ID"), "%q does not contains %q", res.Stdout(), "ID")
+		assert.Assert(t, !strings.Contains(res.Stdout(), "id"), "%q does not contains %q", res.Stdout(), "id")
 		assert.Assert(t, !strings.Contains(res.Stdout(), "1234"), "%q does not contains %q", res.Stdout(), "1234")
 	})
 }
