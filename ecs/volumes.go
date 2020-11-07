@@ -33,7 +33,7 @@ import (
 func (b *ecsAPIService) createNFSMountTarget(project *types.Project, resources awsResources, template *cloudformation.Template) {
 	for volume := range project.Volumes {
 		for _, subnet := range resources.subnets {
-			name := fmt.Sprintf("%sNFSMountTargetOn%s", normalizeResourceName(volume), normalizeResourceName(subnet.ID()))
+			name := normalizeResourceName("%sNFSMountTargetOn%s", volume, subnet.ID())
 			template.Resources[name] = &efs.MountTarget{
 				FileSystemId:   resources.filesystems[volume].ID(),
 				SecurityGroups: resources.allSecurityGroups(),
@@ -46,14 +46,14 @@ func (b *ecsAPIService) createNFSMountTarget(project *types.Project, resources a
 func (b *ecsAPIService) mountTargets(volume string, resources awsResources) []string {
 	var refs []string
 	for _, subnet := range resources.subnets {
-		refs = append(refs, fmt.Sprintf("%sNFSMountTargetOn%s", normalizeResourceName(volume), normalizeResourceName(subnet.ID())))
+		refs = append(refs, normalizeResourceName("%sNFSMountTargetOn%s", volume, subnet.ID()))
 	}
 	return refs
 }
 
 func (b *ecsAPIService) createAccessPoints(project *types.Project, r awsResources, template *cloudformation.Template) {
 	for name, volume := range project.Volumes {
-		n := fmt.Sprintf("%sAccessPoint", normalizeResourceName(name))
+		n := normalizeResourceName("%sAccessPoint", name)
 
 		uid := volume.DriverOpts["uid"]
 		gid := volume.DriverOpts["gid"]

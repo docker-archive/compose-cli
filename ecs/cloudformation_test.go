@@ -181,13 +181,13 @@ networks:
   back-tier:
     internal: true
 `, useDefaultVPC)
-	assert.Check(t, template.Resources["FronttierNetwork"] != nil)
-	assert.Check(t, template.Resources["BacktierNetwork"] != nil)
-	assert.Check(t, template.Resources["BacktierNetworkIngress"] != nil)
-	i := template.Resources["FronttierNetworkIngress"]
+	assert.Check(t, template.Resources["FrontTierNetworkE939"] != nil)
+	assert.Check(t, template.Resources["BackTierNetworkEf9a"] != nil)
+	assert.Check(t, template.Resources["BacktierNetworkIngress7487"] != nil)
+	i := template.Resources["FronttierNetworkIngress3399"]
 	assert.Check(t, i != nil)
 	ingress := *i.(*ec2.SecurityGroupIngress)
-	assert.Check(t, ingress.SourceSecurityGroupId == cloudformation.Ref("FronttierNetwork"))
+	assert.Check(t, ingress.SourceSecurityGroupId == cloudformation.Ref("FrontTierNetworkE939"))
 
 }
 
@@ -367,11 +367,11 @@ volumes:
 `, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ResolveFileSystem(gomock.Any(), "fs-123abc").Return(existingAWSResource{id: "fs-123abc"}, nil)
 	})
-	s := template.Resources["DbdataNFSMountTargetOnSubnet1"].(*efs.MountTarget)
+	s := template.Resources["DbDataNFSMountTargetOnSubnet1Aac9"].(*efs.MountTarget)
 	assert.Check(t, s != nil)
 	assert.Equal(t, s.FileSystemId, "fs-123abc") //nolint:staticcheck
 
-	s = template.Resources["DbdataNFSMountTargetOnSubnet2"].(*efs.MountTarget)
+	s = template.Resources["DbDataNFSMountTargetOnSubnet233c0"].(*efs.MountTarget)
 	assert.Check(t, s != nil)
 	assert.Equal(t, s.FileSystemId, "fs-123abc") //nolint:staticcheck
 }
@@ -404,7 +404,7 @@ volumes:
 	assert.Equal(t, f.ThroughputMode, "provisioned")                        //nolint:staticcheck
 	assert.Equal(t, f.ProvisionedThroughputInMibps, float64(1024))          //nolint:staticcheck
 
-	s := template.Resources["DbdataNFSMountTargetOnSubnet1"].(*efs.MountTarget)
+	s := template.Resources["DbDataNFSMountTargetOnSubnet1Aac9"].(*efs.MountTarget)
 	assert.Check(t, s != nil)
 	assert.Equal(t, s.FileSystemId, cloudformation.Ref(n)) //nolint:staticcheck
 }
@@ -422,7 +422,7 @@ volumes:
 `, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ListFileSystems(gomock.Any(), gomock.Any()).Return(nil, nil)
 	})
-	a := template.Resources["DbdataAccessPoint"].(*efs.AccessPoint)
+	a := template.Resources["DbDataAccessPointC7fe"].(*efs.AccessPoint)
 	assert.Check(t, a != nil)
 	assert.Equal(t, a.PosixUser.Uid, "1002") //nolint:staticcheck
 	assert.Equal(t, a.PosixUser.Gid, "1002") //nolint:staticcheck
@@ -445,7 +445,7 @@ volumes:
 			},
 		}, nil)
 	})
-	s := template.Resources["DbdataNFSMountTargetOnSubnet1"].(*efs.MountTarget)
+	s := template.Resources["DbDataNFSMountTargetOnSubnet233c0"].(*efs.MountTarget)
 	assert.Check(t, s != nil)
 	assert.Equal(t, s.FileSystemId, "fs-123abc") //nolint:staticcheck
 }
@@ -526,6 +526,26 @@ services:
 		}, nil)
 	})
 	assert.Equal(t, template.Metadata["Cluster"], "arn:aws:ecs:region:account:cluster/name")
+}
+
+func TestNormalizeResourceName(t *testing.T) {
+	r := normalizeResourceName("TestingABC")
+	assert.Equal(t, r, "TestingABC")
+
+	r = normalizeResourceName("TestingABC%d", 123)
+	assert.Equal(t, r, "TestingABC123")
+
+	r = normalizeResourceName("TestingABC %d", 123)
+	assert.Equal(t, r, "TestingABC123Ea16")
+
+	r = normalizeResourceName("TestingABC %d-%s", 123, "xyz")
+	assert.Equal(t, r, "TestingABC123XyzC311")
+
+	r = normalizeResourceName("testingABC %d-%s", 123, "xyz")
+	assert.Equal(t, r, "TestingABC123Xyz9e57")
+
+	r = normalizeResourceName("%s+testingABC %d-%s", "aei", 123, "xyz")
+	assert.Equal(t, r, "AeitestingABC123Xyz39c2")
 }
 
 func convertYaml(t *testing.T, yaml string, fn ...func(m *MockAPIMockRecorder)) *cloudformation.Template {

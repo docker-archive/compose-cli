@@ -81,7 +81,7 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 	}
 
 	for _, v := range service.Volumes {
-		n := fmt.Sprintf("%sAccessPoint", normalizeResourceName(v.Source))
+		n := normalizeResourceName("%sAccessPoint", v.Source)
 		volumes = append(volumes, ecs.TaskDefinition_Volume{
 			EFSVolumeConfiguration: &ecs.TaskDefinition_EFSVolumeConfiguration{
 				AuthorizationConfig: &ecs.TaskDefinition_AuthorizationConfig{

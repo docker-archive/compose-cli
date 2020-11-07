@@ -121,7 +121,7 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		definition.TaskRoleArn = cloudformation.Ref(taskRole)
 	}
 
-	taskDefinition := fmt.Sprintf("%sTaskDefinition", normalizeResourceName(service.Name))
+	taskDefinition := normalizeResourceName("%sTaskDefinition", service.Name)
 	template.Resources[taskDefinition] = definition
 
 	var healthCheck *cloudmap.Service_HealthCheckConfig
@@ -229,7 +229,7 @@ func (b *ecsAPIService) createIngress(net string, port types.ServicePortConfig, 
 	if protocol == "" {
 		protocol = allProtocols
 	}
-	ingress := fmt.Sprintf("%s%dIngress", normalizeResourceName(net), port.Target)
+	ingress := normalizeResourceName("%s%dIngress", net, port.Target)
 	template.Resources[ingress] = &ec2.SecurityGroupIngress{
 		CidrIp:      "0.0.0.0/0",
 		Description: fmt.Sprintf("%d/%s on %s network", port.Target, port.Protocol, net),
@@ -249,7 +249,7 @@ func (b *ecsAPIService) createSecret(project *types.Project, name string, s type
 		return err
 	}
 
-	resource := fmt.Sprintf("%sSecret", normalizeResourceName(s.Name))
+	resource := normalizeResourceName("%sSecret", s.Name)
 	template.Resources[resource] = &secretsmanager.Secret{
 		Description:  fmt.Sprintf("Secret %s", s.Name),
 		SecretString: string(sensitiveData),
@@ -315,9 +315,9 @@ func computeRollingUpdateLimits(service types.ServiceConfig) (int, int, error) {
 func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.ServicePortConfig,
 	template *cloudformation.Template,
 	targetGroupName string, loadBalancer awsResource, protocol string) string {
-	listenerName := fmt.Sprintf(
+	listenerName := normalizeResourceName(
 		"%s%s%dListener",
-		normalizeResourceName(service.Name),
+		service.Name,
 		strings.ToUpper(port.Protocol),
 		port.Target,
 	)
@@ -467,13 +467,13 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(
 	template.Resources[listenerName] = listener
 
 	//add forward rules for this url
-	listenerRuleName := fmt.Sprintf(
+	listenerRuleName := normalizeResourceName(
 		"%s%s%dListenerRule%s%s",
-		normalizeResourceName(service.Name),
+		service.Name,
 		strings.ToUpper(port.Protocol),
 		port.Published,
-		normalizeResourceName(p.Host),
-		normalizeResourceName(p.Path),
+		p.Host,
+		p.Path,
 	)
 
 	template.Resources[listenerRuleName] = &elasticloadbalancingv2.ListenerRule{
@@ -510,13 +510,13 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(
 			80,
 		)
 		listenerPort := 80
-		listenerRedirRuleName := fmt.Sprintf(
+		listenerRedirRuleName := normalizeResourceName(
 			"%s%s%dListenerRule%s%s",
-			normalizeResourceName(service.Name),
+			service.Name,
 			strings.ToUpper(port.Protocol),
 			listenerPort,
-			normalizeResourceName(p.Host),
-			normalizeResourceName(p.Path),
+			p.Host,
+			p.Path,
 		)
 		additionalListenerName = listenerName80
 
@@ -556,9 +556,9 @@ func (b *ecsAPIService) createOrUpdateListenerURLRules(
 }
 
 func (b *ecsAPIService) createTargetGroup(project *types.Project, service types.ServiceConfig, port types.ServicePortConfig, template *cloudformation.Template, protocol string, vpc string) string {
-	targetGroupName := fmt.Sprintf(
+	targetGroupName := normalizeResourceName(
 		"%s%s%dTargetGroup",
-		normalizeResourceName(service.Name),
+		service.Name,
 		strings.ToUpper(port.Protocol),
 		port.Published,
 	)
@@ -573,7 +573,7 @@ func (b *ecsAPIService) createTargetGroup(project *types.Project, service types.
 }
 
 func (b *ecsAPIService) createServiceRegistry(service types.ServiceConfig, template *cloudformation.Template, healthCheck *cloudmap.Service_HealthCheckConfig) ecs.Service_ServiceRegistry {
-	serviceRegistration := fmt.Sprintf("%sServiceDiscoveryEntry", normalizeResourceName(service.Name))
+	serviceRegistration := normalizeResourceName("%sServiceDiscoveryEntry", service.Name)
 	serviceRegistry := ecs.Service_ServiceRegistry{
 		RegistryArn: cloudformation.GetAtt(serviceRegistration, "Arn"),
 	}
@@ -600,7 +600,7 @@ func (b *ecsAPIService) createServiceRegistry(service types.ServiceConfig, templ
 }
 
 func (b *ecsAPIService) createTaskExecutionRole(project *types.Project, service types.ServiceConfig, template *cloudformation.Template) string {
-	taskExecutionRole := fmt.Sprintf("%sTaskExecutionRole", normalizeResourceName(service.Name))
+	taskExecutionRole := normalizeResourceName("%sTaskExecutionRole", service.Name)
 	policies := b.createPolicies(project, service)
 	template.Resources[taskExecutionRole] = &iam.Role{
 		AssumeRolePolicyDocument: ecsTaskAssumeRolePolicyDocument,
@@ -615,17 +615,17 @@ func (b *ecsAPIService) createTaskExecutionRole(project *types.Project, service 
 }
 
 func (b *ecsAPIService) createTaskRole(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources) string {
-	taskRole := fmt.Sprintf("%sTaskRole", normalizeResourceName(service.Name))
+	taskRole := normalizeResourceName("%sTaskRole", service.Name)
 	rolePolicies := []iam.Role_Policy{}
 	if roles, ok := service.Extensions[extensionRole]; ok {
 		rolePolicies = append(rolePolicies, iam.Role_Policy{
-			PolicyName:     fmt.Sprintf("%s%sPolicy", normalizeResourceName(project.Name), normalizeResourceName(service.Name)),
+			PolicyName:     normalizeResourceName("%s%sPolicy", project.Name, service.Name),
 			PolicyDocument: roles,
 		})
 	}
 	for _, vol := range service.Volumes {
 		rolePolicies = append(rolePolicies, iam.Role_Policy{
-			PolicyName:     fmt.Sprintf("%s%sVolumeMountPolicy", normalizeResourceName(project.Name), normalizeResourceName(service.Name)),
+			PolicyName:     normalizeResourceName("%s%sVolumeMountPolicy", project.Name, service.Name),
 			PolicyDocument: volumeMountPolicyDocument(vol.Source, resources.filesystems[vol.Source].ARN()),
 		})
 	}
@@ -675,7 +675,7 @@ func (b *ecsAPIService) createPolicies(project *types.Project, service types.Ser
 						},
 					},
 				},
-				PolicyName: fmt.Sprintf("%sGrantAccessToSecrets", service.Name),
+				PolicyName: normalizeResourceName("%sGrantAccessToSecrets", service.Name),
 			},
 		}
 	}
@@ -683,24 +683,45 @@ func (b *ecsAPIService) createPolicies(project *types.Project, service types.Ser
 }
 
 func networkResourceName(network string) string {
-	return fmt.Sprintf("%sNetwork", normalizeResourceName(network))
+	return normalizeResourceName("%sNetwork", network)
 }
 
 func serviceResourceName(service string) string {
-	return fmt.Sprintf("%sService", normalizeResourceName(service))
+	return normalizeResourceName("%sService", service)
 }
 
 func volumeResourceName(service string) string {
-	return fmt.Sprintf("%sFilesystem", normalizeResourceName(service))
+	return normalizeResourceName("%sFilesystem", service)
 }
 
-func normalizeResourceName(s string) string {
-	chk := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(s)))
-	ts := strings.Title(regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(s, ""))
-	if len(ts) > 6 {
-		ts = ts[:6]
+// normalizeResourceName will remove invalid template element name characters,
+// create a CamelCase style in resulting string and add 4 bytes of the string CRC
+// if the original string contents was changed to avoid collisions when two different
+// strings return the same string after removing invalid chars
+func normalizeResourceName(fmtstr string, args ...interface{}) string {
+	//camelcase
+	targs := make([]interface{}, 0)
+	for _, a := range args {
+		b, ok := a.(string)
+		if ok {
+			targs = append(targs, strings.Title(b))
+			continue
+		}
+		targs = append(targs, a)
 	}
-	return fmt.Sprintf("%s%s", ts, chk)
+	//cleanup invalid chars and limit size
+	s := fmt.Sprintf(fmtstr, targs...)
+	ts := regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(s, "")
+	if len(ts) > 60 {
+		ts = ts[:60]
+	}
+	//apply CRC str if any char was removed from original string
+	if ts != s {
+		chk := fmt.Sprintf("%x", crc32.ChecksumIEEE([]byte(s)))
+		chk = chk[:4]
+		return strings.Title(fmt.Sprintf("%s%s", ts, strings.Title(chk)))
+	}
+	return strings.Title(ts)
 }
 
 func elementExists(source []string, elem string) bool {

@@ -306,7 +306,7 @@ func (b *ecsAPIService) ensureNetworks(r *awsResources, project *types.Project, 
 			Tags:             networkTags(project, net),
 		}
 
-		ingress := securityGroup + "Ingress"
+		ingress := normalizeResourceName(name + "NetworkIngress")
 		template.Resources[ingress] = &ec2.SecurityGroupIngress{
 			Description:           fmt.Sprintf("Allow communication within network %s", name),
 			IpProtocol:            allProtocols,

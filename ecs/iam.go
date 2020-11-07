@@ -17,8 +17,6 @@
 package ecs
 
 import (
-	"fmt"
-
 	"github.com/awslabs/goformation/v4/cloudformation"
 )
 
@@ -58,7 +56,7 @@ func policyDocument(service string) PolicyDocument {
 }
 
 func volumeMountPolicyDocument(volume string, filesystem string) PolicyDocument {
-	ap := fmt.Sprintf("%sAccessPoint", normalizeResourceName(volume))
+	ap := normalizeResourceName("%sAccessPoint", volume)
 	return PolicyDocument{
 		Version: "2012-10-17", // https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_version.html
 		Statement: []PolicyStatement{

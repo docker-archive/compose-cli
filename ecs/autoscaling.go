@@ -60,7 +60,7 @@ func (b *ecsAPIService) createAutoscalingPolicy(project *types.Project, resource
 		return fmt.Errorf("%s MUST define max replicas", extensionAutoScaling)
 	}
 
-	role := fmt.Sprintf("%sAutoScalingRole", normalizeResourceName(service.Name))
+	role := normalizeResourceName("%sAutoScalingRole", service.Name)
 	template.Resources[role] = &iam.Role{
 		AssumeRolePolicyDocument: ausocalingAssumeRolePolicyDocument,
 		Path:                     "/",
@@ -89,7 +89,7 @@ func (b *ecsAPIService) createAutoscalingPolicy(project *types.Project, resource
 	// Why isn't this just the service ARN ?????
 	resourceID := cloudformation.Join("/", []string{"service", resources.cluster.ID(), cloudformation.GetAtt(serviceResourceName(service.Name), "Name")})
 
-	target := fmt.Sprintf("%sScalableTarget", normalizeResourceName(service.Name))
+	target := normalizeResourceName("%sScalableTarget", service.Name)
 	template.Resources[target] = &applicationautoscaling.ScalableTarget{
 		MaxCapacity:                config.Max,
 		MinCapacity:                config.Min,
@@ -109,7 +109,7 @@ func (b *ecsAPIService) createAutoscalingPolicy(project *types.Project, resource
 		targetPercent = config.Memory
 	}
 
-	policy := fmt.Sprintf("%sScalingPolicy", normalizeResourceName(service.Name))
+	policy := normalizeResourceName("%sScalingPolicy", service.Name)
 	template.Resources[policy] = &applicationautoscaling.ScalingPolicy{
 		PolicyType:                     "TargetTrackingScaling",
 		PolicyName:                     policy,
