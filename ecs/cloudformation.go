@@ -619,13 +619,13 @@ func (b *ecsAPIService) createTaskRole(project *types.Project, service types.Ser
 	rolePolicies := []iam.Role_Policy{}
 	if roles, ok := service.Extensions[extensionRole]; ok {
 		rolePolicies = append(rolePolicies, iam.Role_Policy{
-			PolicyName:     normalizeResourceName("%s%sPolicy", project.Name, service.Name),
+			PolicyName:     normalizeResourceName("%sPolicy", service.Name),
 			PolicyDocument: roles,
 		})
 	}
 	for _, vol := range service.Volumes {
 		rolePolicies = append(rolePolicies, iam.Role_Policy{
-			PolicyName:     normalizeResourceName("%s%sVolumeMountPolicy", project.Name, service.Name),
+			PolicyName:     normalizeResourceName("%s%sVolumeMountPolicy", project.Name, vol.Source),
 			PolicyDocument: volumeMountPolicyDocument(vol.Source, resources.filesystems[vol.Source].ARN()),
 		})
 	}

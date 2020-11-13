@@ -173,7 +173,7 @@ func stopACIContainerGroup(ctx context.Context, aciContext store.AciContext, con
 	}
 
 	result, err := containerGroupsClient.Stop(ctx, aciContext.ResourceGroup, containerGroupName)
-	if result.StatusCode == http.StatusNotFound {
+	if result.IsHTTPStatus(http.StatusNotFound) {
 		return errdefs.ErrNotFound
 	}
 	return err
@@ -281,6 +281,9 @@ func getACIContainerLogs(ctx context.Context, aciContext store.AciContext, conta
 	logs, err := containerClient.ListLogs(ctx, aciContext.ResourceGroup, containerGroupName, containerName, tail)
 	if err != nil {
 		return "", fmt.Errorf("cannot get container logs: %v", err)
+	}
+	if logs.Content == nil {
+		return "", nil
 	}
 	return *logs.Content, err
 }
