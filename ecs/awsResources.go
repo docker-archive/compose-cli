@@ -451,6 +451,10 @@ func portIsHTTP(it types.ServicePortConfig) bool {
 		protocol := v.(string)
 		return protocol == "http" || protocol == "https"
 	}
+	if _, ok := it.Extensions[extensionCertificate]; ok {
+		// setting certificate implies protocol = https
+		return true
+	}
 	return it.Target == 80 || it.Target == 443
 }
 

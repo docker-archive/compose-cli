@@ -30,4 +30,5 @@ const (
 	extensionRole            = "x-aws-role"
 	extensionManagedPolicies = "x-aws-policies"
 	extensionAutoScaling     = "x-aws-autoscaling"
+	extensionCertificate     = "x-aws-certificate"
 )

@@ -133,7 +133,7 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 			protocol = elbv2.ProtocolEnumHttp
 		}
 		targetGroupName := b.createTargetGroup(project, service, port, template, protocol, resources.vpc)
-		listenerName := b.createListener(service, port, template, targetGroupName, resources.loadBalancer, protocol)
+		listenerName := b.createListener(project, service, port, template, targetGroupName, resources.loadBalancer, protocol)
 		dependsOn = append(dependsOn, listenerName)
 		serviceLB = append(serviceLB, ecs.Service_LoadBalancer{
 			ContainerName:  service.Name,
@@ -290,15 +290,21 @@ func computeRollingUpdateLimits(service types.ServiceConfig) (int, int, error) {
 	return minPercent, maxPercent, nil
 }
 
-func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.ServicePortConfig,
-	template *cloudformation.Template,
-	targetGroupName string, loadBalancer awsResource, protocol string) string {
+func (b *ecsAPIService) createListener(project *types.Project, service types.ServiceConfig, port types.ServicePortConfig, template *cloudformation.Template, targetGroupName string, loadBalancer awsResource, protocol string) string {
 	listenerName := fmt.Sprintf(
 		"%s%s%dListener",
 		normalizeResourceName(service.Name),
 		strings.ToUpper(port.Protocol),
 		port.Target,
 	)
+	var certificates []elasticloadbalancingv2.Listener_Certificate
+	if secret, ok := port.Extensions[extensionCertificate]; ok {
+		arn := project.Secrets[secret.(string)].Name
+		certificates = append(certificates, elasticloadbalancingv2.Listener_Certificate{
+			CertificateArn: arn,
+		})
+	}
+
 	//add listener to dependsOn
 	//https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
 	template.Resources[listenerName] = &elasticloadbalancingv2.Listener{
@@ -317,6 +323,7 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 		LoadBalancerArn: loadBalancer.ARN(),
 		Protocol:        protocol,
 		Port:            int(port.Target),
+		Certificates:    certificates,
 	}
 	return listenerName
 }

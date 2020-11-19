@@ -351,6 +351,26 @@ services:
 	assert.Check(t, loadBalancer.Type == elbv2.LoadBalancerTypeEnumNetwork)
 }
 
+func TestServiceCertificate(t *testing.T) {
+	template := convertYaml(t, `
+services:
+  test:
+    image: nginx
+    ports:
+      - target: 443
+        x-aws-certificate: certificate 
+secrets:
+  certificate:
+    external: true
+    name: "arn:123:abc"
+`, useDefaultVPC)
+	l := template.Resources["Test443Listener"]
+	assert.Check(t, l != nil)
+	listener := *l.(*elasticloadbalancingv2.Listener)
+	assert.Equal(t, len(listener.Certificates), 1)
+	assert.Equal(t, listener.Certificates[0].CertificateArn, "arn:123:abc")
+}
+
 func TestUseExternalNetwork(t *testing.T) {
 	template := convertYaml(t, `
 services:
