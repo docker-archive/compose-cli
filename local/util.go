@@ -40,3 +40,12 @@ func contains(slice []string, item string) bool {
 	}
 	return false
 }
+
+func containsAll(slice []string, items []string) bool {
+	for _, i := range items {
+		if !contains(slice, i) {
+			return false
+		}
+	}
+	return true
+}

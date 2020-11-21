@@ -27,36 +27,7 @@ import (
 
 func inDependencyOrder(ctx context.Context, project *types.Project, fn func(context.Context, types.ServiceConfig) error) error {
 	graph := buildDependencyGraph(project.Services)
-
-	eg, ctx := errgroup.WithContext(ctx)
-	results := make(chan string)
-	errors := make(chan error)
-	scheduled := map[string]bool{}
-	for len(graph) > 0 {
-		for _, n := range graph.independents() {
-			service := n.service
-			if scheduled[service.Name] {
-				continue
-			}
-			eg.Go(func() error {
-				err := fn(ctx, service)
-				if err != nil {
-					errors <- err
-					return err
-				}
-				results <- service.Name
-				return nil
-			})
-			scheduled[service.Name] = true
-		}
-		select {
-		case result := <-results:
-			graph.resolved(result)
-		case err := <-errors:
-			return err
-		}
-	}
-	return eg.Wait()
+	return graph.walk(ctx, fn).Wait()
 }
 
 type dependencyGraph map[string]node
@@ -67,23 +38,53 @@ type node struct {
 	dependent    []string
 }
 
-func (graph dependencyGraph) independents() []node {
-	var nodes []node
-	for _, node := range graph {
-		if len(node.dependencies) == 0 {
-			nodes = append(nodes, node)
+func (graph dependencyGraph) filter(predicate func(node) bool) []node {
+	var filtered []node
+	for _, n := range graph {
+		if predicate(n) {
+			filtered = append(filtered, n)
 		}
 	}
-	return nodes
+	return filtered
 }
 
-func (graph dependencyGraph) resolved(result string) {
-	for _, parent := range graph[result].dependent {
-		node := graph[parent]
-		node.dependencies = remove(node.dependencies, result)
-		graph[parent] = node
+func withoutDepencies(n node) bool {
+	return len(n.dependencies) == 0
+}
+
+func (graph dependencyGraph) walk(ctx context.Context, fn func(context.Context, types.ServiceConfig) error) *errgroup.Group {
+	eg, ctx := errgroup.WithContext(ctx)
+	resultsCh := make(chan node)
+	schedule := func(ctx context.Context, n node) {
+		eg.Go(func() error {
+			err := fn(ctx, n.service)
+			if err != nil {
+				return err
+			}
+			resultsCh <- n
+			return nil
+		})
 	}
-	delete(graph, result)
+
+	// start producer goroutine
+	go func() {
+		visited := []string{}
+		for len(visited) < len(graph) {
+			done := <-resultsCh
+			visited = append(visited, done.service.Name)
+			for _, n := range done.dependent {
+				dependent := graph[n]
+				if containsAll(visited, dependent.dependencies) {
+					schedule(ctx, dependent)
+				}
+			}
+		}
+	}()
+
+	for _, n := range graph.filter(withoutDepencies) {
+		schedule(ctx, n)
+	}
+	return eg
 }
 
 func buildDependencyGraph(services types.Services) dependencyGraph {
@@ -105,14 +106,4 @@ func buildDependencyGraph(services types.Services) dependencyGraph {
 		graph[s.Name] = node
 	}
 	return graph
-}
-
-func remove(slice []string, item string) []string {
-	var s []string
-	for _, i := range slice {
-		if i != item {
-			s = append(s, i)
-		}
-	}
-	return s
 }
