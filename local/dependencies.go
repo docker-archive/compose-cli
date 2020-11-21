@@ -27,7 +27,7 @@ import (
 
 func inDependencyOrder(ctx context.Context, project *types.Project, fn func(context.Context, types.ServiceConfig) error) error {
 	graph := buildDependencyGraph(project.Services)
-	return graph.walk(ctx, fn).Wait()
+	return graph.walk(ctx, fn, forward).Wait()
 }
 
 type dependencyGraph map[string]node
@@ -48,11 +48,34 @@ func (graph dependencyGraph) filter(predicate func(node) bool) []node {
 	return filtered
 }
 
-func withoutDepencies(n node) bool {
-	return len(n.dependencies) == 0
-}
+type direction int
 
-func (graph dependencyGraph) walk(ctx context.Context, fn func(context.Context, types.ServiceConfig) error) *errgroup.Group {
+const (
+	forward direction = iota
+	backward
+)
+
+func (graph dependencyGraph) walk(ctx context.Context, fn func(context.Context, types.ServiceConfig) error, d direction) *errgroup.Group {
+	var (
+		init     func(node) bool
+		next     func(node) []string
+		required func(node) []string
+	)
+	switch d {
+	case forward:
+		init = func(n node) bool {
+			return len(n.dependencies) == 0
+		}
+		next = dependent
+		required = dependencies
+	case backward:
+		init = func(n node) bool {
+			return len(n.dependent) == 0
+		}
+		next = dependencies
+		required = dependent
+	}
+
 	eg, ctx := errgroup.WithContext(ctx)
 	resultsCh := make(chan node)
 	schedule := func(ctx context.Context, n node) {
@@ -72,16 +95,16 @@ func (graph dependencyGraph) walk(ctx context.Context, fn func(context.Context, 
 		for len(visited) < len(graph) {
 			done := <-resultsCh
 			visited = append(visited, done.service.Name)
-			for _, n := range done.dependent {
+			for _, n := range next(done) {
 				dependent := graph[n]
-				if containsAll(visited, dependent.dependencies) {
+				if containsAll(visited, required(dependent)) {
 					schedule(ctx, dependent)
 				}
 			}
 		}
 	}()
 
-	for _, n := range graph.filter(withoutDepencies) {
+	for _, n := range graph.filter(init) {
 		schedule(ctx, n)
 	}
 	return eg
@@ -106,4 +129,12 @@ func buildDependencyGraph(services types.Services) dependencyGraph {
 		graph[s.Name] = node
 	}
 	return graph
+}
+
+func dependencies(n node) []string {
+	return n.dependencies
+}
+
+func dependent(n node) []string {
+	return n.dependent
 }
