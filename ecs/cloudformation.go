@@ -128,9 +128,14 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		}
 
 		protocol := strings.ToUpper(port.Protocol)
+		if p, ok := port.Extensions[extensionProtocol]; ok {
+			protocol = strings.ToUpper(p.(string))
+		}
 		if resources.loadBalancerType == elbv2.LoadBalancerTypeEnumApplication {
-			// we don't set Https as a certificate must be specified for HTTPS listeners
 			protocol = elbv2.ProtocolEnumHttp
+			if _, ok := port.Extensions[extensionCertificate]; ok {
+				protocol = elbv2.ProtocolEnumHttps
+			}
 		}
 		targetGroupName := b.createTargetGroup(project, service, port, template, protocol, resources.vpc)
 		listenerName := b.createListener(project, service, port, template, targetGroupName, resources.loadBalancer, protocol)
