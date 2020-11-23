@@ -18,9 +18,11 @@ package aci
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -41,6 +43,7 @@ import (
 	"github.com/docker/compose-cli/context/store"
 	"github.com/docker/compose-cli/errdefs"
 	"github.com/docker/compose-cli/progress"
+	"github.com/docker/compose-cli/utils"
 )
 
 func createACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {
@@ -100,6 +103,11 @@ func autocreateFileshares(ctx context.Context, project *types.Project) error {
 }
 
 func createOrUpdateACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {
+	if utils.StringContains(os.Args, "-D") {
+		bytes, _ := json.MarshalIndent(groupDefinition, "", " ")
+		fmt.Println(string(bytes))
+		return nil
+	}
 	w := progress.ContextWriter(ctx)
 	containerGroupsClient, err := login.NewContainerGroupsClient(aciContext.SubscriptionID)
 	if err != nil {

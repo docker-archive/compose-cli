@@ -262,12 +262,9 @@ func TestRunVolume(t *testing.T) {
 
 	t.Run("run", func(t *testing.T) {
 		mountTarget := "/usr/share/nginx/html"
-		res := c.RunDockerCmd(
-			"run", "-d",
-			"-v", fmt.Sprintf("%s:%s", volumeID, mountTarget),
-			"-p", "80:80",
-			"nginx",
-		)
+		res := c.RunDockerCmd("-D", "run", "-d", "-v", fmt.Sprintf("%s:%s", volumeID, mountTarget), "-p", "80:80", "nginx")
+		fmt.Println(res.Stdout())
+		res = c.RunDockerCmd("run", "-d", "-v", fmt.Sprintf("%s:%s", volumeID, mountTarget), "-p", "80:80", "nginx")
 		container = getContainerName(res.Stdout())
 	})
 
@@ -537,8 +534,10 @@ func TestUpSecretsResources(t *testing.T) {
 	_, _, _ = setupTestResourceGroup(t, c)
 
 	t.Run("compose up", func(t *testing.T) {
+		res := c.RunDockerCmd("compose", "up", "-D", "-f", composefilePath, "--project-name", composeProjectName)
+		fmt.Println(res.Stdout())
 		c.RunDockerCmd("compose", "up", "-f", composefilePath, "--project-name", composeProjectName)
-		res := c.RunDockerCmd("ps")
+		res = c.RunDockerCmd("ps")
 		out := lines(res.Stdout())
 		// Check 2 containers running
 		assert.Assert(t, is.Len(out, 3))
