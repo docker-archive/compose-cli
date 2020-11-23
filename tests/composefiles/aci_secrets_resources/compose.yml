@@ -13,10 +13,10 @@ services:
         condition: on-failure
       resources:
         limits:
-          cpus: '0.7'
+          cpus: '1.7'
           memory: 1G
         reservations:
-          cpus: '0.5'
+          cpus: '1.5'
           memory: 0.5G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/healthz"]
@@ -34,7 +34,7 @@ services:
         condition: on-failure
       resources:
         reservations:
-          cpus: '0.5'
+          cpus: '1.5'
           memory: 0.7G
     secrets:
       - mysecret2

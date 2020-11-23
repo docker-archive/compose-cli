@@ -584,14 +584,14 @@ func TestUpSecretsResources(t *testing.T) {
 	})
 
 	t.Run("check resource limits", func(t *testing.T) {
-		assert.Equal(t, web1Inspect.HostConfig.CPULimit, 0.7)
+		assert.Equal(t, web1Inspect.HostConfig.CPULimit, 1.7)
 		assert.Equal(t, web1Inspect.HostConfig.MemoryLimit, uint64(1073741824))
-		assert.Equal(t, web1Inspect.HostConfig.CPUReservation, 0.5)
+		assert.Equal(t, web1Inspect.HostConfig.CPUReservation, 1.5)
 		assert.Equal(t, web1Inspect.HostConfig.MemoryReservation, uint64(536870912))
 
-		assert.Equal(t, web2Inspect.HostConfig.CPULimit, 0.5)
+		assert.Equal(t, web2Inspect.HostConfig.CPULimit, 1.5)
 		assert.Equal(t, web2Inspect.HostConfig.MemoryLimit, uint64(751619276))
-		assert.Equal(t, web2Inspect.HostConfig.CPUReservation, 0.5)
+		assert.Equal(t, web2Inspect.HostConfig.CPUReservation, 1.5)
 		assert.Equal(t, web2Inspect.HostConfig.MemoryReservation, uint64(751619276))
 	})
 
