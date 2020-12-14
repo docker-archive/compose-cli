@@ -158,6 +158,44 @@ func TestLocalComposeRun(t *testing.T) {
 	})
 }
 
+func TestNetworks(t *testing.T) {
+	c := NewParallelE2eCLI(t, binDir)
+
+	const projectName = "network_e2e"
+
+	t.Run("ensure we do not reuse previous networks", func(t *testing.T) {
+		c.RunDockerOrExitError("network", "rm", projectName+"_dbnet")
+		c.RunDockerOrExitError("network", "rm", "microservices")
+	})
+
+	t.Run("up", func(t *testing.T) {
+		c.RunDockerCmd("compose", "up", "-d", "-f", "./fixtures/network-test/docker-compose.yaml", "--project-name", projectName, "-d")
+	})
+
+	t.Run("check running project", func(t *testing.T) {
+		res := c.RunDockerCmd("compose", "ps", "-p", projectName)
+		res.Assert(t, icmd.Expected{Out: `web`})
+
+		endpoint := "http://localhost:80"
+		output := HTTPGetWithRetry(t, endpoint+"/words/noun", http.StatusOK, 2*time.Second, 20*time.Second)
+		assert.Assert(t, strings.Contains(output, `"word":`))
+
+		res = c.RunDockerCmd("network", "ls")
+		res.Assert(t, icmd.Expected{Out: projectName + "_dbnet"})
+		res.Assert(t, icmd.Expected{Out: "microservices"})
+	})
+
+	t.Run("down", func(t *testing.T) {
+		_ = c.RunDockerCmd("compose", "down", "--project-name", projectName)
+	})
+
+	t.Run("check networks after down", func(t *testing.T) {
+		res := c.RunDockerCmd("network", "ls")
+		assert.Assert(t, !strings.Contains(res.Combined(), projectName), res.Combined())
+		assert.Assert(t, !strings.Contains(res.Combined(), "microservices"), res.Combined())
+	})
+}
+
 func TestLocalComposeBuild(t *testing.T) {
 	c := NewParallelE2eCLI(t, binDir)
 
