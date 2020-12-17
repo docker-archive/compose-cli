@@ -33,6 +33,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/docker/docker/client"
 )
 
 const backendType = store.EcsContextType
@@ -106,18 +107,25 @@ func getEcsAPIService(ecsCtx store.EcsContext) (*ecsAPIService, error) {
 		return nil, err
 	}
 
+	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
 	sdk := newSDK(sess)
 	return &ecsAPIService{
-		ctx:    ecsCtx,
-		Region: region,
-		aws:    sdk,
+		apiClient: apiClient,
+		ctx:       ecsCtx,
+		Region:    region,
+		aws:       sdk,
 	}, nil
 }
 
 type ecsAPIService struct {
-	ctx    store.EcsContext
-	Region string
-	aws    API
+	apiClient *client.Client
+	ctx       store.EcsContext
+	Region    string
+	aws       API
 }
 
 func (b *ecsAPIService) ContainerService() containers.Service {
@@ -138,6 +146,20 @@ func (b *ecsAPIService) VolumeService() volumes.Service {
 
 func (b *ecsAPIService) ResourceService() resources.Service {
 	return nil
+}
+
+func (b *ecsAPIService) resolveDigest(ctx context.Context, image string) (string, error) {
+	inspect, _, err := b.apiClient.ImageInspectWithRaw(ctx, image)
+	if client.IsErrNotFound(err) {
+		return image, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if len(inspect.RepoDigests) == 1 {
+		return inspect.RepoDigests[0], nil
+	}
+	return image, nil
 }
 
 func getCloudService() (cloud.Service, error) {

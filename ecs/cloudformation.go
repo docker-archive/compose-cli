@@ -80,6 +80,11 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 	b.createAccessPoints(project, resources, template)
 
 	for _, service := range project.Services {
+		service.Image, err = b.resolveDigest(ctx, service.Image)
+		if err != nil {
+			return nil, err
+		}
+
 		err := b.createService(project, service, template, resources)
 		if err != nil {
 			return nil, err

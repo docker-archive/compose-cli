@@ -23,6 +23,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/docker/docker/client"
+
 	"github.com/docker/compose-cli/api/compose"
 
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -570,8 +572,12 @@ func convertYaml(t *testing.T, yaml string, fn ...func(m *MockAPIMockRecorder)) 
 		f(m.EXPECT())
 	}
 
+	apiClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	assert.NilError(t, err)
+
 	backend := &ecsAPIService{
-		aws: m,
+		apiClient: apiClient,
+		aws:       m,
 	}
 	template, err := backend.convert(context.TODO(), project)
 	assert.NilError(t, err)
