@@ -55,6 +55,13 @@ e2e-aci: ## Run End to end ACI tests. Set E2E_TEST=TestName to run a single test
 e2e-ecs: ## Run End to end ECS tests. Set E2E_TEST=TestName to run a single test
 	go test -timeout 20m -count=1 -v $(TEST_FLAGS) ./tests/ecs-e2e
 
+cross-%:
+	@docker build . --target cross-single \
+	--platform $(subst -,/,$*) \
+	--build-arg BUILD_TAGS \
+	--build-arg GIT_TAG=$(GIT_TAG) \
+	--output ./bin \
+
 cross: ## Compile the CLI for linux, darwin and windows
 	@docker build . --target cross \
 	--build-arg BUILD_TAGS \

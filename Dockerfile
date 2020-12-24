@@ -86,6 +86,18 @@ RUN --mount=target=. \
     GIT_TAG=${GIT_TAG} \
     make BINARY=/out/docker  -f builder.Makefile cross
 
+FROM base AS make-cross-single
+ARG BUILD_TAGS
+ARG GIT_TAG
+ARG TARGETOS
+ARG TARGETARCH
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    BUILD_TAGS=${BUILD_TAGS} \
+    GIT_TAG=${GIT_TAG} \
+    make BINARY=/out/docker -f builder.Makefile cross-${TARGETOS}-${TARGETARCH}
+
 FROM scratch AS protos
 COPY --from=make-protos /compose-cli/protos .
 
@@ -94,6 +106,9 @@ COPY --from=make-cli /out/* .
 
 FROM scratch AS cross
 COPY --from=make-cross /out/* .
+
+FROM scratch AS cross-single
+COPY --from=make-cross-single /out/* .
 
 FROM base AS test
 ENV CGO_ENABLED=0

@@ -61,7 +61,7 @@ cli:
 
 cross-%:
 	GOOS=$(word 1,$(subst -, ,$(*))) GOARCH=$(word 2,$(subst -, ,$(*))) \
-	$(GO_BUILD) $(TAGS) -o $(BINARY)-$(*)$(if $(filter windows,$(word 1,$(subst -, ,$(*)))),.exe,) ./cli;
+	$(GO_BUILD) $(TAGS) -o $(BINARY)-$(*)$(if $(filter windows,$(word 1,$(subst -, ,$(*)))),.exe,) ./cli
 
 .PHONY: cross
 cross: $(foreach plat,$(CROSS_PLATFORMS),cross-$(subst /,-,$(plat)))
