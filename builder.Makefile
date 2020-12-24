@@ -12,10 +12,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+PKG_NAME:=github.com/docker/compose-cli
+
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
 
-PKG_NAME := github.com/docker/compose-cli
+CROSS_PLATFORMS:=darwin/amd64 linux/amd64 linux/arm linux/arm64 windows/amd64
 
 PROTOS=$(shell find protos -name \*.proto)
 
@@ -42,9 +44,9 @@ ifdef BUILD_TAGS
   LINT_TAGS=--build-tags $(BUILD_TAGS)
 endif
 
-TAR_TRANSFORM:=--transform s/packaging/docker/ --transform s/bin/docker/ --transform s/docker-linux-amd64/docker/ --transform s/docker-darwin-amd64/docker/
+TAR_TRANSFORM:=--transform s/packaging/docker/ --transform s/bin/docker/ --transform s/docker-.*/docker/
 ifneq ($(findstring bsd,$(shell tar --version)),)
-  TAR_TRANSFORM=-s /packaging/docker/ -s /bin/docker/ -s /docker-linux-amd64/docker/ -s /docker-darwin-amd64/docker/
+  TAR_TRANSFORM=-s /packaging/docker/ -s /bin/docker/ -s /docker-.*/docker/
 endif
 
 all: cli
@@ -57,11 +59,12 @@ protos:
 cli:
 	GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o $(BINARY_WITH_EXTENSION) ./cli
 
+cross-%:
+	GOOS=$(word 1,$(subst -, ,$(*))) GOARCH=$(word 2,$(subst -, ,$(*))) \
+	$(GO_BUILD) $(TAGS) -o $(BINARY)-$(*)$(if $(filter windows,$(word 1,$(subst -, ,$(*)))),.exe,) ./cli;
+
 .PHONY: cross
-cross:
-	GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-linux-amd64 ./cli
-	GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-amd64 ./cli
-	GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-windows-amd64.exe ./cli
+cross: $(foreach plat,$(CROSS_PLATFORMS),cross-$(subst /,-,$(plat)))
 
 .PHONY: test
 test:
@@ -86,8 +89,8 @@ check-go-mod:
 .PHONY: package
 package: cross
 	mkdir -p dist
-	tar -czf dist/docker-linux-amd64.tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-linux-amd64
-	tar -czf dist/docker-darwin-amd64.tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-darwin-amd64
+	$(foreach plat,$(filter-out windows%,$(CROSS_PLATFORMS)), \
+	tar czf dist/docker-$(subst /,-,$(plat)).tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-$(subst /,-,$(plat));)
 	cp $(BINARY)-windows-amd64.exe $(WORK_DIR)/docker.exe
 	rm -f dist/docker-windows-amd64.zip && zip dist/docker-windows-amd64.zip -j packaging/LICENSE $(WORK_DIR)/docker.exe
 	rm -r $(WORK_DIR)
