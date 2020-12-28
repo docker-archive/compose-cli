@@ -27,12 +27,12 @@ import (
 )
 
 type pullOptions struct {
-	composeOptions
+	*composeOptions
 }
 
 func pullCommand(composeOpts *composeOptions) *cobra.Command {
 	opts := pullOptions{
-		composeOptions: *composeOpts,
+		composeOptions: composeOpts,
 	}
 
 	pullCmd := &cobra.Command{

@@ -33,12 +33,12 @@ type runOptions struct {
 	Command []string
 	Detach  bool
 	Remove  bool
-	composeOptions
+	*composeOptions
 }
 
 func runCommand(composeOpts *composeOptions) *cobra.Command {
 	opts := runOptions{
-		composeOptions: *composeOpts,
+		composeOptions: composeOpts,
 	}
 
 	runCmd := &cobra.Command{
@@ -63,7 +63,7 @@ func runCommand(composeOpts *composeOptions) *cobra.Command {
 }
 
 func runRun(ctx context.Context, opts runOptions) error {
-	c, project, err := setup(ctx, opts.composeOptions, []string{opts.Name})
+	c, project, err := setup(ctx, *opts.composeOptions, []string{opts.Name})
 	if err != nil {
 		return err
 	}
