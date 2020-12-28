@@ -30,16 +30,16 @@ import (
 	"github.com/docker/compose-cli/formatter"
 )
 
-func listCommand(composeOpts composeOptions) *cobra.Command {
+func listCommand(composeOpts *composeOptions) *cobra.Command {
 	lsCmd := &cobra.Command{
 		Use:   "ls",
 		Short: "List running compose projects",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runList(cmd.Context(), composeOpts)
+			return runList(cmd.Context(), *composeOpts)
 		},
 	}
 
-	addComposeCommonFlags(lsCmd.Flags(), &composeOpts)
+	addComposeCommonFlags(lsCmd.Flags(), composeOpts)
 
 	return lsCmd
 }
