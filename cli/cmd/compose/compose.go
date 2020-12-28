@@ -85,20 +85,20 @@ func Command(contextType string) *cobra.Command {
 	}
 
 	command.AddCommand(
-		upCommand(composeOpts, contextType),
-		downCommand(composeOpts),
-		psCommand(composeOpts),
-		listCommand(composeOpts),
-		logsCommand(composeOpts),
-		convertCommand(composeOpts),
-		runCommand(composeOpts),
+		upCommand(&composeOpts, contextType),
+		downCommand(&composeOpts),
+		psCommand(&composeOpts),
+		listCommand(&composeOpts),
+		logsCommand(&composeOpts),
+		convertCommand(&composeOpts),
+		runCommand(&composeOpts),
 	)
 
 	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
 		command.AddCommand(
-			buildCommand(composeOpts),
-			pushCommand(composeOpts),
-			pullCommand(composeOpts),
+			buildCommand(&composeOpts),
+			pushCommand(&composeOpts),
+			pullCommand(&composeOpts),
 		)
 	}
 
