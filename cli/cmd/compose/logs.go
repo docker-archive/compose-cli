@@ -26,12 +26,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func logsCommand(composeOpts composeOptions) *cobra.Command {
+func logsCommand(composeOpts *composeOptions) *cobra.Command {
 	logsCmd := &cobra.Command{
 		Use:   "logs [service...]",
 		Short: "View output from containers",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runLogs(cmd.Context(), composeOpts, args)
+			return runLogs(cmd.Context(), *composeOpts, args)
 		},
 	}
 

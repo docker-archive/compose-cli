@@ -30,9 +30,9 @@ type buildOptions struct {
 	composeOptions
 }
 
-func buildCommand(composeOpts composeOptions) *cobra.Command {
+func buildCommand(composeOpts *composeOptions) *cobra.Command {
 	opts := buildOptions{
-		composeOptions: composeOpts,
+		composeOptions: *composeOpts,
 	}
 
 	buildCmd := &cobra.Command{

@@ -27,12 +27,12 @@ import (
 	"github.com/docker/compose-cli/progress"
 )
 
-func downCommand(composeOpts composeOptions) *cobra.Command {
+func downCommand(composeOpts *composeOptions) *cobra.Command {
 	downCmd := &cobra.Command{
 		Use:   "down",
 		Short: "Stop and remove containers, networks",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDown(cmd.Context(), composeOpts)
+			return runDown(cmd.Context(), *composeOpts)
 		},
 	}
 

@@ -28,12 +28,12 @@ import (
 	"github.com/docker/compose-cli/api/client"
 )
 
-func convertCommand(composeOpts composeOptions) *cobra.Command {
+func convertCommand(composeOpts *composeOptions) *cobra.Command {
 	convertCmd := &cobra.Command{
 		Use:   "convert",
 		Short: "Converts the compose file to a cloud format (default: cloudformation)",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConvert(cmd.Context(), composeOpts)
+			return runConvert(cmd.Context(), *composeOpts)
 		},
 	}
 
