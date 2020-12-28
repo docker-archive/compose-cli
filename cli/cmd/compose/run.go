@@ -29,7 +29,6 @@ import (
 )
 
 type runOptions struct {
-	Name    string
 	Service string
 	Command []string
 	Remove  bool
@@ -79,7 +78,7 @@ func runRun(ctx context.Context, opts runOptions) error {
 	project.Services = originalServices
 	// start container and attach to container streams
 	runOpts := compose.RunOptions{
-		Service:    opts.Name,
+		Service:    opts.Service,
 		Command:    opts.Command,
 		Detach:     opts.Detach,
 		AutoRemove: opts.Remove,
