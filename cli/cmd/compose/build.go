@@ -30,8 +30,11 @@ type buildOptions struct {
 	composeOptions
 }
 
-func buildCommand() *cobra.Command {
-	opts := buildOptions{}
+func buildCommand(globalOpts composeOptions) *cobra.Command {
+	opts := buildOptions{
+		composeOptions: globalOpts,
+	}
+
 	buildCmd := &cobra.Command{
 		Use:   "build [SERVICE...]",
 		Short: "Build or rebuild services",
@@ -39,8 +42,8 @@ func buildCommand() *cobra.Command {
 			return runBuild(cmd.Context(), opts, args)
 		},
 	}
+
 	buildCmd.Flags().StringVar(&opts.WorkingDir, "workdir", "", "Work dir")
-	buildCmd.Flags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
 
 	return buildCmd
 }
