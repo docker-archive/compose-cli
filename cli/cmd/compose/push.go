@@ -30,9 +30,9 @@ type pushOptions struct {
 	*composeOptions
 }
 
-func pushCommand(composeOpts *composeOptions) *cobra.Command {
+func pushCommand(globalOpts composeOptions) *cobra.Command {
 	opts := pushOptions{
-		composeOptions: composeOpts,
+		composeOptions: &globalOpts,
 	}
 
 	pushCmd := &cobra.Command{
