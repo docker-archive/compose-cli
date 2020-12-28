@@ -27,18 +27,17 @@ import (
 	"github.com/docker/compose-cli/progress"
 )
 
-func downCommand() *cobra.Command {
-	opts := composeOptions{}
+func downCommand(globalOpts composeOptions) *cobra.Command {
 	downCmd := &cobra.Command{
 		Use:   "down",
 		Short: "Stop and remove containers, networks",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDown(cmd.Context(), opts)
+			return runDown(cmd.Context(), globalOpts)
 		},
 	}
-	downCmd.Flags().StringVarP(&opts.ProjectName, "project-name", "p", "", "Project name")
-	downCmd.Flags().StringVar(&opts.WorkingDir, "workdir", "", "Work dir")
-	downCmd.Flags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
+	downCmd.Flags().StringVarP(&globalOpts.ProjectName, "project-name", "p", "", "Project name")
+	downCmd.Flags().StringVar(&globalOpts.WorkingDir, "workdir", "", "Work dir")
+	downCmd.Flags().StringArrayVarP(&globalOpts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
 
 	return downCmd
 }

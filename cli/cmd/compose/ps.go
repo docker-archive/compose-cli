@@ -30,18 +30,17 @@ import (
 	"github.com/docker/compose-cli/formatter"
 )
 
-func psCommand() *cobra.Command {
-	opts := composeOptions{}
+func psCommand(globalOpts composeOptions) *cobra.Command {
 	psCmd := &cobra.Command{
 		Use:   "ps",
 		Short: "List containers",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runPs(cmd.Context(), opts)
+			return runPs(cmd.Context(), globalOpts)
 		},
 	}
-	psCmd.Flags().StringVar(&opts.WorkingDir, "workdir", "", "Work dir")
-	psCmd.Flags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
-	addComposeCommonFlags(psCmd.Flags(), &opts)
+	psCmd.Flags().StringVar(&globalOpts.WorkingDir, "workdir", "", "Work dir")
+	addComposeCommonFlags(psCmd.Flags(), &globalOpts)
+
 	return psCmd
 }
 
