@@ -79,7 +79,7 @@ func runRun(ctx context.Context, opts runOptions) error {
 	project.Services = originalServices
 	// start container and attach to container streams
 	runOpts := compose.RunOptions{
-		Name:       opts.Name,
+		Service:    opts.Name,
 		Command:    opts.Command,
 		Detach:     opts.Detach,
 		AutoRemove: opts.Remove,
