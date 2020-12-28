@@ -46,9 +46,8 @@ func upCommand(composeOpts composeOptions, contextType string) *cobra.Command {
 			}
 		},
 	}
-	upCmd.Flags().StringVarP(&composeOpts.ProjectName, "project-name", "p", "", "Project name")
+
 	upCmd.Flags().StringVar(&composeOpts.WorkingDir, "workdir", "", "Work dir")
-	upCmd.Flags().StringArrayVarP(&composeOpts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
 	upCmd.Flags().StringArrayVarP(&composeOpts.Environment, "environment", "e", []string{}, "Environment variables")
 	upCmd.Flags().BoolVarP(&composeOpts.Detach, "detach", "d", false, "Detached mode: Run containers in the background")
 	upCmd.Flags().BoolVar(&composeOpts.Build, "build", false, "Build images before starting containers.")
