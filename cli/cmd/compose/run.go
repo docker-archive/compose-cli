@@ -32,7 +32,6 @@ type runOptions struct {
 	Name    string
 	Service     string
 	Command []string
-	Detach  bool
 	Remove  bool
 	*composeOptions
 }
