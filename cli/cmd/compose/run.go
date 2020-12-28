@@ -29,9 +29,7 @@ import (
 )
 
 type runOptions struct {
-	Name    string
 	Command []string
-	Detach  bool
 	Remove  bool
 	*composeOptions
 }
