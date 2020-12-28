@@ -33,29 +33,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func upCommand(contextType string) *cobra.Command {
-	opts := composeOptions{}
+func upCommand(composeOpts composeOptions, contextType string) *cobra.Command {
 	upCmd := &cobra.Command{
 		Use:   "up [SERVICE...]",
 		Short: "Create and start containers",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch contextType {
 			case store.LocalContextType, store.DefaultContextType, store.EcsLocalSimulationContextType:
-				return runCreateStart(cmd.Context(), opts, args)
+				return runCreateStart(cmd.Context(), composeOpts, args)
 			default:
-				return runUp(cmd.Context(), opts, args)
+				return runUp(cmd.Context(), composeOpts, args)
 			}
 		},
 	}
-	upCmd.Flags().StringVarP(&opts.ProjectName, "project-name", "p", "", "Project name")
-	upCmd.Flags().StringVar(&opts.WorkingDir, "workdir", "", "Work dir")
-	upCmd.Flags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
-	upCmd.Flags().StringArrayVarP(&opts.Environment, "environment", "e", []string{}, "Environment variables")
-	upCmd.Flags().BoolVarP(&opts.Detach, "detach", "d", false, "Detached mode: Run containers in the background")
-	upCmd.Flags().BoolVar(&opts.Build, "build", false, "Build images before starting containers.")
+	upCmd.Flags().StringVarP(&composeOpts.ProjectName, "project-name", "p", "", "Project name")
+	upCmd.Flags().StringVar(&composeOpts.WorkingDir, "workdir", "", "Work dir")
+	upCmd.Flags().StringArrayVarP(&composeOpts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
+	upCmd.Flags().StringArrayVarP(&composeOpts.Environment, "environment", "e", []string{}, "Environment variables")
+	upCmd.Flags().BoolVarP(&composeOpts.Detach, "detach", "d", false, "Detached mode: Run containers in the background")
+	upCmd.Flags().BoolVar(&composeOpts.Build, "build", false, "Build images before starting containers.")
 
 	if contextType == store.AciContextType {
-		upCmd.Flags().StringVar(&opts.DomainName, "domainname", "", "Container NIS domain name")
+		upCmd.Flags().StringVar(&composeOpts.DomainName, "domainname", "", "Container NIS domain name")
 	}
 
 	return upCmd
