@@ -73,6 +73,7 @@ func (o *composeOptions) toProjectOptions() (*cli.ProjectOptions, error) {
 
 // Command returns the compose command with its child commands
 func Command(contextType string) *cobra.Command {
+	opts := composeOptions{}
 	command := &cobra.Command{
 		Short: "Docker Compose",
 		Use:   "compose",
@@ -101,7 +102,11 @@ func Command(contextType string) *cobra.Command {
 			pullCommand(),
 		)
 	}
+
 	command.Flags().SetInterspersed(false)
+	command.PersistentFlags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
+	command.PersistentFlags().StringVarP(&opts.Name, "project-name", "p", "", "Project name")
+
 	return command
 }
 
