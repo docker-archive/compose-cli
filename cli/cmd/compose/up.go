@@ -33,16 +33,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func upCommand(composeOpts composeOptions, contextType string) *cobra.Command {
+func upCommand(composeOpts *composeOptions, contextType string) *cobra.Command {
 	upCmd := &cobra.Command{
 		Use:   "up [SERVICE...]",
 		Short: "Create and start containers",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch contextType {
 			case store.LocalContextType, store.DefaultContextType, store.EcsLocalSimulationContextType:
-				return runCreateStart(cmd.Context(), composeOpts, args)
+				return runCreateStart(cmd.Context(), *composeOpts, args)
 			default:
-				return runUp(cmd.Context(), composeOpts, args)
+				return runUp(cmd.Context(), *composeOpts, args)
 			}
 		},
 	}

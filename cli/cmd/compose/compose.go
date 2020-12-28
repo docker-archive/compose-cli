@@ -86,20 +86,20 @@ func Command(contextType string) *cobra.Command {
 	}
 
 	command.AddCommand(
-		upCommand(globalOpts, contextType),
-		downCommand(globalOpts),
-		psCommand(globalOpts),
-		listCommand(globalOpts),
-		logsCommand(globalOpts),
-		convertCommand(globalOpts),
-		runCommand(globalOpts),
+		upCommand(&globalOpts, contextType),
+		downCommand(&globalOpts),
+		psCommand(&globalOpts),
+		listCommand(&globalOpts),
+		logsCommand(&globalOpts),
+		convertCommand(&globalOpts),
+		runCommand(&globalOpts),
 	)
 
 	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
 		command.AddCommand(
-			buildCommand(globalOpts),
-			pushCommand(globalOpts),
-			pullCommand(globalOpts),
+			buildCommand(&globalOpts),
+			pushCommand(&globalOpts),
+			pullCommand(&globalOpts),
 		)
 	}
 
