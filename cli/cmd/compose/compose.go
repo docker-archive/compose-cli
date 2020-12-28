@@ -72,7 +72,7 @@ func (o *composeOptions) toProjectOptions() (*cli.ProjectOptions, error) {
 
 // Command returns the compose command with its child commands
 func Command(contextType string) *cobra.Command {
-	globalOpts := composeOptions{}
+	composeOpts := composeOptions{}
 	command := &cobra.Command{
 		Short: "Docker Compose",
 		Use:   "compose",
@@ -86,25 +86,25 @@ func Command(contextType string) *cobra.Command {
 
 	command.AddCommand(
 		upCommand(contextType),
-		downCommand(globalOpts),
-		psCommand(globalOpts),
-		listCommand(globalOpts),
-		logsCommand(globalOpts),
-		convertCommand(globalOpts),
-		runCommand(globalOpts),
+		downCommand(composeOpts),
+		psCommand(composeOpts),
+		listCommand(composeOpts),
+		logsCommand(composeOpts),
+		convertCommand(composeOpts),
+		runCommand(composeOpts),
 	)
 
 	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
 		command.AddCommand(
-			buildCommand(globalOpts),
-			pushCommand(globalOpts),
-			pullCommand(globalOpts),
+			buildCommand(composeOpts),
+			pushCommand(composeOpts),
+			pullCommand(composeOpts),
 		)
 	}
 
 	command.Flags().SetInterspersed(false)
-	command.PersistentFlags().StringArrayVarP(&globalOpts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
-	command.PersistentFlags().StringVarP(&globalOpts.Name, "project-name", "p", "", "Project name")
+	command.PersistentFlags().StringArrayVarP(&composeOpts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
+	command.PersistentFlags().StringVarP(&composeOpts.Name, "project-name", "p", "", "Project name")
 
 	return command
 }
