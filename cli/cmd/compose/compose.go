@@ -84,7 +84,7 @@ func Command(contextType string) *cobra.Command {
 	}
 
 	command.AddCommand(
-		upCommand(contextType),
+		upCommand(composeOpts, contextType),
 		downCommand(composeOpts),
 		psCommand(composeOpts),
 		listCommand(composeOpts),
