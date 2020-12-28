@@ -36,9 +36,9 @@ type runOptions struct {
 	*composeOptions
 }
 
-func runCommand(globalOpts composeOptions) *cobra.Command {
+func runCommand(composeOpts composeOptions) *cobra.Command {
 	opts := runOptions{
-		composeOptions: &globalOpts,
+		composeOptions: &composeOpts,
 	}
 
 	runCmd := &cobra.Command{

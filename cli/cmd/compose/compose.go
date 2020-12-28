@@ -93,6 +93,7 @@ func Command(contextType string) *cobra.Command {
 		logsCommand(globalOpts),
 		convertCommand(globalOpts),
 		runCommand(globalOpts),
+
 	)
 
 	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
