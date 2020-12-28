@@ -28,20 +28,18 @@ import (
 	"github.com/docker/compose-cli/api/client"
 )
 
-func convertCommand() *cobra.Command {
-	opts := composeOptions{}
+func convertCommand(globalOpts composeOptions) *cobra.Command {
 	convertCmd := &cobra.Command{
 		Use:   "convert",
 		Short: "Converts the compose file to a cloud format (default: cloudformation)",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConvert(cmd.Context(), opts)
+			return runConvert(cmd.Context(), globalOpts)
 		},
 	}
-	convertCmd.Flags().StringVarP(&opts.Name, "project-name", "p", "", "Project name")
-	convertCmd.Flags().StringVar(&opts.WorkingDir, "workdir", "", "Work dir")
-	convertCmd.Flags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
-	convertCmd.Flags().StringArrayVarP(&opts.Environment, "environment", "e", []string{}, "Environment variables")
-	convertCmd.Flags().StringVar(&opts.Format, "format", "yaml", "Format the output. Values: [yaml | json]")
+
+	convertCmd.Flags().StringVar(&globalOpts.WorkingDir, "workdir", "", "Work dir")
+	convertCmd.Flags().StringArrayVarP(&globalOpts.Environment, "environment", "e", []string{}, "Environment variables")
+	convertCmd.Flags().StringVar(&globalOpts.Format, "format", "yaml", "Format the output. Values: [yaml | json]")
 
 	return convertCmd
 }
