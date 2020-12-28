@@ -30,8 +30,11 @@ type pullOptions struct {
 	composeOptions
 }
 
-func pullCommand() *cobra.Command {
-	opts := pullOptions{}
+func pullCommand(globalOptions composeOptions) *cobra.Command {
+	opts := pullOptions{
+		composeOptions: globalOptions,
+	}
+
 	pullCmd := &cobra.Command{
 		Use:   "pull [SERVICE...]",
 		Short: "Pull service images",
@@ -41,7 +44,6 @@ func pullCommand() *cobra.Command {
 	}
 
 	pullCmd.Flags().StringVar(&opts.WorkingDir, "workdir", "", "Work dir")
-	pullCmd.Flags().StringArrayVarP(&opts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
 
 	return pullCmd
 }
