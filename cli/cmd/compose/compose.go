@@ -105,7 +105,7 @@ func Command(contextType string) *cobra.Command {
 
 	command.Flags().SetInterspersed(false)
 	command.PersistentFlags().StringArrayVarP(&composeOpts.ConfigPaths, "file", "f", []string{}, "Compose configuration files")
-	command.PersistentFlags().StringVarP(&composeOpts.Name, "project-name", "p", "", "Project name")
+	command.PersistentFlags().StringVarP(&composeOpts.ProjectName, "project-name", "p", "", "Project name")
 
 	return command
 }
