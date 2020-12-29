@@ -30,7 +30,7 @@ import (
 
 type runOptions struct {
 	Name    string
-	Service     string
+	Service string
 	Command []string
 	Remove  bool
 	*composeOptions
@@ -79,7 +79,7 @@ func runRun(ctx context.Context, opts runOptions) error {
 	project.Services = originalServices
 	// start container and attach to container streams
 	runOpts := compose.RunOptions{
-		Service:    opts.Service,
+		Name:       opts.Name,
 		Command:    opts.Command,
 		Detach:     opts.Detach,
 		AutoRemove: opts.Remove,
