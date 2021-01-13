@@ -18,97 +18,22 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/cli/cmd/mobyflags"
-	"github.com/docker/compose-cli/cli/formatter"
-	"github.com/docker/compose-cli/cli/mobycli"
 	"github.com/docker/compose-cli/internal"
 )
-
-const formatOpt = "format"
 
 // VersionCommand command to display version
 func VersionCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show the Docker version information",
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, _ []string) {
-			runVersion(cmd)
+			fmt.Println(strings.TrimPrefix(internal.Version, "v"))
 		},
 	}
-	// define flags for backward compatibility with com.docker.cli
-	flags := cmd.Flags()
-	flags.StringP(formatOpt, "f", "", "Format the output. Values: [pretty | json]. (Default: pretty)")
-	flags.String("kubeconfig", "", "Kubernetes config file")
-	mobyflags.AddMobyFlagsForRetrocompatibility(flags)
-
 	return cmd
-}
-
-func runVersion(cmd *cobra.Command) {
-	var versionString string
-	format := strings.ToLower(strings.ReplaceAll(cmd.Flag(formatOpt).Value.String(), " ", ""))
-	displayedVersion := strings.TrimPrefix(internal.Version, "v")
-	// Replace is preferred in this case to keep the order.
-	switch format {
-	case formatter.PRETTY, "":
-		versionString = strings.Replace(getOutFromMoby(cmd, fixedPrettyArgs(os.Args[1:])...),
-			"\n Version:", "\n Cloud integration: "+displayedVersion+"\n Version:", 1)
-	case formatter.JSON, formatter.TemplateLegacyJSON: // Try to catch full JSON formats
-		versionString = strings.Replace(getOutFromMoby(cmd, fixedJSONArgs(os.Args[1:])...),
-			`"Version":`, fmt.Sprintf(`"CloudIntegration":%q,"Version":`, displayedVersion), 1)
-	default:
-		versionString = getOutFromMoby(cmd)
-	}
-
-	fmt.Print(versionString)
-}
-
-func getOutFromMoby(cmd *cobra.Command, args ...string) string {
-	versionResult, _ := mobycli.ExecSilent(cmd.Context(), args...)
-	// we don't want to fail on error, there is an error if the engine is not available but it displays client version info
-	// Still, technically the [] byte versionResult could be nil, just let the original command display what it has to display
-	if versionResult == nil {
-		mobycli.Exec(cmd.Root())
-		return ""
-	}
-	return string(versionResult)
-}
-
-func fixedPrettyArgs(oArgs []string) []string {
-	args := make([]string, 0)
-	for i := 0; i < len(oArgs); i++ {
-		if isFormatOpt(oArgs[i]) &&
-			len(oArgs) > i &&
-			(strings.ToLower(oArgs[i+1]) == formatter.PRETTY || oArgs[i+1] == "") {
-			i++
-			continue
-		}
-		args = append(args, oArgs[i])
-	}
-	return args
-}
-
-func fixedJSONArgs(oArgs []string) []string {
-	args := make([]string, 0)
-	for i := 0; i < len(oArgs); i++ {
-		if isFormatOpt(oArgs[i]) &&
-			len(oArgs) > i &&
-			strings.ToLower(oArgs[i+1]) == formatter.JSON {
-			args = append(args, oArgs[i], "{{json .}}")
-			i++
-			continue
-		}
-		args = append(args, oArgs[i])
-	}
-	return args
-}
-
-func isFormatOpt(o string) bool {
-	return o == "--format" || o == "-f"
 }
