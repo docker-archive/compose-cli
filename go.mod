@@ -37,8 +37,6 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/iancoleman/strcase v0.1.2
 	github.com/joho/godotenv v1.3.0
-	github.com/labstack/echo v3.3.10+incompatible
-	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/moby/buildkit v0.8.1-0.20201205083753-0af7b1b9c693
 	github.com/moby/term v0.0.0-20201110203204-bea5bbe245bf
 	github.com/morikuni/aec v1.0.0
@@ -51,7 +49,6 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
-	github.com/valyala/fasttemplate v1.2.1 // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9

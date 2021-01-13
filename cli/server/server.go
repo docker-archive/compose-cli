@@ -24,8 +24,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
-
-	"github.com/docker/compose-cli/cli/metrics"
 )
 
 // New returns a new GRPC server.
@@ -33,7 +31,6 @@ func New(ctx context.Context) *grpc.Server {
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			unaryServerInterceptor(ctx),
-			metricsServerInterceptor(metrics.NewClient()),
 		),
 		grpc.StreamInterceptor(streamServerInterceptor(ctx)),
 	)

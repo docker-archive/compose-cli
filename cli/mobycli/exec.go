@@ -28,7 +28,6 @@ import (
 
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
 )
 
@@ -92,15 +91,12 @@ func Exec(root *cobra.Command) {
 	err = cmd.Run()
 	childExit <- true
 	if err != nil {
-		metrics.Track(store.DefaultContextType, os.Args[1:], metrics.FailureStatus)
-
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			os.Exit(exiterr.ExitCode())
 		}
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	metrics.Track(store.DefaultContextType, os.Args[1:], metrics.SuccessStatus)
 
 	os.Exit(0)
 }

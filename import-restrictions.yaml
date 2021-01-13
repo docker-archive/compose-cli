@@ -9,7 +9,7 @@
     - github.com/docker/compose-cli/aci
     - github.com/docker/compose-cli/cli
     - github.com/docker/compose-cli/local
-- path: ./local
+  path: ./local
   forbiddenImports:
     - github.com/docker/compose-cli/aci
     - github.com/docker/compose-cli/cli
