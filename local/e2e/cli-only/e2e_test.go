@@ -403,56 +403,6 @@ func TestBackendMetadata(t *testing.T) {
 	})
 }
 
-func TestVersion(t *testing.T) {
-	c := NewParallelE2eCLI(t, binDir)
-
-	t.Run("azure version", func(t *testing.T) {
-		res := c.RunDockerCmd("version")
-		res.Assert(t, icmd.Expected{Out: "Cloud integration"})
-	})
-
-	t.Run("format", func(t *testing.T) {
-		res := c.RunDockerCmd("version", "-f", "{{ json . }}")
-		res.Assert(t, icmd.Expected{Out: `"Client":`})
-		res = c.RunDockerCmd("version", "--format", "{{ json . }}")
-		res.Assert(t, icmd.Expected{Out: `"Client":`})
-	})
-
-	t.Run("format legacy", func(t *testing.T) {
-		res := c.RunDockerCmd("version", "-f", "{{ json .Client }}")
-		res.Assert(t, icmd.Expected{Out: `"DefaultAPIVersion":`})
-		res = c.RunDockerCmd("version", "--format", "{{ json .Server }}")
-		res.Assert(t, icmd.Expected{Out: `"KernelVersion":`})
-	})
-
-	t.Run("format cloud integration", func(t *testing.T) {
-		res := c.RunDockerCmd("version", "-f", "pretty")
-		res.Assert(t, icmd.Expected{Out: `Cloud integration:`})
-		res = c.RunDockerCmd("version", "-f", "")
-		res.Assert(t, icmd.Expected{Out: `Cloud integration:`})
-
-		res = c.RunDockerCmd("version", "-f", "json")
-		res.Assert(t, icmd.Expected{Out: `"CloudIntegration":`})
-		res = c.RunDockerCmd("version", "-f", "{{ json . }}")
-		res.Assert(t, icmd.Expected{Out: `"CloudIntegration":`})
-		res = c.RunDockerCmd("version", "--format", "{{json .}}")
-		res.Assert(t, icmd.Expected{Out: `"CloudIntegration":`})
-		res = c.RunDockerCmd("version", "--format", "{{json . }}")
-		res.Assert(t, icmd.Expected{Out: `"CloudIntegration":`})
-		res = c.RunDockerCmd("version", "--format", "{{ json .}}")
-		res.Assert(t, icmd.Expected{Out: `"CloudIntegration":`})
-		res = c.RunDockerCmd("version", "--format", "{{ json . }}")
-		res.Assert(t, icmd.Expected{Out: `"CloudIntegration":`})
-	})
-
-	t.Run("delegate version flag", func(t *testing.T) {
-		c.RunDockerCmd("context", "create", "local", "test-local")
-		c.RunDockerCmd("context", "use", "test-local")
-		res := c.RunDockerCmd("-v")
-		res.Assert(t, icmd.Expected{Out: "Docker version"})
-	})
-}
-
 func TestFailOnEcsUsageAsPlugin(t *testing.T) {
 	c := NewParallelE2eCLI(t, binDir)
 	res := c.RunDockerCmd("context", "create", "local", "local")
