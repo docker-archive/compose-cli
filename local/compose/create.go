@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/docker/compose-cli/local/lambdas"
+
 	"github.com/compose-spec/compose-go/types"
 	moby "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -43,6 +45,8 @@ import (
 )
 
 func (s *composeService) Create(ctx context.Context, project *types.Project, opts compose.CreateOptions) error {
+	lambdas.TransformForLambdas(project)
+
 	err := s.ensureImagesExists(ctx, project)
 	if err != nil {
 		return err

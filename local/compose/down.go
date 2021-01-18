@@ -21,6 +21,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	lambdas2 "github.com/docker/compose-cli/api/lambdas"
+
+	"github.com/docker/compose-cli/local/lambdas"
+
 	"github.com/docker/compose-cli/api/compose"
 
 	"github.com/docker/compose-cli/api/progress"
@@ -33,6 +37,7 @@ import (
 )
 
 func (s *composeService) Down(ctx context.Context, projectName string, options compose.DownOptions) error {
+
 	eg, _ := errgroup.WithContext(ctx)
 	w := progress.ContextWriter(ctx)
 
@@ -148,6 +153,13 @@ func (s *composeService) projectFromContainerLabels(ctx context.Context, project
 	if err != nil {
 		return nil, err
 	}
+
+	err = lambdas2.LoadQueues(project)
+	if err != nil {
+		return nil, err
+	}
+
+	lambdas.TransformForLambdas(project)
 
 	return project, nil
 }
