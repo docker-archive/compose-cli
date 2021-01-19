@@ -28,7 +28,6 @@ import (
 	"gotest.tools/v3/icmd"
 	"gotest.tools/v3/poll"
 
-	"github.com/docker/compose-cli/cli/cmd"
 	. "github.com/docker/compose-cli/api/utils/e2e"
 )
 
@@ -88,7 +87,11 @@ func TestLocalBackendRun(t *testing.T) {
 		})
 		res = c.RunDockerCmd("inspect", containerName)
 
-		inspect := &cmd.ContainerInspectView{}
+		type ContainerInspectView struct {
+			ID     string
+			Status string
+		}
+		inspect := &ContainerInspectView{}
 		err := json.Unmarshal([]byte(res.Stdout()), inspect)
 		assert.NilError(t, err)
 		assert.Equal(t, inspect.Status, "running")

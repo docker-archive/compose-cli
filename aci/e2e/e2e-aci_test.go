@@ -53,7 +53,6 @@ import (
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/api/errdefs"
-	"github.com/docker/compose-cli/cli/cmd"
 	. "github.com/docker/compose-cli/api/utils/e2e"
 )
 
@@ -979,8 +978,20 @@ func waitForStatus(t *testing.T, c *E2eCLI, containerID string, statuses ...stri
 	poll.WaitOn(t, checkStopped, poll.WithDelay(5*time.Second), poll.WithTimeout(90*time.Second))
 }
 
-func parseContainerInspect(stdout string) (*cmd.ContainerInspectView, error) {
-	var res cmd.ContainerInspectView
+// struct from cli, but avoid backward dependency
+type ContainerInspectView struct {
+	ID         string
+	Status     string
+	Image      string
+	Command    string                    `json:",omitempty"`
+	HostConfig *containers.HostConfig    `json:",omitempty"`
+	Ports      []containers.Port         `json:",omitempty"`
+	Config     *containers.RuntimeConfig `json:",omitempty"`
+	Platform   string
+}
+
+func parseContainerInspect(stdout string) (*ContainerInspectView, error) {
+	var res ContainerInspectView
 	rdr := bytes.NewReader([]byte(stdout))
 	if err := json.NewDecoder(rdr).Decode(&res); err != nil {
 		return nil, err
