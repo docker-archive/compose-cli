@@ -116,6 +116,41 @@ func TestPortParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			in: "80-85:80-85",
+			expected: []containers.Port{
+				{
+					HostPort:      80,
+					ContainerPort: 80,
+					Protocol:      "tcp",
+				},
+				{
+					HostPort:      81,
+					ContainerPort: 81,
+					Protocol:      "tcp",
+				},
+				{
+					HostPort:      82,
+					ContainerPort: 82,
+					Protocol:      "tcp",
+				},
+				{
+					HostPort:      83,
+					ContainerPort: 83,
+					Protocol:      "tcp",
+				},
+				{
+					HostPort:      84,
+					ContainerPort: 84,
+					Protocol:      "tcp",
+				},
+				{
+					HostPort:      85,
+					ContainerPort: 85,
+					Protocol:      "tcp",
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {

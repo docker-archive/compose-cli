@@ -21,67 +21,61 @@ import (
 
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/cli/options/run"
+	"github.com/docker/compose-cli/api/containers"
 )
 
 func TestDisplayPortsNoDomainname(t *testing.T) {
+
 	testCases := []struct {
 		name     string
-		in       []string
+		in       []containers.Port
 		expected []string
 	}{
 		{
 			name:     "simple",
-			in:       []string{"80"},
+			in:       []containers.Port{{HostPort: 80, ContainerPort: 80, Protocol: "tcp"}},
 			expected: []string{"0.0.0.0:80->80/tcp"},
 		},
 		{
 			name:     "different ports",
-			in:       []string{"80:90"},
+			in:       []containers.Port{{HostPort: 80, ContainerPort: 90, Protocol: "tcp"}},
 			expected: []string{"0.0.0.0:80->90/tcp"},
 		},
 		{
 			name:     "host ip",
-			in:       []string{"192.168.0.1:80:90"},
+			in:       []containers.Port{{HostIP: "192.168.0.1", HostPort: 80, ContainerPort: 90, Protocol: "tcp"}},
 			expected: []string{"192.168.0.1:80->90/tcp"},
 		},
 		{
-			name:     "port range",
-			in:       []string{"80-90:80-90"},
-			expected: []string{"0.0.0.0:80-90->80-90/tcp"},
-		},
-		{
 			name:     "grouping",
-			in:       []string{"80:80", "81:81"},
+			in:       []containers.Port{{HostPort: 80, ContainerPort: 80, Protocol: "tcp"}, {HostPort: 81, ContainerPort: 81, Protocol: "tcp"}},
 			expected: []string{"0.0.0.0:80-81->80-81/tcp"},
 		},
 		{
 			name:     "groups",
-			in:       []string{"80:80", "82:82"},
+			in:       []containers.Port{{HostPort: 80, ContainerPort: 80, Protocol: "tcp"}, {HostPort: 82, ContainerPort: 82, Protocol: "tcp"}},
 			expected: []string{"0.0.0.0:80->80/tcp", "0.0.0.0:82->82/tcp"},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			runOpts := run.Opts{
-				Publish: testCase.in,
-			}
-			containerConfig, err := runOpts.ToContainerConfig("test")
-			assert.NilError(t, err)
-
-			out := PortsToStrings(containerConfig.Ports, "")
+			out := PortsToStrings(testCase.in, "")
 			assert.DeepEqual(t, testCase.expected, out)
 		})
 	}
 }
 
 func TestDisplayPortsWithDomainname(t *testing.T) {
-	runOpts := run.Opts{
-		Publish: []string{"80"},
+	containerConfig := containers.ContainerConfig{
+		Ports: []containers.Port{
+			{
+				HostPort:      80,
+				ContainerPort: 80,
+				Protocol:      "tcp",
+			},
+		},
 	}
-	containerConfig, err := runOpts.ToContainerConfig("test")
-	assert.NilError(t, err)
 
 	out := PortsToStrings(containerConfig.Ports, "mydomain.westus.azurecontainner.io")
 	assert.DeepEqual(t, []string{"mydomain.westus.azurecontainner.io:80->80/tcp"}, out)
