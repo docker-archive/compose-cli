@@ -19,7 +19,7 @@ package proxy
 import (
 	"testing"
 
-	"github.com/docker/compose-cli/utils"
+	"github.com/docker/compose-cli/api/utils"
 
 	"gotest.tools/v3/assert"
 

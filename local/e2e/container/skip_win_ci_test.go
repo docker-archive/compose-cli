@@ -30,7 +30,7 @@ import (
 	"gotest.tools/v3/icmd"
 	"gotest.tools/v3/poll"
 
-	. "github.com/docker/compose-cli/utils/e2e"
+	. "github.com/docker/compose-cli/api/utils/e2e"
 )
 
 func TestKillChildProcess(t *testing.T) {

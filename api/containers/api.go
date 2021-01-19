@@ -23,7 +23,7 @@ import (
 	"github.com/compose-spec/compose-go/types"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/docker/compose-cli/utils"
+	"github.com/docker/compose-cli/api/utils"
 )
 
 const (
