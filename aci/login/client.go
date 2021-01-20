@@ -27,7 +27,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/docker/compose-cli/api/errdefs"
-	"github.com/docker/compose-cli/internal"
 )
 
 // NewContainerGroupsClient get client toi manipulate containerGrouos
@@ -43,8 +42,10 @@ func NewContainerGroupsClient(subscriptionID string) (containerinstance.Containe
 	return containerGroupsClient, nil
 }
 
+var CliVersion = ""
+
 func setupClient(aciClient *autorest.Client) error {
-	aciClient.UserAgent = internal.UserAgentName + "/" + internal.Version
+	aciClient.UserAgent = "docker-cli" + CliVersion
 	auth, err := NewAuthorizerFromLogin()
 	if err != nil {
 		return err

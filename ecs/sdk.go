@@ -27,7 +27,6 @@ import (
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/errdefs"
 	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/internal"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -80,9 +79,11 @@ type sdk struct {
 // sdk implement API
 var _ API = sdk{}
 
+var CliVersion = ""
+
 func newSDK(sess *session.Session) sdk {
 	sess.Handlers.Build.PushBack(func(r *request.Request) {
-		request.AddToUserAgent(r, internal.ECSUserAgentName+"/"+internal.Version)
+		request.AddToUserAgent(r, "Docker CLI/"+CliVersion)
 	})
 	return sdk{
 		ECS:      ecs.New(sess),

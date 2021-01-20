@@ -35,6 +35,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/docker/pkg/fileutils"
 
 	"gotest.tools/v3/assert"
@@ -980,14 +981,28 @@ func waitForStatus(t *testing.T, c *E2eCLI, containerID string, statuses ...stri
 
 // struct from cli, but avoid backward dependency
 type ContainerInspectView struct {
-	ID         string
-	Status     string
-	Image      string
-	Command    string                    `json:",omitempty"`
-	HostConfig *containers.HostConfig    `json:",omitempty"`
-	Ports      []containers.Port         `json:",omitempty"`
-	Config     *containers.RuntimeConfig `json:",omitempty"`
-	Platform   string
+	ID          string
+	Status      string
+	Image       string
+	Command     string                    `json:",omitempty"`
+	HostConfig  *containers.HostConfig    `json:",omitempty"`
+	Ports       []containers.Port         `json:",omitempty"`
+	Config      *containers.RuntimeConfig `json:",omitempty"`
+	Platform    string
+	Healthcheck *containerInspectHealthcheck `json:",omitempty"`
+}
+
+type containerInspectHealthcheck struct {
+	// Test is the command to be run to check the health of the container
+	Test []string `json:",omitempty"`
+	// Interval is the period in between the checks
+	Interval *types.Duration `json:",omitempty"`
+	// Retries is the number of attempts before declaring the container as healthy or unhealthy
+	Retries *int `json:",omitempty"`
+	// StartPeriod is the start delay before starting the checks
+	StartPeriod *types.Duration `json:",omitempty"`
+	// Timeout is the timeout in between checks
+	Timeout *types.Duration `json:",omitempty"`
 }
 
 func parseContainerInspect(stdout string) (*ContainerInspectView, error) {

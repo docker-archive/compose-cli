@@ -25,8 +25,8 @@ import (
 
 	"github.com/docker/compose-cli/cli/cmd/mobyflags"
 	"github.com/docker/compose-cli/cli/formatter"
+	"github.com/docker/compose-cli/cli/internal"
 	"github.com/docker/compose-cli/cli/mobycli"
-	"github.com/docker/compose-cli/internal"
 )
 
 const formatOpt = "format"
