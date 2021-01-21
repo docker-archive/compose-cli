@@ -24,11 +24,12 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/compose-spec/compose-go/loader"
-	"github.com/compose-spec/compose-go/types"
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/compose-spec/compose-go/loader"
+	"github.com/compose-spec/compose-go/types"
 )
 
 func loadYAML(yaml string) (*loader.Config, error) {
@@ -172,9 +173,9 @@ version: "3"
 services:
   redis:
     image: "redis:alpine"
-    cap_add: 
+    cap_add:
       - ALL
-    cap_drop: 
+    cap_drop:
       - NET_ADMIN
       - SYS_ADMIN
 `)
@@ -193,7 +194,7 @@ func TestToPodWithReadOnly(t *testing.T) {
 	podTemplate := podTemplate(t, `
 version: "3"
 services:
-  redis:	
+  redis:
     image: "redis:alpine"
     read_only: true
 `)
@@ -209,7 +210,7 @@ func TestToPodWithPrivileged(t *testing.T) {
 	podTemplate := podTemplate(t, `
 version: "3"
 services:
-  redis:	
+  redis:
     image: "redis:alpine"
     privileged: true
 `)
@@ -225,9 +226,9 @@ func TestToPodWithEnvNilShouldErrorOut(t *testing.T) {
 	_, err := podTemplateWithError(`
 version: "3"
 services:
-  redis:	
+  redis:
     image: "redis:alpine"
-    environment: 
+    environment:
       - SESSION_SECRET
 `)
 	assert.Error(t, err)
@@ -239,7 +240,7 @@ version: "3"
 services:
   redis:
     image: "redis:alpine"
-    environment: 
+    environment:
       - RACK_ENV=development
       - SHOW=true
 `)
@@ -268,7 +269,7 @@ version: "3"
 services:
   nginx:
     image: nginx
-    volumes: 
+    volumes:
       - /ignore:/ignore
       - /opt/data:/var/lib/mysql:ro
 `)
@@ -285,9 +286,9 @@ func /*FIXME Test*/ ToPodWithRelativeVolumes(t *testing.T) {
 	_, err := podTemplateWithError(`
 version: "3"
 services:
-  nginx:  
+  nginx:
     image: nginx
-    volumes: 
+    volumes:
       - ./fail:/ignore
 `)
 
@@ -300,7 +301,7 @@ version: "3"
 services:
   nginx:
     image: nginx
-    healthcheck: 
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 90s
       timeout: 10s
@@ -327,7 +328,7 @@ version: "3"
 services:
   nginx:
     image: nginx
-    healthcheck: 
+    healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost"]
 `)
 
@@ -351,8 +352,8 @@ version: "3"
 services:
   nginx:
     image: nginx
-    secrets: 
-      - my_secret 
+    secrets:
+      - my_secret
 `)
 
 	expectedVolume := apiv1.Volume{
@@ -549,7 +550,7 @@ version: "3"
 services:
   redis:
     image: "redis:alpine"
-    tmpfs: 
+    tmpfs:
       - /tmp
 `)
 
@@ -597,7 +598,7 @@ version: "3"
 services:
   redis:
     image: "redis:alpine"
-    volumes: 
+    volumes:
       - source: "git@github.com:moby/moby.git"
         target: /sources
         type: git
@@ -630,7 +631,7 @@ version: "3"
 services:
  redis:
     image: "redis:alpine"
-    configs: 
+    configs:
       - source: my_config
         target: /usr/share/nginx/html/index.html
         uid: "103"
@@ -680,7 +681,7 @@ version: "3"
 services:
   redis:
     image: "redis:alpine"
-    configs: 
+    configs:
       - my_config
 configs:
   my_config:
@@ -723,7 +724,7 @@ version: "3"
 services:
   redis:
     image: "redis:alpine"
-    configs: 
+    configs:
       - source: my_config
         target: /usr/share/nginx/html/index.html
         uid: "103"
@@ -773,7 +774,7 @@ version: "3"
 services:
   nginx:
     image: nginx
-    configs: 
+    configs:
       - source: first
         target: /data/first.json
         mode: "0440"
@@ -852,7 +853,7 @@ version: "3"
 services:
   nginx:
     image: nginx
-    configs: 
+    configs:
       - source: first
         target: /data/first.json
       - source: second

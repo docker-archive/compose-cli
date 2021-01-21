@@ -44,16 +44,16 @@ cli: ## Compile the cli
 	--output ./bin
 
 e2e-local: ## Run End to end local tests. Set E2E_TEST=TestName to run a single test
-	go test -count=1 -v $(TEST_FLAGS) ./local/e2e/compose ./local/e2e/container ./local/e2e/cli-only
+	cd local ; go test -count=1 -v $(TEST_FLAGS) ./e2e/compose ./e2e/container ./e2e/cli-only
 
 e2e-win-ci: ## Run end to end local tests on Windows CI, no Docker for Linux containers available ATM. Set E2E_TEST=TestName to run a single test
-	go test -count=1 -v $(TEST_FLAGS) ./local/e2e/cli-only
+	cd local ; go test -count=1 -v $(TEST_FLAGS) ./e2e/cli-only
 
 e2e-aci: ## Run End to end ACI tests. Set E2E_TEST=TestName to run a single test
-	go test -count=1 -v $(TEST_FLAGS) ./aci/e2e
+	cd aci ; go test -count=1 -v $(TEST_FLAGS) ./e2e
 
 e2e-ecs: ## Run End to end ECS tests. Set E2E_TEST=TestName to run a single test
-	go test -timeout 20m -count=1 -v $(TEST_FLAGS) ./ecs/e2e/ecs ./ecs/e2e/ecs-local
+	cd ecs ; go test -timeout 20m -count=1 -v $(TEST_FLAGS) ./e2e/ecs ./e2e/ecs-local
 
 cross: ## Compile the CLI for linux, darwin and windows
 	@docker build . --target cross \
@@ -63,6 +63,7 @@ cross: ## Compile the CLI for linux, darwin and windows
 
 test: ## Run unit tests
 	@docker build . \
+	--build-arg BUILD_TAGS=kube \
 	--build-arg GIT_TAG=$(GIT_TAG) \
 	--target test
 
@@ -71,16 +72,14 @@ cache-clear: ## Clear the builder cache
 
 lint: ## run linter(s)
 	@docker build . \
-	--build-arg BUILD_TAGS=e2e \
+	--build-arg BUILD_TAGS=kube,e2e \
 	--build-arg GIT_TAG=$(GIT_TAG) \
 	--target lint
 
-check-dependencies: ## check dependency updates
-	go list -u -m -f '{{if not .Indirect}}{{if .Update}}{{.}}{{end}}{{end}}' all
+check-dependencies: check-dependencies-api check-dependencies-local check-dependencies-ecs check-dependencies-aci check-dependencies-cli ## check dependency updates
 
-import-restrictions: ## run import-restrictions script
-	@docker build . \
-	--target import-restrictions
+check-dependencies-%:
+	cd $(*) ; go list -u -m -f '{{if not .Indirect}}{{if .Update}}{{.}}{{end}}{{end}}' all
 
 serve: cli ## start server
 	@./bin/docker serve --address unix:///tmp/backend.sock
@@ -99,7 +98,7 @@ validate-go-mod: ## Validate go.mod and go.sum are up-to-date
 
 validate: validate-go-mod validate-headers ## Validate sources
 
-pre-commit: validate import-restrictions check-dependencies lint cli test e2e-local
+pre-commit: validate check-dependencies lint cli test e2e-local
 
 build-aci-sidecar:  ## build aci sidecar image locally and tag it with make build-aci-sidecar tag=0.1
 	docker build -t docker/aci-hostnames-sidecar:$(tag) aci/etchosts

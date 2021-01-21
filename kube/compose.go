@@ -56,8 +56,8 @@ func (s *composeService) Down(ctx context.Context, projectName string, options c
 }
 
 // List executes the equivalent to a `docker stack ls`
-func (s *composeService) List(ctx context.Context, projectName string) ([]compose.Stack, error) {
-	return s.sdk.List(projectName)
+func (s *composeService) List(ctx context.Context) ([]compose.Stack, error) {
+	return s.sdk.List()
 }
 
 // Build executes the equivalent to a `compose build`

@@ -2,9 +2,18 @@ module github.com/docker/compose-cli/ecs
 
 go 1.15
 
-replace github.com/docker/compose-cli/api => ../api
+replace (
+	github.com/docker/compose-cli/api => ../api
 
-replace github.com/docker/compose-cli/local => ../local
+	github.com/docker/compose-cli/local => ../local
+
+	// the distribution version from ecs plugin is quite old and it breaks containerd
+	// we need to create a new release tag for docker/distribution
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20200708230824-53e18a9d9bfe
+
+	// (for buildx)
+	github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402012908-ad4c4a574305
+)
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.7
@@ -19,8 +28,8 @@ require (
 	github.com/docker/docker v20.10.2+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/golang/mock v1.4.4
-	github.com/hashicorp/go-multierror v1.1.0
-	github.com/hashicorp/go-uuid v1.0.2
+	github.com/hashicorp/go-multierror v1.0.0
+	github.com/hashicorp/go-uuid v1.0.1
 	github.com/iancoleman/strcase v0.1.3
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1

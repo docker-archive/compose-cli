@@ -60,7 +60,7 @@ func (s SDK) Uninstall(projectName string) error {
 }
 
 // List returns a list of compose stacks
-func (s SDK) List(projectName string) ([]compose.Stack, error) {
+func (s SDK) List() ([]compose.Stack, error) {
 	return s.h.ListReleases()
 }
 

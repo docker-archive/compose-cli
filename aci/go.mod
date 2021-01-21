@@ -21,8 +21,6 @@ require (
 	github.com/docker/compose-cli/api v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v20.10.2+incompatible
 	github.com/docker/docker-credential-helpers v0.6.3 // indirect
-	github.com/go-kit/kit v0.9.0 // indirect
-	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.0.4

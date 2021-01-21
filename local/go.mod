@@ -2,7 +2,16 @@ module github.com/docker/compose-cli/local
 
 go 1.15
 
-replace github.com/docker/compose-cli/api => ../api
+replace (
+	github.com/docker/compose-cli/api => ../api
+
+	// the distribution version from ecs plugin is quite old and it breaks containerd
+	// we need to create a new release tag for docker/distribution
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20200708230824-53e18a9d9bfe
+
+	// (for buildx)
+	github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402012908-ad4c4a574305
+)
 
 require (
 	github.com/compose-spec/compose-go v0.0.0-20210119095023-cd294eea46e9

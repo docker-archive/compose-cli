@@ -28,9 +28,16 @@ RUN apk add --no-cache \
     make \
     protoc \
     protobuf-dev
-COPY go.* .
+COPY api/go.* api/
+COPY local/go.* local/
+COPY ecs/go.* ecs/
+COPY aci/go.* aci/
+COPY kube/go.* kube/
+COPY cli/go.* cli/
+COPY builder.Makefile .
+
 RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
+    make -f builder.Makefile go-mod-download
 
 FROM base AS make-protos
 ARG PROTOC_GEN_GO_VERSION
@@ -52,14 +59,6 @@ RUN --mount=target=. \
     BUILD_TAGS=${BUILD_TAGS} \
     GIT_TAG=${GIT_TAG} \
     make -f builder.Makefile lint
-
-FROM base AS import-restrictions-base
-RUN go get github.com/docker/import-restrictions
-
-FROM import-restrictions-base AS import-restrictions
-RUN --mount=target=. \
-    --mount=type=cache,target=/go/pkg/mod \
-    make -f builder.Makefile import-restrictions
 
 FROM base AS make-cli
 ENV CGO_ENABLED=0
@@ -114,11 +113,21 @@ RUN --mount=target=. \
 FROM base AS make-go-mod-tidy
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod tidy
+    make -f builder.Makefile go-mod-tidy
 
 FROM scratch AS go-mod-tidy
-COPY --from=make-go-mod-tidy /compose-cli/go.mod .
-COPY --from=make-go-mod-tidy /compose-cli/go.sum .
+COPY --from=make-go-mod-tidy /compose-cli/api/go.mod api/
+COPY --from=make-go-mod-tidy /compose-cli/api/go.sum api/
+COPY --from=make-go-mod-tidy /compose-cli/local/go.mod local/
+COPY --from=make-go-mod-tidy /compose-cli/local/go.sum local/
+COPY --from=make-go-mod-tidy /compose-cli/ecs/go.mod ecs/
+COPY --from=make-go-mod-tidy /compose-cli/ecs/go.sum ecs/
+COPY --from=make-go-mod-tidy /compose-cli/aci/go.mod aci/
+COPY --from=make-go-mod-tidy /compose-cli/aci/go.sum aci/
+COPY --from=make-go-mod-tidy /compose-cli/kube/go.mod kube/
+COPY --from=make-go-mod-tidy /compose-cli/kube/go.sum kube/
+COPY --from=make-go-mod-tidy /compose-cli/cli/go.mod cli/
+COPY --from=make-go-mod-tidy /compose-cli/cli/go.sum cli/
 
 FROM base AS check-go-mod
 COPY . .

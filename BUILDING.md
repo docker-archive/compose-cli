@@ -11,6 +11,17 @@
   * [Docker 19.03 or later](https://docs.docker.com/engine/install/)
   * make
 
+### Opening in VSCode
+This project uses several go module folders under compose-cli.
+To enable multi-module in the same workspace in VSCode, you need to enal-ble `experimentaWorkspaceModule` in gopls settings:
+(see https://github.com/golang/go/issues/32394)
+
+```
+"gopls": {
+    "experimentalWorkspaceModule": true,
+}
+```
+
 ### Building the CLI
 
 Once you have the prerequisites installed, you can build the CLI using:

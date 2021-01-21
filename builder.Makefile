@@ -28,7 +28,7 @@ STATIC_FLAGS=CGO_ENABLED=0
 
 GIT_TAG?=$(shell git describe --tags --match "v[0-9]*")
 
-LDFLAGS="-s -w -X $(PKG_NAME)/internal.Version=${GIT_TAG}"
+LDFLAGS="-s -w -X $(PKG_NAME)/cli.internal.Version=${GIT_TAG}"
 GO_BUILD=$(STATIC_FLAGS) go build -trimpath -ldflags=$(LDFLAGS)
 
 BINARY?=bin/docker
@@ -55,25 +55,43 @@ protos:
 
 .PHONY: cli
 cli:
-	GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o $(BINARY_WITH_EXTENSION) ./cli
+	cd cli ; GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o ../$(BINARY_WITH_EXTENSION) ./
 
 .PHONY: cross
 cross:
-	GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-linux-amd64 ./cli
-	GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-amd64 ./cli
-	GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-windows-amd64.exe ./cli
+	cd cli ; GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-linux-amd64 ./
+	cd cli ; GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-amd64 ./
+	cd cli ; GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-windows-amd64.exe ./
+
+.PHONY: go-mod-tidy
+go-mod-tidy: go-mod-tidy-api go-mod-tidy-local go-mod-tidy-ecs go-mod-tidy-aci go-mod-tidy-kube go-mod-tidy-cli
+
+go-mod-tidy-%:
+	cd $(*) ; go mod tidy
+
+.PHONY: go-mod-download
+go-mod-download: go-mod-download-api go-mod-download-local go-mod-download-ecs go-mod-download-aci go-mod-download-kube go-mod-download-cli
+
+go-mod-download-%:
+	cd $(*) ; go mod download
 
 .PHONY: test
-test:
+test: test-api test-local test-ecs test-aci test-kube test-cli
+
+test-api:
+	cd api ; go test $(TAGS) -cover $(shell cd api; go list $(TAGS)  ./... | grep -vE 'e2e')
+
+test-%:
+	cd $(*) ; go test $(TAGS) -cover $(shell cd $(*); go list $(TAGS) ./... | grep -vE 'e2e') .
+
+test-module:
 	go test $(TAGS) -cover $(shell go list ./... | grep -vE 'e2e')
 
 .PHONY: lint
-lint:
-	golangci-lint run $(LINT_TAGS) --timeout 10m0s ./...
+lint: lint-api lint-local lint-ecs lint-aci lint-kube lint-cli
 
-.PHONY: import-restrictions
-import-restrictions:
-	import-restrictions --configuration import-restrictions.yaml
+lint-%:
+	cd $(*) ; golangci-lint run $(LINT_TAGS) --timeout 10m0s ./...
 
 .PHONY: check-licese-headers
 check-license-headers:
