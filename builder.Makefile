@@ -76,7 +76,7 @@ go-mod-download-%:
 	cd $(*) ; go mod download
 
 .PHONY: test
-test: test-api test-local test-ecs test-aci test-kube test-cli
+test: test-api test-local test-ecs test-aci test-cli
 
 test-api:
 	cd api ; go test $(TAGS) -cover $(shell cd api; go list $(TAGS)  ./... | grep -vE 'e2e')
@@ -88,7 +88,7 @@ test-module:
 	go test $(TAGS) -cover $(shell go list ./... | grep -vE 'e2e')
 
 .PHONY: lint
-lint: lint-api lint-local lint-ecs lint-aci lint-kube lint-cli
+lint: lint-api lint-local lint-ecs lint-aci lint-cli
 
 lint-%:
 	cd $(*) ; golangci-lint run $(LINT_TAGS) --timeout 10m0s ./...
