@@ -28,8 +28,8 @@ import (
 
 	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/containers"
-	formatter2 "github.com/docker/compose-cli/cli/formatter"
 	"github.com/docker/compose-cli/api/utils/formatter"
+	formatter2 "github.com/docker/compose-cli/cli/formatter"
 )
 
 type psOpts struct {

@@ -26,6 +26,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/pkg/errors"
 
+	"github.com/docker/compose-cli/aci/internal"
 	"github.com/docker/compose-cli/api/errdefs"
 )
 
@@ -42,10 +43,8 @@ func NewContainerGroupsClient(subscriptionID string) (containerinstance.Containe
 	return containerGroupsClient, nil
 }
 
-var CliVersion = ""
-
 func setupClient(aciClient *autorest.Client) error {
-	aciClient.UserAgent = "docker-cli" + CliVersion
+	aciClient.UserAgent = "docker-cli" + internal.Version
 	auth, err := NewAuthorizerFromLogin()
 	if err != nil {
 		return err
