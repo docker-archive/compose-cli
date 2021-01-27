@@ -35,7 +35,8 @@ import (
 // composeOptions hold options common to `up` and `run` to run compose project
 type composeOptions struct {
 	*projectOptions
-	Build bool
+	Build      bool
+	PullPolicy string
 	// ACI only
 	DomainName string
 }
@@ -70,6 +71,10 @@ func upCommand(p *projectOptions, contextType string) *cobra.Command {
 		Use:   "up [SERVICE...]",
 		Short: "Create and start containers",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.Build {
+				opts.PullPolicy = types.PullPolicyBuild
+			}
+
 			switch contextType {
 			case store.LocalContextType, store.DefaultContextType, store.EcsLocalSimulationContextType:
 				if opts.forceRecreate && opts.noRecreate {
@@ -94,8 +99,8 @@ func upCommand(p *projectOptions, contextType string) *cobra.Command {
 		flags.BoolVar(&opts.forceRecreate, "force-recreate", false, "Recreate containers even if their configuration and image haven't changed.")
 		flags.BoolVar(&opts.noRecreate, "no-recreate", false, "If containers already exist, don't recreate them. Incompatible with --force-recreate.")
 		flags.BoolVar(&opts.noStart, "no-start", false, "Don't start the services after creating them.")
+		flags.StringVar(&opts.PullPolicy, "pull", "", `Define pull policy for service images ("always"|"missing"|"never"|"build").`)
 	}
-
 	return upCmd
 }
 
@@ -117,6 +122,21 @@ func runCreateStart(ctx context.Context, opts upOptions, services []string) erro
 	c, project, err := setup(ctx, *opts.composeOptions, services)
 	if err != nil {
 		return err
+	}
+
+	switch opts.PullPolicy {
+	case types.PullPolicyNever:
+	case types.PullPolicyIfNotPresent:
+	case types.PullPolicyBuild:
+	case types.PullPolicyAlways:
+		for i, s := range project.Services {
+			s.PullPolicy = opts.PullPolicy
+			project.Services[i] = s
+		}
+	case "":
+		break
+	default:
+		return fmt.Errorf("invalid pull policy %q", opts.PullPolicy)
 	}
 
 	_, err = progress.Run(ctx, func(ctx context.Context) (string, error) {
@@ -169,11 +189,6 @@ func setup(ctx context.Context, opts composeOptions, services []string) (*client
 	if opts.DomainName != "" {
 		// arbitrarily set the domain name on the first service ; ACI backend will expose the entire project
 		project.Services[0].DomainName = opts.DomainName
-	}
-	if opts.Build {
-		for _, service := range project.Services {
-			service.PullPolicy = types.PullPolicyBuild
-		}
 	}
 
 	return c, project, nil

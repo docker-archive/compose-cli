@@ -309,6 +309,8 @@ github.com/codahale/hdrhistogram v0.0.0-20160425231609-f8ad88b59a58/go.mod h1:sE
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
 github.com/compose-spec/compose-go v0.0.0-20210202093933-d648aac758f9 h1:S5VA8b4LXPe9jZsOXy5KNC/2iMMcllWqW2/rOBTwnxQ=
 github.com/compose-spec/compose-go v0.0.0-20210202093933-d648aac758f9/go.mod h1:DmI+QjIXA6A/DLEanqkNEl1+Bn/ZSp9FWEuAGC8haHA=
+github.com/compose-spec/compose-go v0.0.0-20210205093959-68d7cb6644cd h1:bmJySwY+c6RX8PHUijS9/upPWzn2ecZh3im55Yian4M=
+github.com/compose-spec/compose-go v0.0.0-20210205093959-68d7cb6644cd/go.mod h1:DmI+QjIXA6A/DLEanqkNEl1+Bn/ZSp9FWEuAGC8haHA=
 github.com/containerd/cgroups v0.0.0-20190919134610-bf292b21730f/go.mod h1:OApqhQ4XNSNC13gXIwDjhOQxjWa/NxkwZXJ1EvqT0ko=
 github.com/containerd/cgroups v0.0.0-20200531161412-0dbf7f05ba59/go.mod h1:pA0z1pT8KYB3TCXK/ocprsh7MAkoW8bZVzPdih9snmM=
 github.com/containerd/cgroups v0.0.0-20200710171044-318312a37340 h1:9atoWyI9RtXFwf7UDbme/6M8Ud0rFrx+Q3ZWgSnsxtw=
