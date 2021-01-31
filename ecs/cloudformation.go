@@ -25,6 +25,7 @@ import (
 
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/config"
+	"github.com/docker/compose-cli/api/errdefs"
 
 	ecsapi "github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -45,6 +46,10 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/kustomize/kyaml/yaml/merge2"
 )
+
+func (b *ecsAPIService) Config(ctx context.Context, project *types.Project, options compose.ConfigOptions) ([]byte, error) {
+	return nil, errdefs.ErrNotImplemented
+}
 
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options compose.ConvertOptions) ([]byte, error) {
 	err := b.resolveServiceImagesDigests(ctx, project)
@@ -387,8 +392,8 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 		strings.ToUpper(port.Protocol),
 		port.Target,
 	)
-	//add listener to dependsOn
-	//https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
+	// add listener to dependsOn
+	// https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
 	template.Resources[listenerName] = &elasticloadbalancingv2.Listener{
 		DefaultActions: []elasticloadbalancingv2.Listener_Action{
 			{

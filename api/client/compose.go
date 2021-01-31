@@ -76,6 +76,10 @@ func (c *composeService) Convert(context.Context, *types.Project, compose.Conver
 	return nil, errdefs.ErrNotImplemented
 }
 
+func (c *composeService) Config(ctx context.Context, project *types.Project, options compose.ConfigOptions) ([]byte, error) {
+	return nil, errdefs.ErrNotImplemented
+}
+
 func (c *composeService) RunOneOffContainer(ctx context.Context, project *types.Project, opts compose.RunOptions) error {
 	return errdefs.ErrNotImplemented
 }

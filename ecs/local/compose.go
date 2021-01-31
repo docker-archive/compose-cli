@@ -65,6 +65,10 @@ func (e ecsLocalSimulation) Up(ctx context.Context, project *types.Project, opti
 	return errdefs.ErrNotImplemented
 }
 
+func (e ecsLocalSimulation) Config(ctx context.Context, project *types.Project, options compose.ConfigOptions) ([]byte, error) {
+	return nil, errdefs.ErrNotImplemented
+}
+
 func (e ecsLocalSimulation) Convert(ctx context.Context, project *types.Project, options compose.ConvertOptions) ([]byte, error) {
 	enhanced, err := e.enhanceForLocalSimulation(project)
 	if err != nil {

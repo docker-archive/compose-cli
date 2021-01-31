@@ -97,7 +97,7 @@ func Command(contextType string) *cobra.Command {
 		Short: "Docker Compose",
 		Use:   "compose",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if contextType == store.DefaultContextType || contextType == store.LocalContextType {
+			if cmd.Use != "config" && (contextType == store.DefaultContextType || contextType == store.LocalContextType) {
 				fmt.Println("The new 'docker compose' command is currently experimental. To provide feedback or request new features please open issues at https://github.com/docker/compose-cli")
 			}
 			return nil
@@ -113,6 +113,7 @@ func Command(contextType string) *cobra.Command {
 		listCommand(),
 		logsCommand(&opts, contextType),
 		convertCommand(&opts),
+		configCommand(&opts),
 		runCommand(&opts),
 	)
 

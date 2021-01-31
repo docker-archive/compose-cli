@@ -49,6 +49,8 @@ type Service interface {
 	List(ctx context.Context) ([]Stack, error)
 	// Convert translate compose model into backend's native format
 	Convert(ctx context.Context, project *types.Project, options ConvertOptions) ([]byte, error)
+	// Convert translate compose model into backend's native format
+	Config(ctx context.Context, project *types.Project, options ConfigOptions) ([]byte, error)
 	// RunOneOffContainer creates a service oneoff container and starts its dependencies
 	RunOneOffContainer(ctx context.Context, project *types.Project, opts RunOptions) error
 }
@@ -79,6 +81,14 @@ type DownOptions struct {
 type ConvertOptions struct {
 	// Format define the output format used to dump converted application model (json|yaml)
 	Format string
+}
+
+// ConfigOptions group options of the Config API
+type ConfigOptions struct {
+	// Format is the format to convert the current configuration
+	Format string
+	// Quiet only validates the and don't print anything
+	Quiet bool
 }
 
 // RunOptions options to execute compose run

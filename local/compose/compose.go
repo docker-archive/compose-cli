@@ -65,3 +65,33 @@ func (s *composeService) Convert(ctx context.Context, project *types.Project, op
 		return nil, fmt.Errorf("unsupported format %q", options)
 	}
 }
+
+// ProjectConfigView is the project view representation of a compose file
+type ProjectConfigView struct {
+	Services types.Services `json:"services"`
+	Networks types.Networks `yaml:",omitempty" json:"networks,omitempty"`
+	Volumes  types.Volumes  `yaml:",omitempty" json:"volumes,omitempty"`
+	Secrets  types.Secrets  `yaml:",omitempty" json:"secrets,omitempty"`
+	Configs  types.Configs  `yaml:",omitempty" json:"configs,omitempty"`
+}
+
+func (pv *ProjectConfigView) fromProject(project *types.Project) {
+	pv.Services = project.Services
+	pv.Networks = project.Networks
+	pv.Volumes = project.Volumes
+	pv.Secrets = project.Secrets
+	pv.Configs = project.Configs
+}
+
+func (s *composeService) Config(ctx context.Context, project *types.Project, options compose.ConfigOptions) ([]byte, error) {
+	var pv ProjectConfigView
+	pv.fromProject(project)
+	switch options.Format {
+	case "json":
+		return json.MarshalIndent(pv, "", "  ")
+	case "yaml":
+		return yaml.Marshal(pv)
+	default:
+		return nil, fmt.Errorf("unsupported format %q", options.Format)
+	}
+}
