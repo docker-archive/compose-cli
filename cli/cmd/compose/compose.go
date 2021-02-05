@@ -105,7 +105,14 @@ func Command(contextType string) *cobra.Command {
 		},
 	}
 
-	command.AddCommand(
+	addComposeCommand := func(cmds ...*cobra.Command) {
+		for _, subCmd := range cmds {
+			opts.addProjectFlags(subCmd.Flags())
+			command.AddCommand(subCmd)
+		}
+	}
+
+	addComposeCommand(
 		upCommand(&opts, contextType),
 		downCommand(&opts),
 		startCommand(&opts),
@@ -119,7 +126,7 @@ func Command(contextType string) *cobra.Command {
 	)
 
 	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
-		command.AddCommand(
+		addComposeCommand(
 			buildCommand(&opts),
 			pushCommand(&opts),
 			pullCommand(&opts),

@@ -96,7 +96,7 @@ func TestLocalComposeUp(t *testing.T) {
 	})
 
 	t.Run("down", func(t *testing.T) {
-		_ = c.RunDockerCmd("compose", "--project-name", projectName, "down")
+		_ = c.RunDockerCmd("compose", "down", "--project-name", projectName)
 	})
 
 	t.Run("check containers after down", func(t *testing.T) {
