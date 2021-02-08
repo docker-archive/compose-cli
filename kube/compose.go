@@ -135,7 +135,7 @@ func (s *composeService) Create(ctx context.Context, project *types.Project, opt
 }
 
 // Start executes the equivalent to a `compose start`
-func (s *composeService) Start(ctx context.Context, project *types.Project, consumer compose.LogConsumer) error {
+func (s *composeService) Start(ctx context.Context, project *types.Project, options compose.StartOptions) error {
 	return errdefs.ErrNotImplemented
 }
 
