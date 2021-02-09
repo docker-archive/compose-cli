@@ -18,6 +18,7 @@ package compose
 
 import (
 	"context"
+	"sort"
 
 	"github.com/compose-spec/compose-go/types"
 	moby "github.com/docker/docker/api/types"
@@ -96,4 +97,11 @@ func (containers Containers) forEach(fn func(moby.Container)) {
 	for _, c := range containers {
 		fn(c)
 	}
+}
+
+func (containers Containers) sortByName() Containers {
+	sort.Slice(containers, func(i, j int) bool {
+		return getCanonicalContainerName(containers[i]) < getCanonicalContainerName(containers[j])
+	})
+	return containers
 }

@@ -65,10 +65,8 @@ type CreateOptions struct {
 
 // StartOptions group options of the Start API
 type StartOptions struct {
-	// Attach will attach to container and pipe stdout/stderr to LogConsumer
-	Attach LogConsumer
-	// Listener will get notified on container events
-	Listener chan ContainerExited
+	// Attach will attach to service containers and pipe stdout/stderr to channel
+	Attach chan ContainerEvent
 }
 
 // UpOptions group options of the Up API
@@ -183,11 +181,18 @@ type Stack struct {
 // LogConsumer is a callback to process log messages from services
 type LogConsumer interface {
 	Log(service, container, message string)
-	Status(service, container, message string)
+	Status(service, container, msg string)
 }
 
-// ContainerExited let us know a Container exited
-type ContainerExited struct {
-	Service string
-	Status  int
+type ContainerEvent struct {
+	Type     int
+	Source   string
+	Service  string
+	Line     string
+	ExitCode int
 }
+
+const (
+	ContainerEventLog = iota
+	ContainerEventExit
+)

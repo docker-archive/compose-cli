@@ -18,19 +18,18 @@ package compose
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"os"
-
+	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/api/progress"
 	"github.com/docker/compose-cli/cli/formatter"
-
-	"github.com/compose-spec/compose-go/types"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // composeOptions hold options common to `up` and `run` to run compose project
@@ -150,47 +149,34 @@ func runCreateStart(ctx context.Context, opts upOptions, services []string) erro
 		return nil
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
-	listener := make(chan compose.ContainerExited)
-	exitCode := make(chan int)
+	queue := make(chan compose.ContainerEvent)
+	printer := Printer{
+		queue: queue,
+	}
+
+	stopFunc := func() error {
+		ctx := context.Background()
+		_, err := progress.Run(ctx, func(ctx context.Context) (string, error) {
+			return "", c.ComposeService().Stop(ctx, project)
+		})
+		return err
+	}
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		var aborting bool
-		for {
-			exit := <-listener
-			if opts.cascadeStop && !aborting {
-				aborting = true
-				cancel()
-				exitCode <- exit.Status
-			}
-		}
+		<-signalChan
+		fmt.Println("Gracefully stopping...")
+		stopFunc()
 	}()
 
 	err = c.ComposeService().Start(ctx, project, compose.StartOptions{
-		Attach:   formatter.NewLogConsumer(ctx, os.Stdout),
-		Listener: listener,
+		Attach: queue,
 	})
-
-	if errors.Is(ctx.Err(), context.Canceled) {
-		select {
-		case exit := <-exitCode:
-			fmt.Println("Aborting on container exit...")
-			err = stop(c, project)
-			logrus.Error(exit)
-			// os.Exit(exit)
-		default:
-			// cancelled by user
-			fmt.Println("Gracefully stopping...")
-			err = stop(c, project)
-		}
+	if err != nil {
+		return err
 	}
-	return err
-}
 
-func stop(c *client.Client, project *types.Project) error {
-	ctx := context.Background()
-	_, err := progress.Run(ctx, func(ctx context.Context) (string, error) {
-		return "", c.ComposeService().Stop(ctx, project)
-	})
+	_, err = printer.Run(ctx, opts.cascadeStop, stopFunc)
 	return err
 }
 
@@ -216,4 +202,27 @@ func setup(ctx context.Context, opts composeOptions, services []string) (*client
 	}
 
 	return c, project, nil
+}
+
+type Printer struct {
+	queue chan compose.ContainerEvent
+}
+
+func (p Printer) Run(ctx context.Context, cascadeStop bool, stopFn func() error) (int, error) {
+	consumer := formatter.NewLogConsumer(ctx, os.Stdout)
+	for {
+		event := <-p.queue
+		switch event.Type {
+		case compose.ContainerEventExit:
+			consumer.Status(event.Service, event.Source, fmt.Sprintf("exited with code %d", event.ExitCode))
+			if cascadeStop {
+				fmt.Println("Aborting on container exit...")
+				err := stopFn()
+				logrus.Error(event.ExitCode)
+				return event.ExitCode, err
+			}
+		case compose.ContainerEventLog:
+			consumer.Log(event.Service, event.Source, event.Line)
+		}
+	}
 }
