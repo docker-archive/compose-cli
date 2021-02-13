@@ -222,7 +222,7 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 	}
 
 	r.vpc = vpc
-	r.subnets = subNets
+	r.subnets = publicSubNets
 	return nil
 }
 
