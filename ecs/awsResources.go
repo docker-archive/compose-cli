@@ -450,10 +450,21 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 			})
 	}
 
+	var publicSubNetIDs []string
+	for _, subNetID := range r.subnetsIDs() {
+        isPublic, err := b.aws.IsPublicSubnet(b.ctx, subNetID)
+        if err != nil {
+            return err
+        }
+        if isPublic {
+            publicSubNetIDs = append(publicSubNetIDs, subNetID)
+        }
+    }
+
 	template.Resources["LoadBalancer"] = &elasticloadbalancingv2.LoadBalancer{
 		Scheme:                 elbv2.LoadBalancerSchemeEnumInternetFacing,
 		SecurityGroups:         securityGroups,
-		Subnets:                r.subnetsIDs(),
+		Subnets:                publicSubNetIDs,
 		Tags:                   projectTags(project),
 		Type:                   balancerType,
 		LoadBalancerAttributes: loadBalancerAttributes,
