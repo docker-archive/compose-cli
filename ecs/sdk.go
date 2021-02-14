@@ -1045,7 +1045,7 @@ func (s sdk) GetPublicIPs(ctx context.Context, interfaces ...string) (map[string
 	}
 }
 
-func (s sdk) ResolveLoadBalancer(ctx context.Context, nameOrArn string) (awsResource, string, string, []awsResource, error) {
+func (s sdk) ResolveLoadBalancer(ctx context.Context, nameOrArn string) (awsResource, string, string, vpcSubNets, error) {
 	logrus.Debug("Check if LoadBalancer exists: ", nameOrArn)
 	var arns []*string
 	var names []*string
@@ -1060,17 +1060,27 @@ func (s sdk) ResolveLoadBalancer(ctx context.Context, nameOrArn string) (awsReso
 		Names:            names,
 	})
 	if err != nil {
-		return nil, "", "", nil, err
+		return nil, "", "", vpcSubNets{}, err
 	}
 	if len(lbs.LoadBalancers) == 0 {
-		return nil, "", "", nil, errors.Wrapf(errdefs.ErrNotFound, "load balancer %q does not exist", nameOrArn)
+		return nil, "", "", vpcSubNets{}, errors.Wrapf(errdefs.ErrNotFound, "load balancer %q does not exist", nameOrArn)
 	}
 	it := lbs.LoadBalancers[0]
-	var subNets []awsResource
+	var subNets vpcSubNets
 	for _, az := range it.AvailabilityZones {
-		subNets = append(subNets, existingAWSResource{
-			id: aws.StringValue(az.SubnetId),
-		})
+		isPublic, err := s.IsPublicSubnet(ctx,aws.StringValue(az.SubnetId));
+		if err != nil {
+			return nil, "", "", subNets, err
+		}
+		if isPublic {
+			subNets.public = append(subNets.public, existingAWSResource{
+				id: aws.StringValue(az.SubnetId),
+			})
+		} else {
+			subNets.private = append(subNets.private, existingAWSResource{
+				id: aws.StringValue(az.SubnetId),
+			})
+		}
 	}
 	return existingAWSResource{
 		arn: aws.StringValue(it.LoadBalancerArn),

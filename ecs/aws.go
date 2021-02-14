@@ -69,7 +69,7 @@ type API interface {
 	getURLWithPortMapping(ctx context.Context, targetGroupArns []string) ([]compose.PortPublisher, error)
 	ListTasks(ctx context.Context, cluster string, family string) ([]string, error)
 	GetPublicIPs(ctx context.Context, interfaces ...string) (map[string]string, error)
-	ResolveLoadBalancer(ctx context.Context, nameOrArn string) (awsResource, string, string, []awsResource, error)
+	ResolveLoadBalancer(ctx context.Context, nameOrArn string) (awsResource, string, string, vpcSubNets, error)
 	GetLoadBalancerURL(ctx context.Context, arn string) (string, error)
 	GetParameter(ctx context.Context, name string) (string, error)
 	SecurityGroupExists(ctx context.Context, sg string) (bool, error)

@@ -37,10 +37,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// vpcSubNets classification
+type vpcSubNets struct {
+	public []awsResource
+	private []awsResource
+}
+
 // awsResources hold the AWS component being used or created to support services definition
 type awsResources struct {
 	vpc              string // shouldn't this also be an awsResource ?
-	subnets          []awsResource
+	subnets          vpcSubNets
 	cluster          awsResource
 	loadBalancer     awsResource
 	loadBalancerType string
@@ -66,7 +72,7 @@ func (r *awsResources) allSecurityGroups() []string {
 
 func (r *awsResources) subnetsIDs() []string {
 	var ids []string
-	for _, r := range r.subnets {
+	for _, r := range append(r.subnets.private, r.subnets.public...) {
 		ids = append(ids, r.ID())
 	}
 	return ids
@@ -207,6 +213,7 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 	}
 
 	var publicSubNets []awsResource
+	var privateSubNets []awsResource
 	for _, subNet := range subNets {
 		isPublic, err := b.aws.IsPublicSubnet(ctx, subNet.ID())
 		if err != nil {
@@ -214,6 +221,8 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 		}
 		if isPublic {
 			publicSubNets = append(publicSubNets, subNet)
+		} else {
+			privateSubNets = append(privateSubNets, subNet)
 		}
 	}
 
@@ -222,7 +231,8 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 	}
 
 	r.vpc = vpc
-	r.subnets = subNets
+	r.subnets.public = publicSubNets
+	r.subnets.private = privateSubNets
 	return nil
 }
 
@@ -451,14 +461,8 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 	}
 
 	var publicSubNetIDs []string
-	for _, subNetID := range r.subnetsIDs() {
-        isPublic, err := b.aws.IsPublicSubnet(context.Background(), subNetID)
-        if err != nil {
-            return err
-        }
-        if isPublic {
-            publicSubNetIDs = append(publicSubNetIDs, subNetID)
-        }
+	for _, subNetID := range r.subnetsIDs() {	
+        publicSubNetIDs = append(publicSubNetIDs, subNetID)
     }
 
 	template.Resources["LoadBalancer"] = &elasticloadbalancingv2.LoadBalancer{

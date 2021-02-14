@@ -32,7 +32,7 @@ import (
 
 func (b *ecsAPIService) createNFSMountTarget(project *types.Project, resources awsResources, template *cloudformation.Template) {
 	for volume := range project.Volumes {
-		for _, subnet := range resources.subnets {
+		for _, subnet := range append(resources.subnets.public, resources.subnets.private...) {
 			name := fmt.Sprintf("%sNFSMountTargetOn%s", normalizeResourceName(volume), normalizeResourceName(subnet.ID()))
 			template.Resources[name] = &efs.MountTarget{
 				FileSystemId:   resources.filesystems[volume].ID(),
@@ -45,7 +45,7 @@ func (b *ecsAPIService) createNFSMountTarget(project *types.Project, resources a
 
 func (b *ecsAPIService) mountTargets(volume string, resources awsResources) []string {
 	var refs []string
-	for _, subnet := range resources.subnets {
+	for _, subnet := range append(resources.subnets.public, resources.subnets.private...) {
 		refs = append(refs, fmt.Sprintf("%sNFSMountTargetOn%s", normalizeResourceName(volume), normalizeResourceName(subnet.ID())))
 	}
 	return refs
