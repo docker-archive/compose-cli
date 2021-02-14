@@ -423,13 +423,13 @@ func (b *ecsAPIService) ensureVolumes(r *awsResources, project *types.Project, t
 
 func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Project, template *cloudformation.Template) error {
 	if r.loadBalancer != nil {
-		return
+		return nil
 	}
 	if allServices(project.Services, func(it types.ServiceConfig) bool {
 		return len(it.Ports) == 0
 	}) {
 		logrus.Debug("Application does not expose any public port, so no need for a LoadBalancer")
-		return
+		return nil
 	}
 
 	balancerType := getRequiredLoadBalancerType(project)
