@@ -421,7 +421,7 @@ func (b *ecsAPIService) ensureVolumes(r *awsResources, project *types.Project, t
 	return nil
 }
 
-func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Project, template *cloudformation.Template) {
+func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Project, template *cloudformation.Template) error {
 	if r.loadBalancer != nil {
 		return
 	}
@@ -452,7 +452,7 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 
 	var publicSubNetIDs []string
 	for _, subNetID := range r.subnetsIDs() {
-        isPublic, err := b.aws.IsPublicSubnet(b.ctx, subNetID)
+        isPublic, err := b.aws.IsPublicSubnet(context.Background(), subNetID)
         if err != nil {
             return err
         }
@@ -474,6 +474,7 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 		nameProperty: "LoadBalancerName",
 	}
 	r.loadBalancerType = balancerType
+	return nil
 }
 
 func (r *awsResources) getLoadBalancerSecurityGroups(project *types.Project) []string {
