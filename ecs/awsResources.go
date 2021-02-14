@@ -37,10 +37,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// vpcSubNets classification
+type vpcSubNets struct {
+	public  []awsResource
+	private []awsResource
+}
+
 // awsResources hold the AWS component being used or created to support services definition
 type awsResources struct {
 	vpc              string // shouldn't this also be an awsResource ?
-	subnets          []awsResource
+	subnets          vpcSubNets
 	cluster          awsResource
 	loadBalancer     awsResource
 	loadBalancerType string
@@ -66,7 +72,7 @@ func (r *awsResources) allSecurityGroups() []string {
 
 func (r *awsResources) subnetsIDs() []string {
 	var ids []string
-	for _, r := range r.subnets {
+	for _, r := range append(r.subnets.private, r.subnets.public...) {
 		ids = append(ids, r.ID())
 	}
 	return ids
@@ -207,6 +213,7 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 	}
 
 	var publicSubNets []awsResource
+	var privateSubNets []awsResource
 	for _, subNet := range subNets {
 		isPublic, err := b.aws.IsPublicSubnet(ctx, subNet.ID())
 		if err != nil {
@@ -214,6 +221,8 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 		}
 		if isPublic {
 			publicSubNets = append(publicSubNets, subNet)
+		} else {
+			privateSubNets = append(privateSubNets, subNet)
 		}
 	}
 
@@ -222,7 +231,8 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 	}
 
 	r.vpc = vpc
-	r.subnets = subNets
+	r.subnets.public = publicSubNets
+	r.subnets.private = privateSubNets
 	return nil
 }
 
@@ -315,7 +325,10 @@ func (b *ecsAPIService) ensureResources(resources *awsResources, project *types.
 	if err != nil {
 		return err
 	}
-	b.ensureLoadBalancer(resources, project, template)
+	err = b.ensureLoadBalancer(resources, project, template)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -421,15 +434,15 @@ func (b *ecsAPIService) ensureVolumes(r *awsResources, project *types.Project, t
 	return nil
 }
 
-func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Project, template *cloudformation.Template) {
+func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Project, template *cloudformation.Template) error {
 	if r.loadBalancer != nil {
-		return
+		return nil
 	}
 	if allServices(project.Services, func(it types.ServiceConfig) bool {
 		return len(it.Ports) == 0
 	}) {
 		logrus.Debug("Application does not expose any public port, so no need for a LoadBalancer")
-		return
+		return nil
 	}
 
 	balancerType := getRequiredLoadBalancerType(project)
@@ -450,10 +463,15 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 			})
 	}
 
+	var publicSubNetIDs []string
+	for _, subNetID := range r.subnets.public {
+		publicSubNetIDs = append(publicSubNetIDs, subNetID.ID())
+	}
+
 	template.Resources["LoadBalancer"] = &elasticloadbalancingv2.LoadBalancer{
 		Scheme:                 elbv2.LoadBalancerSchemeEnumInternetFacing,
 		SecurityGroups:         securityGroups,
-		Subnets:                r.subnetsIDs(),
+		Subnets:                publicSubNetIDs,
 		Tags:                   projectTags(project),
 		Type:                   balancerType,
 		LoadBalancerAttributes: loadBalancerAttributes,
@@ -463,6 +481,7 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 		nameProperty: "LoadBalancerName",
 	}
 	r.loadBalancerType = balancerType
+	return nil
 }
 
 func (r *awsResources) getLoadBalancerSecurityGroups(project *types.Project) []string {

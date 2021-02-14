@@ -604,13 +604,13 @@ func (mr *MockAPIMockRecorder) ResolveFileSystem(arg0, arg1 interface{}) *gomock
 }
 
 // ResolveLoadBalancer mocks base method
-func (m *MockAPI) ResolveLoadBalancer(arg0 context.Context, arg1 string) (awsResource, string, string, []awsResource, error) {
+func (m *MockAPI) ResolveLoadBalancer(arg0 context.Context, arg1 string) (awsResource, string, string, vpcSubNets, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResolveLoadBalancer", arg0, arg1)
 	ret0, _ := ret[0].(awsResource)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(string)
-	ret3, _ := ret[3].([]awsResource)
+	ret3, _ := ret[3].(vpcSubNets)
 	ret4, _ := ret[4].(error)
 	return ret0, ret1, ret2, ret3, ret4
 }
