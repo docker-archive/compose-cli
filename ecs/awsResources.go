@@ -39,7 +39,7 @@ import (
 
 // vpcSubNets classification
 type vpcSubNets struct {
-	public []awsResource
+	public  []awsResource
 	private []awsResource
 }
 
@@ -325,7 +325,10 @@ func (b *ecsAPIService) ensureResources(resources *awsResources, project *types.
 	if err != nil {
 		return err
 	}
-	b.ensureLoadBalancer(resources, project, template)
+	err = b.ensureLoadBalancer(resources, project, template)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -461,9 +464,9 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 	}
 
 	var publicSubNetIDs []string
-	for _, subNetID := range r.subnetsIDs() {	
-        publicSubNetIDs = append(publicSubNetIDs, subNetID)
-    }
+	for _, subNetID := range r.subnetsIDs() {
+		publicSubNetIDs = append(publicSubNetIDs, subNetID)
+	}
 
 	template.Resources["LoadBalancer"] = &elasticloadbalancingv2.LoadBalancer{
 		Scheme:                 elbv2.LoadBalancerSchemeEnumInternetFacing,

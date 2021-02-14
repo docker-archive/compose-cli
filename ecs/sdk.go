@@ -1068,7 +1068,7 @@ func (s sdk) ResolveLoadBalancer(ctx context.Context, nameOrArn string) (awsReso
 	it := lbs.LoadBalancers[0]
 	var subNets vpcSubNets
 	for _, az := range it.AvailabilityZones {
-		isPublic, err := s.IsPublicSubnet(ctx,aws.StringValue(az.SubnetId));
+		isPublic, err := s.IsPublicSubnet(ctx, aws.StringValue(az.SubnetId))
 		if err != nil {
 			return nil, "", "", subNets, err
 		}
