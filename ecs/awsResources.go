@@ -464,8 +464,8 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 	}
 
 	var publicSubNetIDs []string
-	for _, subNetID := range r.subnetsIDs() {
-		publicSubNetIDs = append(publicSubNetIDs, subNetID)
+	for _, subNetID := range r.subnets.public {
+		publicSubNetIDs = append(publicSubNetIDs, subNetID.ID())
 	}
 
 	template.Resources["LoadBalancer"] = &elasticloadbalancingv2.LoadBalancer{
