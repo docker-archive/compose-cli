@@ -114,6 +114,9 @@ func (b *ecsAPIService) resolveServiceImagesDigests(ctx context.Context, project
 	for i, s := range project.Services {
 		idx := i
 		service := s
+		if service.Image == "" {
+			continue
+		}
 		eg.Go(func() error {
 			named, err := reference.ParseDockerRef(service.Image)
 			if err != nil {
