@@ -34,6 +34,8 @@ GO_BUILD=$(STATIC_FLAGS) go build -trimpath -ldflags=$(LDFLAGS)
 BINARY?=bin/docker
 BINARY_WITH_EXTENSION=$(BINARY)$(EXTENSION)
 
+GO_RUN_COMPLETION=go run ./completion/main.go
+
 WORK_DIR:=$(shell mktemp -d)
 
 TAGS:=
@@ -85,13 +87,41 @@ check-license-headers:
 check-go-mod:
 	./scripts/validate/check-go-mod
 
+.PHONY: completion
+completion:
+	mkdir -p ./bin
+	$(GO_RUN_COMPLETION) bash >         ./bin/docker_compose.bash-completion && \
+	$(GO_RUN_COMPLETION) fish >         ./bin/docker_compose.fish-completion && \
+	$(GO_RUN_COMPLETION) zsh >          ./bin/docker_compose.zsh-completion && \
+	$(GO_RUN_COMPLETION) powershell >   ./bin/docker_compose.powershell-completion
+
 .PHONY: package
-package: cross
+package: completion cross
 	mkdir -p dist
-	tar -czf dist/docker-linux-amd64.tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-linux-amd64
-	tar -czf dist/docker-linux-arm64.tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-linux-arm64
-	tar -czf dist/docker-darwin-amd64.tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-darwin-amd64
-	tar -czf dist/docker-darwin-arm64.tar.gz $(TAR_TRANSFORM) packaging/LICENSE $(BINARY)-darwin-arm64
+
+	tar -czf dist/docker-linux-amd64.tar.gz $(TAR_TRANSFORM) \
+	packaging/LICENSE \
+	bin/docker_compose.*sh-completion \
+	$(BINARY)-linux-amd64
+
+	tar -czf dist/docker-linux-arm64.tar.gz $(TAR_TRANSFORM) \
+	packaging/LICENSE \
+	bin/docker_compose.*sh-completion \
+	$(BINARY)-linux-arm64
+
+	tar -czf dist/docker-darwin-amd64.tar.gz $(TAR_TRANSFORM) \
+	packaging/LICENSE \
+	bin/docker_compose.*sh-completion \
+	$(BINARY)-darwin-amd64
+
+	tar -czf dist/docker-darwin-arm64.tar.gz $(TAR_TRANSFORM) \
+	packaging/LICENSE \
+	bin/docker_compose.*sh-completion \
+	$(BINARY)-darwin-arm64
+
 	cp $(BINARY)-windows-amd64.exe $(WORK_DIR)/docker.exe
-	rm -f dist/docker-windows-amd64.zip && zip dist/docker-windows-amd64.zip -j packaging/LICENSE $(WORK_DIR)/docker.exe
+	rm -f dist/docker-windows-amd64.zip && zip dist/docker-windows-amd64.zip -j \
+	packaging/LICENSE \
+	bin/docker_compose.powershell-completion \
+	$(WORK_DIR)/docker.exe
 	rm -r $(WORK_DIR)
