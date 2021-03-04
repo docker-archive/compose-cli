@@ -115,6 +115,14 @@ func Command(contextType string) *cobra.Command {
 		Use:              "compose",
 		TraverseChildren: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			parent := cmd.Root()
+			parentPrerun := parent.PersistentPreRunE
+			if parentPrerun != nil {
+				err := parentPrerun(cmd, args)
+				if err != nil {
+					return err
+				}
+			}
 			if noAnsi {
 				if ansi != "auto" {
 					return errors.New(`cannot specify DEPRECATED "--no-ansi" and "--ansi". Please use only "--ansi"`)
