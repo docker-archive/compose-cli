@@ -40,7 +40,11 @@ func VersionCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := runVersion(cmd)
 			if err != nil {
-				return cli.StatusError{StatusCode: 1, Status: err.Error()}
+				errMsg := ""
+				if err != nil {
+					errMsg = err.Error()
+				}
+				return cli.StatusError{StatusCode: 1, Status: errMsg}
 			}
 			return nil
 		},
