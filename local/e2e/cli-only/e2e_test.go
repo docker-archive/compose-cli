@@ -396,7 +396,7 @@ func TestLegacy(t *testing.T) {
 	})
 
 	t.Run("host flag", func(t *testing.T) {
-		stderr := "nonexistent: Name or service not known"
+		stderr := "dial tcp: lookup nonexistent"
 		if runtime.GOOS == "windows" {
 			stderr = "error during connect: Get http://nonexitent:123"
 		}
