@@ -107,7 +107,7 @@ validate-go-mod: ## Validate go.mod and go.sum are up-to-date
 
 validate: validate-go-mod validate-headers ## Validate sources
 
-pre-commit: validate import-restrictions check-dependencies lint cli test e2e-local
+pre-commit: validate import-restrictions check-dependencies lint cli test e2e-local docs
 
 build-aci-sidecar:  ## build aci sidecar image locally and tag it with make build-aci-sidecar tag=0.1
 	docker build -t docker/aci-hostnames-sidecar:$(tag) aci/etchosts
@@ -132,10 +132,13 @@ clean-aci-e2e: ## Make sure no ACI tests are currently runnnig in the CI when in
 	@ az group list | jq '.[].name' | grep -i E2E-Test
 	az group list | jq '.[].name' | grep -i E2E-Test | xargs -n1 az group delete -y --no-wait -g
 
+docs:
+	go run docs/yaml/main/generate.go
+
 help: ## Show help
 	@echo Please specify a build target. The choices are:
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 FORCE:
 
-.PHONY: all validate protos cli e2e-local cross test cache-clear lint check-dependencies serve classic-link help clean-aci-e2e go-mod-tidy
+.PHONY: all validate protos cli e2e-local cross test cache-clear lint check-dependencies serve classic-link help clean-aci-e2e go-mod-tidy docs
