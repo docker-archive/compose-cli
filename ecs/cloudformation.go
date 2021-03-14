@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/docker/compose-cli/api/compose"
@@ -148,6 +149,11 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 	b.createNFSMountTarget(project, resources, template)
 
 	b.createAccessPoints(project, resources, template)
+
+	//order services for idempotence between calls (because of following rule orders)
+	sort.Slice(project.Services, func(i, j int) bool {
+		return project.Services[i].Name < project.Services[j].Name
+	})
 
 	for _, service := range project.Services {
 		err := b.createService(project, service, template, resources)
