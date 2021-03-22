@@ -18,7 +18,7 @@
 
 set -eu
 
-RELEASE_URL=https://api.github.com/repos/docker/compose-cli/releases/latest
+RELEASE_URL=https://api.github.com/repos/gtardif/compose-cli/releases/latest
 LINK_NAME="${LINK_NAME:-com.docker.cli}"
 DRY_RUN="${DRY_RUN:-}"
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - compose_cli_plugin_release_test
   pull_request:
 
 jobs:

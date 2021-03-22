@@ -26,7 +26,7 @@ endif
 
 STATIC_FLAGS=CGO_ENABLED=0
 
-GIT_TAG?=$(shell git describe --tags --match "v[0-9]*")
+GIT_TAG?=$(shell git describe --tags --match "*v[0-9]*")
 
 LDFLAGS="-s -w -X $(PKG_NAME)/internal.Version=${GIT_TAG}"
 GO_BUILD=$(STATIC_FLAGS) go build -trimpath -ldflags=$(LDFLAGS)
