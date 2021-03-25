@@ -110,7 +110,7 @@ func runComposeV2(args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	err = syscall.Exec(execBinary, args, os.Environ())
+	err = syscall.Exec(execBinary, args, append(os.Environ(), "DOCKER_METRICS_SOURCE=docker-compose"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
