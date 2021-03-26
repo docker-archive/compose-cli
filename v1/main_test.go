@@ -43,6 +43,12 @@ func Test_convert(t *testing.T) {
 			args: []string{"--host", "tcp://1.2.3.4", "up"},
 			want: []string{"--host", "tcp://1.2.3.4", "compose", "up"},
 		},
+		{
+			name: "compose --version",
+			args: []string{"--version"},
+			want: []string{"compose", "version"},
+		},
+
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

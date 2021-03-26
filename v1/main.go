@@ -72,6 +72,10 @@ func convert(args []string) []string {
 		if arg == "--verbose" {
 			arg = "--debug"
 		}
+		if arg == "--version" {
+			// redirect --version pseudo-command to actual command
+			arg = "version"
+		}
 		if utils.StringContains(boolflags, arg) {
 			root = append(root, arg)
 			continue
