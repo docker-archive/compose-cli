@@ -61,18 +61,36 @@ func mustDelegateToMoby(ctxType string) bool {
 
 // Exec delegates to com.docker.cli if on moby context
 func Exec(root *cobra.Command) {
+	childExit := make(chan bool)
+	err := RunDocker(childExit, os.Args[1:]...)
+	childExit <- true
+	if err != nil {
+		metrics.Track(store.DefaultContextType, os.Args[1:], metrics.FailureStatus)
+
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			os.Exit(exiterr.ExitCode())
+		}
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	metrics.Track(store.DefaultContextType, os.Args[1:], metrics.SuccessStatus)
+
+	os.Exit(0)
+}
+
+// RunDocker runs a docker command, and forward signals to the shellout command (stops listening to signals when an event is sent to childExit)
+func RunDocker(childExit chan bool, args ...string) error {
 	execBinary, err := resolvepath.LookPath(ComDockerCli)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	cmd := exec.Command(execBinary, os.Args[1:]...)
+	cmd := exec.Command(execBinary, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	signals := make(chan os.Signal, 1)
-	childExit := make(chan bool)
 	signal.Notify(signals) // catch all signals
 	go func() {
 		for {
@@ -89,20 +107,7 @@ func Exec(root *cobra.Command) {
 		}
 	}()
 
-	err = cmd.Run()
-	childExit <- true
-	if err != nil {
-		metrics.Track(store.DefaultContextType, os.Args[1:], metrics.FailureStatus)
-
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			os.Exit(exiterr.ExitCode())
-		}
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	metrics.Track(store.DefaultContextType, os.Args[1:], metrics.SuccessStatus)
-
-	os.Exit(0)
+	return cmd.Run()
 }
 
 // IsDefaultContextCommand checks if the command exists in the classic cli (issues a shellout --help)
