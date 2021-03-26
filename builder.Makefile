@@ -34,6 +34,9 @@ GO_BUILD=$(STATIC_FLAGS) go build -trimpath -ldflags=$(LDFLAGS)
 BINARY?=bin/docker
 BINARY_WITH_EXTENSION=$(BINARY)$(EXTENSION)
 
+V1_BINARY?=bin/docker-compose-replace
+V1_BINARY_WITH_EXTENSION=$(V1_BINARY)$(EXTENSION)
+
 WORK_DIR:=$(shell mktemp -d)
 
 TAGS:=
@@ -57,6 +60,11 @@ protos:
 cli:
 	GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o $(BINARY_WITH_EXTENSION) ./cli
 
+.PHONY: v1
+v1:
+	GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o $(V1_BINARY_WITH_EXTENSION) ./v1
+
+
 .PHONY: cross
 cross:
 	GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-linux-amd64 ./cli
@@ -64,6 +72,12 @@ cross:
 	GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-amd64 ./cli
 	GOOS=darwin  GOARCH=arm64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-arm64 ./cli
 	GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-windows-amd64.exe ./cli
+
+	GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(V1_BINARY)-linux-amd64 ./v1
+	GOOS=linux   GOARCH=arm64 $(GO_BUILD) $(TAGS) -o $(V1_BINARY)-linux-arm64 ./v1
+	GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(V1_BINARY)-darwin-amd64 ./v1
+	GOOS=darwin  GOARCH=arm64 $(GO_BUILD) $(TAGS) -o $(V1_BINARY)-darwin-arm64 ./v1
+	GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(V1_BINARY)-windows-amd64.exe ./v1
 
 .PHONY: test
 test:

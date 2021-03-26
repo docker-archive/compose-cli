@@ -76,6 +76,21 @@ RUN --mount=target=. \
     GIT_TAG=${GIT_TAG} \
     make BINARY=/out/docker -f builder.Makefile cli
 
+FROM base AS make-v1
+ENV CGO_ENABLED=0
+ARG TARGETOS
+ARG TARGETARCH
+ARG BUILD_TAGS
+ARG GIT_TAG
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOOS=${TARGETOS} \
+    GOARCH=${TARGETARCH} \
+    BUILD_TAGS=${BUILD_TAGS} \
+    GIT_TAG=${GIT_TAG} \
+    make V1_BINARY=/out/docker-compose-replace -f builder.Makefile v1
+
 FROM base AS make-cross
 ARG BUILD_TAGS
 ARG GIT_TAG
@@ -91,6 +106,9 @@ COPY --from=make-protos /compose-cli/cli/server/protos .
 
 FROM scratch AS cli
 COPY --from=make-cli /out/* .
+
+FROM scratch AS v1
+COPY --from=make-v1 /out/* .
 
 FROM scratch AS cross
 COPY --from=make-cross /out/* .

@@ -44,6 +44,12 @@ cli: ## Compile the cli
 	--build-arg GIT_TAG=$(GIT_TAG) \
 	--output ./bin
 
+v1: ## Compile the v1 replacement binary
+	@docker build . --target v1 \
+	--platform local \
+	--build-arg GIT_TAG=$(GIT_TAG) \
+	--output ./bin
+
 e2e-local: ## Run End to end local tests. Set E2E_TEST=TestName to run a single test
 	gotestsum $(TEST_FLAGS) ./local/e2e/compose ./local/e2e/container ./local/e2e/cli-only -- -count=1
 
@@ -138,4 +144,4 @@ help: ## Show help
 
 FORCE:
 
-.PHONY: all validate protos cli e2e-local cross test cache-clear lint check-dependencies serve classic-link help clean-aci-e2e go-mod-tidy
+.PHONY: all validate protos cli v1 e2e-local cross test cache-clear lint check-dependencies serve classic-link help clean-aci-e2e go-mod-tidy
