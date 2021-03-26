@@ -48,7 +48,11 @@ func Test_convert(t *testing.T) {
 			args: []string{"--version"},
 			want: []string{"compose", "version"},
 		},
-
+		{
+			name: "help",
+			args: []string{"-h"},
+			want: []string{"compose", "--help"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

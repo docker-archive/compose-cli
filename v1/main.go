@@ -29,27 +29,27 @@ import (
 
 var (
 	boolflags = []string{
-	"--debug", "-D",
-	"--verbose",
-	"--log-level",
-	"--l",
-	"--tls",
-	"--tlsverivy",
+		"--debug", "-D",
+		"--verbose",
+		"--log-level",
+		"--l",
+		"--tls",
+		"--tlsverivy",
 	}
 
 	stringflags = []string{
-	"--tlscacert",
-	"--tlscert",
-	"--tlskey",
-	"--host", "-H",
-	"--context",
+		"--tlscacert",
+		"--tlscert",
+		"--tlskey",
+		"--host", "-H",
+		"--context",
 	}
 )
 
 func main() {
 	root := &cobra.Command{
 		DisableFlagParsing: true,
-		Use:  "docker-compose",
+		Use:                "docker-compose",
 		Run: func(cmd *cobra.Command, args []string) {
 			if _, ok := os.LookupEnv("DOCKER_COMPOSE_USE_V1"); ok {
 				runComposeV1(args)
@@ -60,11 +60,15 @@ func main() {
 		},
 	}
 
-	root.Execute()
+	err := root.Execute()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
 func convert(args []string) []string {
-	root := []string{}
+	rootFlags := []string{}
 	command := []string{"compose"}
 	l := len(args)
 	for i := 0; i < l; i++ {
@@ -72,12 +76,16 @@ func convert(args []string) []string {
 		if arg == "--verbose" {
 			arg = "--debug"
 		}
+		if arg == "-h" {
+			// docker cli has deprecated -h to avoid ambiguity with -H, while docker-compose still support it
+			arg = "--help"
+		}
 		if arg == "--version" {
 			// redirect --version pseudo-command to actual command
 			arg = "version"
 		}
 		if utils.StringContains(boolflags, arg) {
-			root = append(root, arg)
+			rootFlags = append(rootFlags, arg)
 			continue
 		}
 		if utils.StringContains(stringflags, arg) {
@@ -86,13 +94,12 @@ func convert(args []string) []string {
 				fmt.Fprintf(os.Stderr, "flag needs an argument: '%s'\n", arg)
 				os.Exit(1)
 			}
-			root = append(root, arg, args[i])
+			rootFlags = append(rootFlags, arg, args[i])
 			continue
 		}
 		command = append(command, arg)
 	}
-	compose := append(root, command...)
-	return compose
+	return append(rootFlags, command...)
 }
 
 func runComposeV1(args []string) {
@@ -101,7 +108,7 @@ func runComposeV1(args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	err = syscall.Exec(execBinary, args, os.Environ())
+	err = syscall.Exec(execBinary, append([]string{"docker-compose"}, args...), os.Environ())
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -114,7 +121,7 @@ func runComposeV2(args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	err = syscall.Exec(execBinary, args, append(os.Environ(), "DOCKER_METRICS_SOURCE=docker-compose"))
+	err = syscall.Exec(execBinary, append([]string{"docker"}, args...), append(os.Environ(), "DOCKER_METRICS_SOURCE=docker-compose"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
