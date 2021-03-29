@@ -17,14 +17,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
-	"syscall"
-
-	"github.com/spf13/cobra"
-
+	"github.com/docker/compose-cli/api/config"
+	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
 	"github.com/docker/compose-cli/utils"
+	"github.com/spf13/cobra"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"syscall"
 )
 
 var (
@@ -47,20 +50,60 @@ var (
 )
 
 func main() {
+	configDir := os.Getenv("DOCKER_CONFIG")
+	if configDir == "" {
+		home, _ := os.UserHomeDir()
+		configDir = filepath.Join(home, config.ConfigFileDir)
+	}
+	configFile := filepath.Join(configDir, config.ConfigFileName)
+
+	raw, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr,"Failed to load docker config file: %s\n", err)
+		os.Exit(1)
+	}
+	cfg := map[string]interface{}{}
+	err = json.Unmarshal(raw, &cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr,"Failed to load docker config file: %s\n", err)
+		os.Exit(1)
+	}
+
 	root := &cobra.Command{
 		DisableFlagParsing: true,
 		Use:                "docker-compose",
-		Run: func(cmd *cobra.Command, args []string) {
-			if _, ok := os.LookupEnv("DOCKER_COMPOSE_USE_V1"); ok {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if args[0] == "downgrade" {
+				cfg["composeV2"] = "disabled"
+				metrics.NewClient().Send(metrics.Command{
+					Command: "docker-compose downgrade",
+					Context: "",
+					Source:  "cli",
+					Status:  metrics.SuccessStatus,
+				})
+				return config.WriteFile(configFile, cfg)
+			}
+			if args[0] == "upgrade" {
+				delete(cfg, "composeV2")
+				metrics.NewClient().Send(metrics.Command{
+					Command: "docker-compose upgrade",
+					Context: "",
+					Source:  "cli",
+					Status:  metrics.SuccessStatus,
+				})
+				return config.WriteFile(configFile, cfg)
+			}
+			if cfg["composeV2"] == "disabled" {
 				runComposeV1(args)
 			}
 
 			compose := convert(args)
 			runComposeV2(compose)
+			return nil
 		},
 	}
 
-	err := root.Execute()
+	err = root.Execute()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

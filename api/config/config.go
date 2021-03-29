@@ -64,10 +64,10 @@ func WriteCurrentContext(dir string, name string) error {
 	} else {
 		m[currentContextKey] = name
 	}
-	return writeFile(path, m)
+	return WriteFile(path, m)
 }
 
-func writeFile(path string, content map[string]interface{}) error {
+func WriteFile(path string, content interface{}) error {
 	d, err := json.MarshalIndent(content, "", "\t")
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config")
