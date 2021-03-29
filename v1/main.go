@@ -19,12 +19,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gen2brain/beeep"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
 
+	"github.com/gen2brain/beeep"
 	"github.com/spf13/cobra"
 
 	"github.com/docker/compose-cli/api/config"
@@ -76,7 +76,11 @@ func main() {
 		DisableFlagParsing: true,
 		Use:                "docker-compose",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			useV2, ok := cfg["composeV2"]
 			if args[0] == "downgrade" {
+				if ok && useV2 == "disabled" {
+					return nil
+				}
 				cfg["composeV2"] = "disabled"
 				metrics.NewClient().Send(metrics.Command{
 					Command: "docker-compose downgrade",
@@ -87,6 +91,9 @@ func main() {
 				return config.WriteFile(configFile, cfg)
 			}
 			if args[0] == "upgrade" {
+				if ok && useV2 == "enabled" {
+					return nil
+				}
 				cfg["composeV2"] = "enabled"
 				metrics.NewClient().Send(metrics.Command{
 					Command: "docker-compose upgrade",
@@ -96,7 +103,6 @@ func main() {
 				})
 				return config.WriteFile(configFile, cfg)
 			}
-			useV2, ok := cfg["composeV2"]
 			if !ok {
 				// first use
 				cfg["composeV2"] = "enabled"
