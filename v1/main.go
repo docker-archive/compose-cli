@@ -19,15 +19,18 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/docker/compose-cli/api/config"
-	"github.com/docker/compose-cli/cli/metrics"
-	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
-	"github.com/docker/compose-cli/utils"
-	"github.com/spf13/cobra"
+	"github.com/gen2brain/beeep"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
+
+	"github.com/spf13/cobra"
+
+	"github.com/docker/compose-cli/api/config"
+	"github.com/docker/compose-cli/cli/metrics"
+	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
+	"github.com/docker/compose-cli/utils"
 )
 
 var (
@@ -84,7 +87,7 @@ func main() {
 				return config.WriteFile(configFile, cfg)
 			}
 			if args[0] == "upgrade" {
-				delete(cfg, "composeV2")
+				cfg["composeV2"] = "enabled"
 				metrics.NewClient().Send(metrics.Command{
 					Command: "docker-compose upgrade",
 					Context: "",
@@ -93,7 +96,19 @@ func main() {
 				})
 				return config.WriteFile(configFile, cfg)
 			}
-			if cfg["composeV2"] == "disabled" {
+			useV2, ok := cfg["composeV2"]
+			if !ok {
+				// first use
+				cfg["composeV2"] = "enabled"
+				err = config.WriteFile(configFile, cfg)
+				if err != nil {
+					fmt.Fprintf(os.Stderr,"Failed to access docker config file: %s\n", err)
+					os.Exit(1)
+				}
+				_ = beeep.Notify("Docker Compose", "Docker Compose v2 has been enabled.", "assets/information.png")
+			}
+
+			if useV2 == "disabled" {
 				runComposeV1(args)
 			}
 

@@ -27,6 +27,7 @@ require (
 	github.com/docker/docker v20.10.1+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.4.0
+	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28 // indirect
 	github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee // indirect
 	github.com/gobwas/pool v0.2.0 // indirect
 	github.com/gobwas/ws v1.0.4
