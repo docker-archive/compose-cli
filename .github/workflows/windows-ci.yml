@@ -37,6 +37,8 @@ jobs:
 
       - name: Setup docker CLI
         run: |
+          curl -L -o docker.exe https://github.com/StefanScherer/docker-cli-builder/releases/download/20.10.5/docker.exe
+          mv -Force ./docker.exe "C:\Program Files\Docker\"
           docker version
 
       - name: Checkout code into the Go module directory
@@ -56,6 +58,8 @@ jobs:
         run: make -f builder.Makefile cli
 
       - name: E2E Test
+        env:
+          DOCKER_BUILDKIT: "0"
         run: make e2e-win-ci
 
       - name: ACI e2e Test

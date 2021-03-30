@@ -1,0 +1,6 @@
+services:
+  web:
+    build: app
+    image: custom-aspnet
+    ports:
+      - 80:80
