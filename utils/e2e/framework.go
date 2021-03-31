@@ -252,6 +252,18 @@ func (c *E2eCLI) WaitForCmdResult(command icmd.Cmd, predicate func(*icmd.Result)
 	poll.WaitOn(c.test, checkStopped, poll.WithDelay(delay), poll.WithTimeout(timeout))
 }
 
+// WaitForOutputResult check the output of a running cmd until it matches given predicate
+func (c *E2eCLI) WaitForOutputResult(running *icmd.Result, predicate func(*icmd.Result) bool, timeout time.Duration, delay time.Duration) {
+	assert.Assert(c.test, timeout.Nanoseconds() > delay.Nanoseconds(), "timeout must be greater than delay")
+	checkStopped := func(logt poll.LogT) poll.Result {
+		if !predicate(running) {
+			return poll.Continue("Cmd output did not match requirement: %q", running.Combined())
+		}
+		return poll.Success()
+	}
+	poll.WaitOn(c.test, checkStopped, poll.WithDelay(delay), poll.WithTimeout(timeout))
+}
+
 // PathEnvVar returns path (os sensitive) for running test
 func (c *E2eCLI) PathEnvVar() string {
 	path := c.BinDir + ":" + os.Getenv("PATH")
