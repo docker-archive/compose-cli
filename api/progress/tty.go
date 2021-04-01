@@ -20,14 +20,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/docker/compose-cli/utils"
+	"github.com/moby/term"
+	"github.com/sirupsen/logrus"
 
-	"github.com/buger/goterm"
 	"github.com/morikuni/aec"
 )
 
@@ -91,13 +93,24 @@ func (w *ttyWriter) Event(e Event) {
 	}
 }
 
+func getTerminalWidth() int {
+	size, err := term.GetWinsize(os.Stdout.Fd())
+	if err != nil {
+		logrus.Debugf("Error getting size: %s", err)
+		if size == nil {
+			return 0
+		}
+	}
+	return int(size.Width)
+}
+
 func (w *ttyWriter) print() {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 	if len(w.eventIDs) == 0 {
 		return
 	}
-	terminalWidth := goterm.Width()
+	terminalWidth := getTerminalWidth()
 	b := aec.EmptyBuilder
 	for i := 0; i <= w.numLines; i++ {
 		b = b.Up(1)
