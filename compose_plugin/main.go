@@ -76,6 +76,8 @@ func main() {
 	backend.WithBackend(service)
 
 	plugin.Run(func(dockerCli command.Cli) *cobra.Command {
+		cmd := compose.Command(store.DefaultContextType)
+		cmd.Context()
 		return compose.Command(store.DefaultContextType)
 	},
 		manager.Metadata{

@@ -95,6 +95,7 @@ moby-cli-link: ## Create com.docker.cli symlink if does not already exist
 
 install: ## Link /usr/local/bin/ to current binary
 	ln -fs $(BINARY_FOLDER)/docker /usr/local/bin/docker
+	cp ./bin/docker-compose ~/.docker/cli-plugins/
 
 validate-headers: ## Check license header for all files
 	@docker build . --target check-license-headers

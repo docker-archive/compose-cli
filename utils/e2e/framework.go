@@ -257,11 +257,22 @@ func (c *E2eCLI) WaitForOutputResult(running *icmd.Result, predicate func(*icmd.
 	assert.Assert(c.test, timeout.Nanoseconds() > delay.Nanoseconds(), "timeout must be greater than delay")
 	checkStopped := func(logt poll.LogT) poll.Result {
 		if !predicate(running) {
-			return poll.Continue("Cmd output did not match requirement: %q", running.Combined())
+			return poll.Continue("Cmd output did not match requirement: %q", running.Stdout())
 		}
 		return poll.Success()
 	}
 	poll.WaitOn(c.test, checkStopped, poll.WithDelay(delay), poll.WithTimeout(timeout))
+}
+
+// WaitForCondition wait for predicate to execute to true
+func (c *E2eCLI) WaitForCondition(predicate func() bool, description string, timeout time.Duration, delay time.Duration) {
+	checkStopped := func(logt poll.LogT) poll.Result {
+		if !predicate() {
+			return poll.Continue("Condition not met: %q", description)
+		}
+		return poll.Success()
+	}
+	poll.WaitOn(c.test, checkStopped, poll.WithDelay(1*time.Second), poll.WithTimeout(3*time.Second))
 }
 
 // PathEnvVar returns path (os sensitive) for running test

@@ -20,12 +20,17 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/compose-spec/compose-go/types"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"github.com/docker/cli/cli"
 	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/compose"
+	"github.com/docker/compose-cli/api/errdefs"
 	"github.com/docker/compose-cli/api/progress"
 )
 
@@ -81,6 +86,13 @@ func buildCommand(p *projectOptions) *cobra.Command {
 }
 
 func runBuild(ctx context.Context, opts buildOptions, services []string) error {
+	ctx, cancel := context.WithCancel(ctx)
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		<-s
+		cancel()
+	}()
 	c, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -99,5 +111,12 @@ func runBuild(ctx context.Context, opts buildOptions, services []string) error {
 			NoCache:  opts.noCache,
 		})
 	})
+
+	if err != nil {
+		if errdefs.IsErrCanceled(err) || errors.Is(ctx.Err(), context.Canceled) {
+			return cli.StatusError{StatusCode: 130}
+		}
+	}
+
 	return err
 }
