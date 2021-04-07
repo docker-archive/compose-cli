@@ -70,6 +70,15 @@ services:
           Resource: arn:aws:sqs:us-east-1:12345678:myqueue
 ```
 
+Use an existing IAM role to a task:
+
+NOTE: This will override any as above mentioned in-line IAM policys.
+```yaml
+services:
+  test:
+    x-aws-iam: arn:aws:iam::123456789:role/applicationTaskRole
+```
+
 ###### Logging
 Pass options to awslogs driver
 ```yaml
