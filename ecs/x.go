@@ -28,6 +28,7 @@ const (
 	extensionMaxPercent      = "x-aws-max_percent"
 	extensionRetention       = "x-aws-logs_retention"
 	extensionRole            = "x-aws-role"
+	extensionIam             = "x-aws-iam"
 	extensionManagedPolicies = "x-aws-policies"
 	extensionAutoScaling     = "x-aws-autoscaling"
 	extensionCloudFormation  = "x-aws-cloudformation"

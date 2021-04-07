@@ -170,16 +170,21 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 }
 
 func (b *ecsAPIService) createService(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources) error {
-	taskExecutionRole := b.createTaskExecutionRole(project, service, template)
-	taskRole := b.createTaskRole(project, service, template, resources)
-
 	definition, err := b.createTaskDefinition(project, service, resources)
 	if err != nil {
 		return err
 	}
+
+	taskExecutionRole := b.createTaskExecutionRole(project, service, template)
 	definition.ExecutionRoleArn = cloudformation.Ref(taskExecutionRole)
-	if taskRole != "" {
-		definition.TaskRoleArn = cloudformation.Ref(taskRole)
+
+	if taskRoleArn, ok := service.Extensions[extensionIam]; ok {
+		definition.TaskRoleArn = fmt.Sprintf("%s", taskRoleArn)
+	} else {
+		taskRole := b.createTaskRole(project, service, template, resources)
+		if taskRole != "" {
+			definition.TaskRoleArn = cloudformation.Ref(taskRole)
+		}
 	}
 
 	taskDefinition := fmt.Sprintf("%sTaskDefinition", normalizeResourceName(service.Name))
