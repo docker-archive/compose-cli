@@ -17,6 +17,7 @@
 package compose
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -28,10 +29,30 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"github.com/docker/compose-cli/api/client"
+	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/formatter"
 	"github.com/docker/compose-cli/cli/metrics"
 )
+
+// CliCommand define a compose CLI command to run by WithComposeService
+type CliCommand func(context.Context, compose.Service, []string) error
+
+// WithComposeService adapt a Command into a cobra.Command Run function
+type WithComposeService func(command CliCommand) func(cmd *cobra.Command, args []string) error
+
+// withComposeService implement WithComposeService by retrieving ComposeService for current context's backend
+func withComposeService(fn CliCommand) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		ctx := cmd.Context()
+		c, err := client.New(ctx)
+		if err != nil {
+			return err
+		}
+		return fn(ctx, c.ComposeService(), args)
+	}
+}
 
 // Warning is a global warning to be displayed to user on command failure
 var Warning string
@@ -146,33 +167,33 @@ func Command(contextType string) *cobra.Command {
 	}
 
 	command.AddCommand(
-		upCommand(&opts, contextType),
-		downCommand(&opts, contextType),
-		startCommand(&opts),
-		restartCommand(&opts),
-		stopCommand(&opts),
-		psCommand(&opts),
-		listCommand(contextType),
-		logsCommand(&opts, contextType),
-		convertCommand(&opts),
-		killCommand(&opts),
-		runCommand(&opts),
-		removeCommand(&opts),
-		execCommand(&opts),
-		pauseCommand(&opts),
-		unpauseCommand(&opts),
-		topCommand(&opts),
-		eventsCommand(&opts),
-		portCommand(&opts),
-		imagesCommand(&opts),
+		upCommand(&opts, contextType, withComposeService),
+		downCommand(&opts, contextType, withComposeService),
+		startCommand(&opts, withComposeService),
+		restartCommand(&opts, withComposeService),
+		stopCommand(&opts, withComposeService),
+		psCommand(&opts, withComposeService),
+		listCommand(contextType, withComposeService),
+		logsCommand(&opts, contextType, withComposeService),
+		convertCommand(&opts, withComposeService),
+		killCommand(&opts, withComposeService),
+		runCommand(&opts, withComposeService),
+		removeCommand(&opts, withComposeService),
+		execCommand(&opts, withComposeService),
+		pauseCommand(&opts, withComposeService),
+		unpauseCommand(&opts, withComposeService),
+		topCommand(&opts, withComposeService),
+		eventsCommand(&opts, withComposeService),
+		portCommand(&opts, withComposeService),
+		imagesCommand(&opts, withComposeService),
 	)
 
 	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
 		command.AddCommand(
-			buildCommand(&opts),
-			pushCommand(&opts),
-			pullCommand(&opts),
-			createCommand(&opts),
+			buildCommand(&opts, withComposeService),
+			pushCommand(&opts, withComposeService),
+			pullCommand(&opts, withComposeService),
+			createCommand(&opts, withComposeService),
 		)
 	}
 	command.Flags().SetInterspersed(false)

@@ -26,7 +26,6 @@ import (
 	"github.com/docker/cli/opts"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/formatter"
@@ -39,14 +38,14 @@ type lsOptions struct {
 	Filter opts.FilterOpt
 }
 
-func listCommand(contextType string) *cobra.Command {
+func listCommand(contextType string, w WithComposeService) *cobra.Command {
 	opts := lsOptions{Filter: opts.NewFilterOpt()}
 	lsCmd := &cobra.Command{
 		Use:   "ls",
 		Short: "List running compose projects",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runList(cmd.Context(), opts)
-		},
+		RunE: w(func(ctx context.Context, s compose.Service, args []string) error {
+			return runList(ctx, s, opts)
+		}),
 	}
 	lsCmd.Flags().StringVar(&opts.Format, "format", "pretty", "Format the output. Values: [pretty | json].")
 	lsCmd.Flags().BoolVarP(&opts.Quiet, "quiet", "q", false, "Only display IDs.")
@@ -62,18 +61,14 @@ var acceptedListFilters = map[string]bool{
 	"name": true,
 }
 
-func runList(ctx context.Context, opts lsOptions) error {
+func runList(ctx context.Context, s compose.Service, opts lsOptions) error {
 	filters := opts.Filter.Value()
 	err := filters.Validate(acceptedListFilters)
 	if err != nil {
 		return err
 	}
 
-	c, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
-	stackList, err := c.ComposeService().List(ctx, compose.ListOptions{All: opts.All})
+	stackList, err := s.List(ctx, compose.ListOptions{All: opts.All})
 	if err != nil {
 		return err
 	}

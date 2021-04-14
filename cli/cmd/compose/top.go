@@ -27,37 +27,33 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
+	"github.com/docker/compose-cli/api/compose"
 )
 
 type topOptions struct {
 	*projectOptions
 }
 
-func topCommand(p *projectOptions) *cobra.Command {
+func topCommand(p *projectOptions, w WithComposeService) *cobra.Command {
 	opts := topOptions{
 		projectOptions: p,
 	}
 	topCmd := &cobra.Command{
 		Use:   "top",
 		Short: "Display the running processes",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runTop(cmd.Context(), opts, args)
-		},
+		RunE: w(func(ctx context.Context, s compose.Service, args []string) error {
+			return runTop(ctx, s, opts, args)
+		}),
 	}
 	return topCmd
 }
 
-func runTop(ctx context.Context, opts topOptions, services []string) error {
-	c, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
+func runTop(ctx context.Context, s compose.Service, opts topOptions, services []string) error {
 	projectName, err := opts.toProjectName()
 	if err != nil {
 		return err
 	}
-	containers, err := c.ComposeService().Top(ctx, projectName, services)
+	containers, err := s.Top(ctx, projectName, services)
 	if err != nil {
 		return err
 	}

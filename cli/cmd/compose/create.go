@@ -17,9 +17,12 @@
 package compose
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/docker/compose-cli/api/compose"
 )
 
 type createOptions struct {
@@ -28,21 +31,21 @@ type createOptions struct {
 	noRecreate    bool
 }
 
-func createCommand(p *projectOptions) *cobra.Command {
+func createCommand(p *projectOptions, w WithComposeService) *cobra.Command {
 	opts := createOptions{
 		composeOptions: &composeOptions{},
 	}
 	cmd := &cobra.Command{
 		Use:   "create [SERVICE...]",
 		Short: "Creates containers for a service.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: w(func(ctx context.Context, s compose.Service, args []string) error {
 			if opts.Build && opts.noBuild {
 				return fmt.Errorf("--build and --no-build are incompatible")
 			}
 			if opts.forceRecreate && opts.noRecreate {
 				return fmt.Errorf("--force-recreate and --no-recreate are incompatible")
 			}
-			return runCreateStart(cmd.Context(), upOptions{
+			return runCreateStart(ctx, s, upOptions{
 				composeOptions: &composeOptions{
 					projectOptions: p,
 					Build:          opts.Build,
@@ -52,7 +55,7 @@ func createCommand(p *projectOptions) *cobra.Command {
 				forceRecreate: opts.forceRecreate,
 				noRecreate:    opts.noRecreate,
 			}, args)
-		},
+		}),
 	}
 	flags := cmd.Flags()
 	flags.BoolVar(&opts.Build, "build", false, "Build images before starting containers.")

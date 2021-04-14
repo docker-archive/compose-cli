@@ -26,7 +26,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/compose"
 	"github.com/docker/compose-cli/cli/formatter"
 	"github.com/docker/compose-cli/utils"
@@ -40,16 +39,16 @@ type psOptions struct {
 	Services bool
 }
 
-func psCommand(p *projectOptions) *cobra.Command {
+func psCommand(p *projectOptions, w WithComposeService) *cobra.Command {
 	opts := psOptions{
 		projectOptions: p,
 	}
 	psCmd := &cobra.Command{
 		Use:   "ps",
 		Short: "List containers",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runPs(cmd.Context(), opts)
-		},
+		RunE: w(func(ctx context.Context, s compose.Service, args []string) error {
+			return runPs(ctx, s, opts)
+		}),
 	}
 	psCmd.Flags().StringVar(&opts.Format, "format", "pretty", "Format the output. Values: [pretty | json].")
 	psCmd.Flags().BoolVarP(&opts.Quiet, "quiet", "q", false, "Only display IDs")
@@ -58,17 +57,12 @@ func psCommand(p *projectOptions) *cobra.Command {
 	return psCmd
 }
 
-func runPs(ctx context.Context, opts psOptions) error {
-	c, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
-
+func runPs(ctx context.Context, s compose.Service, opts psOptions) error {
 	projectName, err := opts.toProjectName()
 	if err != nil {
 		return err
 	}
-	containers, err := c.ComposeService().Ps(ctx, projectName, compose.PsOptions{
+	containers, err := s.Ps(ctx, projectName, compose.PsOptions{
 		All: opts.All,
 	})
 	if err != nil {
@@ -77,9 +71,9 @@ func runPs(ctx context.Context, opts psOptions) error {
 
 	if opts.Services {
 		services := []string{}
-		for _, s := range containers {
-			if !utils.StringContains(services, s.Service) {
-				services = append(services, s.Service)
+		for _, c := range containers {
+			if !utils.StringContains(services, c.Service) {
+				services = append(services, c.Service)
 			}
 		}
 		fmt.Println(strings.Join(services, "\n"))
