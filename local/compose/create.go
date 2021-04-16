@@ -586,17 +586,12 @@ func (s *composeService) buildContainerVolumes(ctx context.Context, p types.Proj
 	volumeMounts := map[string]struct{}{}
 	binds := []string{}
 	for _, m := range mountOptions {
-
+		volumeMounts[m.Target] = struct{}{}
 		if m.Type == mount.TypeVolume {
-			volumeMounts[m.Target] = struct{}{}
-			if m.Source != "" {
-				binds = append(binds, fmt.Sprintf("%s:%s:rw", m.Source, m.Target))
-			}
-		}
-	}
-	for _, m := range mountOptions {
-		if m.Type == mount.TypeBind || m.Type == mount.TypeTmpfs {
 			mounts = append(mounts, m)
+		}
+		if m.Source != "" && m.Type == mount.TypeBind {
+			binds = append(binds, fmt.Sprintf("%s:%s:rw", m.Source, m.Target))
 		}
 	}
 	return volumeMounts, binds, mounts, nil
