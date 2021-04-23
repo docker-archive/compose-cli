@@ -591,7 +591,11 @@ func (s *composeService) buildContainerVolumes(ctx context.Context, p types.Proj
 			mounts = append(mounts, m)
 		}
 		if m.Source != "" && m.Type == mount.TypeBind {
-			binds = append(binds, fmt.Sprintf("%s:%s:rw", m.Source, m.Target))
+			if m.ReadOnly {
+				binds = append(binds, fmt.Sprintf("%s:%s:ro", m.Source, m.Target))
+			} else {
+				binds = append(binds, fmt.Sprintf("%s:%s", m.Source, m.Target))
+			}
 		}
 	}
 	return volumeMounts, binds, mounts, nil
