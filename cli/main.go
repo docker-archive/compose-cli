@@ -29,6 +29,9 @@ import (
 	"time"
 
 	"github.com/docker/cli/cli"
+	"github.com/docker/cli/cli-plugins/manager"
+	"github.com/docker/cli/cli/command"
+	cliflags "github.com/docker/cli/cli/flags"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -165,7 +168,7 @@ func main() {
 	})
 
 	// populate the opts with the global flags
-	flags.Parse(os.Args[1:]) //nolint: errcheck
+	flags.Parse(os.Args[1:]) // nolint: errcheck
 
 	level, err := logrus.ParseLevel(opts.LogLevel)
 	if err != nil {
@@ -216,6 +219,8 @@ func main() {
 	}
 	backend.WithBackend(service)
 
+	executeIfStandalone(ctype, service)
+
 	root.AddCommand(
 		run.Command(ctype),
 		volume.Command(ctype),
@@ -230,6 +235,28 @@ func main() {
 		handleError(ctx, err, ctype, currentContext, cc, root)
 	}
 	metrics.Track(ctype, os.Args[1:], metrics.SuccessStatus)
+}
+
+func executeIfStandalone(ctype string, service backend.Service) {
+	if os.Getenv("DOCKER_CLI_PLUGIN_ORIGINAL_CLI_COMMAND") == "" {
+		if len(os.Args) < 2 || os.Args[1] != manager.MetadataSubcommandName {
+			dockerCli, err := command.NewDockerCli()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			opts := cliflags.NewClientOptions()
+			err = dockerCli.Initialize(opts)
+			if err != nil {
+				return
+			}
+			rootCmd := compose.RootCommand(ctype, service.ComposeService())
+			if err := rootCmd.Execute(); err != nil {
+				os.Exit(1)
+			}
+			os.Exit(0)
+		}
+	}
 }
 
 func getBackend(ctype string, configDir string, opts cliopts.GlobalOpts) (backend.Service, error) {

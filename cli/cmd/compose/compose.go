@@ -39,10 +39,10 @@ import (
 	"github.com/docker/compose-cli/cli/metrics"
 )
 
-//Command defines a compose CLI command as a func with args
+// Command defines a compose CLI command as a func with args
 type Command func(context.Context, []string) error
 
-//Adapt a Command func to cobra library
+// Adapt a Command func to cobra library
 func Adapt(fn Command) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
@@ -170,12 +170,17 @@ func RootCommand(contextType string, backend compose.Service) *cobra.Command {
 			}
 		},
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			parent := cmd.Root()
-			parentPrerun := parent.PersistentPreRunE
-			if parentPrerun != nil {
-				err := parentPrerun(cmd, args)
-				if err != nil {
-					return err
+			if cmd.HasParent() {
+				parent := cmd.Root()
+				if !parent.HasParent() {
+					return nil
+				}
+				parentPrerun := parent.PersistentPreRunE
+				if parentPrerun != nil {
+					err := parentPrerun(cmd, args)
+					if err != nil {
+						return err
+					}
 				}
 			}
 			if noAnsi {
