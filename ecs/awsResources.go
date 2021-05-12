@@ -320,12 +320,41 @@ func (b *ecsAPIService) ensureResources(resources *awsResources, project *types.
 }
 
 func (b *ecsAPIService) ensureCluster(r *awsResources, project *types.Project, template *cloudformation.Template) {
+	fargateType := "FARGATE"
+
+	if project.Extensions[extensionClusterFargateType] != nil {
+		if r.cluster != nil {
+			errors.New("Cannot set Fargate Capacity Provider when using existing cluster")
+		}
+		fargateType = project.Extensions[extensionClusterFargateType].(string)
+
+		if fargateType != "FARGATE" && fargateType != "FARGATE_SPOT" {
+			errors.New(fmt.Sprintf("Invalid Fargate Capacity provider specified: expected FARGATE or FARGATE_SPOT, got %s", fargateType))
+		}
+	}
+
 	if r.cluster != nil {
 		return
 	}
+
+	if project.Extensions[extensionClusterFargateType] != nil {
+		fargateType = project.Extensions[extensionClusterFargateType].(string)
+	}
+
 	template.Resources["Cluster"] = &ecs.Cluster{
 		ClusterName: project.Name,
 		Tags:        projectTags(project),
+		CapacityProviders: []string{
+			"FARGATE",
+			"FARGATE_SPOT",
+		},
+		DefaultCapacityProviderStrategy: []ecs.Cluster_CapacityProviderStrategyItem{
+			{
+				Base:             1,
+				Weight:           1,
+				CapacityProvider: fargateType,
+			},
+		},
 	}
 	r.cluster = cloudformationResource{logicalName: "Cluster"}
 }
