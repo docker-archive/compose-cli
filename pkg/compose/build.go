@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"sync"
 
 	"github.com/compose-spec/compose-go/types"
 	"github.com/containerd/containerd/platforms"
@@ -29,10 +31,12 @@ import (
 	"github.com/docker/buildx/util/buildflags"
 	xprogress "github.com/docker/buildx/util/progress"
 	moby "github.com/docker/docker/api/types"
+	"github.com/docker/docker/registry"
 	bclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/docker/compose-cli/pkg/api"
 	"github.com/docker/compose-cli/pkg/progress"
@@ -97,7 +101,7 @@ func (s *composeService) ensureImagesExists(ctx context.Context, project *types.
 		}
 	}
 
-	images, err := s.getLocalImagesDigests(ctx, project)
+	images, err := s.getLocalImagesIDs(ctx, project)
 	if err != nil {
 		return err
 	}
@@ -163,7 +167,19 @@ func (s *composeService) getBuildOptions(project *types.Project, images map[stri
 
 }
 
-func (s *composeService) getLocalImagesDigests(ctx context.Context, project *types.Project) (map[string]string, error) {
+func (s *composeService) getLocalImagesIDs(ctx context.Context, project *types.Project) (map[string]string, error) {
+	imgs, err := s.getLocalImageSummaries(ctx, project)
+	if err != nil {
+		return nil, err
+	}
+	images := map[string]string{}
+	for name, info := range imgs {
+		images[name] = info.ID
+	}
+	return images, nil
+}
+
+func (s *composeService) getLocalImageSummaries(ctx context.Context, project *types.Project) (map[string]api.ImageSummary, error) {
 	imageNames := []string{}
 	for _, s := range project.Services {
 		imgName := getImageName(s, project.Name)
@@ -175,11 +191,62 @@ func (s *composeService) getLocalImagesDigests(ctx context.Context, project *typ
 	if err != nil {
 		return nil, err
 	}
-	images := map[string]string{}
-	for name, info := range imgs {
-		images[name] = info.ID
+	return imgs, nil
+}
+
+func (s *composeService) getLocalImagesDigests(ctx context.Context, project *types.Project) (map[string][]string, error) {
+	imgs, err := s.getLocalImageSummaries(ctx, project)
+	if err != nil {
+		return nil, err
+	}
+	images := map[string][]string{}
+	for name, summary := range imgs {
+		for _, d := range summary.Digests {
+			s := strings.Split(d, "@")
+			images[name] = append(images[name], s[len(s)-1])
+		}
 	}
 	return images, nil
+}
+
+func (s *composeService) getDistributionImagesDigests(ctx context.Context, project *types.Project) (map[string]string, error) {
+	images := map[string]string{}
+
+	for _, service := range project.Services {
+		if service.Image == "" {
+			continue
+		}
+		images[service.Image] = ""
+	}
+
+	info, err := s.apiClient.Info(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if info.IndexServerAddress == "" {
+		info.IndexServerAddress = registry.IndexServer
+	}
+
+	l := sync.Mutex{}
+	eg, ctx := errgroup.WithContext(ctx)
+	for img := range images {
+		img := img
+		eg.Go(func() error {
+			registryAuth, err := getEncodedRegistryAuth(img, info, s.configFile)
+			if err != nil {
+				return err
+			}
+			inspect, _ := s.apiClient.DistributionInspect(ctx, img, registryAuth)
+			// Ignore error here.
+			// If you catch error here, all inspect requests will fail.
+			l.Lock()
+			images[img] = inspect.Descriptor.Digest.String()
+			l.Unlock()
+			return nil
+		})
+	}
+	return images, eg.Wait()
 }
 
 func (s *composeService) doBuild(ctx context.Context, project *types.Project, opts map[string]build.Options, observedState Containers, mode string) (map[string]string, error) {

@@ -36,6 +36,8 @@ type pullOptions struct {
 	noParallel         bool
 	includeDeps        bool
 	ignorePullFailures bool
+	dryRun             bool
+	format             string
 }
 
 func pullCommand(p *projectOptions, backend api.Service) *cobra.Command {
@@ -63,6 +65,8 @@ func pullCommand(p *projectOptions, backend api.Service) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.parallel, "no-parallel", true, "DEPRECATED disable parallel pulling.")
 	flags.MarkHidden("no-parallel") //nolint:errcheck
 	cmd.Flags().BoolVar(&opts.ignorePullFailures, "ignore-pull-failures", false, "Pull what it can and ignores images with pull failures")
+	cmd.Flags().BoolVar(&opts.dryRun, "dry-run", false, "Calc and print effects of execution of pull command without any actual effects")
+	cmd.Flags().StringVar(&opts.format, "format", "", `Format the output. Only compatible with "--dry-run". Values: [pretty | json]. (Default: pretty)`)
 	return cmd
 }
 
@@ -88,5 +92,7 @@ func runPull(ctx context.Context, backend api.Service, opts pullOptions, service
 	return backend.Pull(ctx, project, api.PullOptions{
 		Quiet:          opts.quiet,
 		IgnoreFailures: opts.ignorePullFailures,
+		DryRun:         opts.dryRun,
+		Format:         opts.format,
 	})
 }

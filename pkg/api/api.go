@@ -175,6 +175,8 @@ type PushOptions struct {
 type PullOptions struct {
 	Quiet          bool
 	IgnoreFailures bool
+	DryRun         bool
+	Format         string
 }
 
 // ImagesOptions group options of the Images API
@@ -308,6 +310,7 @@ type ImageSummary struct {
 	Repository    string
 	Tag           string
 	Size          int64
+	Digests       []string
 }
 
 // ServiceStatus hold status about a service
