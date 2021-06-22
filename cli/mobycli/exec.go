@@ -21,16 +21,19 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
+	gosignal "os/signal"
 	"path/filepath"
 	"regexp"
+	"syscall"
+
+	"github.com/docker/docker/pkg/signal"
+
+	"github.com/spf13/cobra"
 
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
-	"github.com/spf13/cobra"
-
 	"github.com/docker/compose-cli/pkg/compose"
 	"github.com/docker/compose-cli/pkg/utils"
 )
@@ -102,12 +105,24 @@ func RunDocker(childExit chan bool, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	// run command in a distinct process group to enforce it doesn't automatically receive the same signals
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+		Pgid:    0,
+	}
+
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals) // catch all signals
+	gosignal.Notify(signals) // catch all signals
 	go func() {
 		for {
 			select {
-			case sig := <-signals:
+			case sig, ok := <-signals:
+				if !ok {
+					return
+				}
+				if sig == signal.SIGCHLD || sig == signal.SIGPIPE {
+					continue
+				}
 				if cmd.Process == nil {
 					continue // can happen if receiving signal before the process is actually started
 				}
