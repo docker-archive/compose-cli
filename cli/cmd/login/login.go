@@ -48,7 +48,7 @@ func Command() *cobra.Command {
 }
 
 func runLogin(cmd *cobra.Command, args []string) error {
-	mobycli.Exec(cmd.Root())
+	mobycli.Exec()
 	return nil
 }
 
