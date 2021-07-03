@@ -21,11 +21,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 	moby "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 
-	"github.com/docker/compose-cli/pkg/utils"
+	"github.com/docker/compose-cli/v2/pkg/utils"
 )
 
 func (s *composeService) Events(ctx context.Context, project string, options api.EventsOptions) error {

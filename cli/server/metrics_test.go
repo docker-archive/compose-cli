@@ -21,24 +21,24 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/compose-cli/api/resources"
+	"github.com/docker/compose-cli/v2/api/resources"
 
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/cli/metrics"
-	containersv1 "github.com/docker/compose-cli/cli/server/protos/containers/v1"
-	contextsv1 "github.com/docker/compose-cli/cli/server/protos/contexts/v1"
-	streamsv1 "github.com/docker/compose-cli/cli/server/protos/streams/v1"
-	volumesv1 "github.com/docker/compose-cli/cli/server/protos/volumes/v1"
-	"github.com/docker/compose-cli/cli/server/proxy"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/api/volumes"
+	"github.com/docker/compose-cli/v2/cli/metrics"
+	containersv1 "github.com/docker/compose-cli/v2/cli/server/protos/containers/v1"
+	contextsv1 "github.com/docker/compose-cli/v2/cli/server/protos/contexts/v1"
+	streamsv1 "github.com/docker/compose-cli/v2/cli/server/protos/streams/v1"
+	volumesv1 "github.com/docker/compose-cli/v2/cli/server/protos/volumes/v1"
+	"github.com/docker/compose-cli/v2/cli/server/proxy"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 func TestAllMethodsHaveCorrespondingCliCommand(t *testing.T) {

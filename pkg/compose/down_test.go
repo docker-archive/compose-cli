@@ -20,8 +20,8 @@ import (
 	"context"
 	"testing"
 
-	compose "github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/mocks"
+	compose "github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/mocks"
 
 	moby "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"

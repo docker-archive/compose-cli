@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/docker/compose-cli/ecs/resolv"
+	"github.com/docker/compose-cli/v2/ecs/resolv"
 )
 
 const resolvconf = "/etc/resolv.conf"

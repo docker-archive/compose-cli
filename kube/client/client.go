@@ -27,8 +27,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/utils"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/utils"
 
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"

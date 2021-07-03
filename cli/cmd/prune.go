@@ -23,8 +23,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/resources"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/resources"
 )
 
 type pruneOpts struct {

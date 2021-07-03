@@ -19,7 +19,7 @@ package ecs
 import (
 	"context"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 func (b *ecsAPIService) Images(ctx context.Context, projectName string, options api.ImagesOptions) ([]api.ImageSummary, error) {

@@ -26,10 +26,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/ecs"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/ecs"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 func init() {

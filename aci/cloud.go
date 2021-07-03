@@ -21,7 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/aci/login"
+	"github.com/docker/compose-cli/v2/aci/login"
 )
 
 type aciCloudService struct {

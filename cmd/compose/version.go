@@ -22,8 +22,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/cli/formatter"
-	"github.com/docker/compose-cli/internal"
+	"github.com/docker/compose-cli/v2/cli/formatter"
+	"github.com/docker/compose-cli/v2/internal"
 )
 
 type versionOptions struct {

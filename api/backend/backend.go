@@ -22,12 +22,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/compose-cli/api/cloud"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/api/resources"
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/cloud"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/api/resources"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/api/volumes"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 var (

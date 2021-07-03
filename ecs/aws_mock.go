@@ -8,8 +8,8 @@ import (
 	context "context"
 	cloudformation "github.com/aws/aws-sdk-go/service/cloudformation"
 	ecs "github.com/aws/aws-sdk-go/service/ecs"
-	secrets "github.com/docker/compose-cli/api/secrets"
-	compose "github.com/docker/compose-cli/pkg/api"
+	secrets "github.com/docker/compose-cli/v2/api/secrets"
+	compose "github.com/docker/compose-cli/v2/pkg/api"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

@@ -25,12 +25,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/compose-cli/aci/convert"
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/progress"
-	"github.com/docker/compose-cli/utils/formatter"
+	"github.com/docker/compose-cli/v2/aci/convert"
+	"github.com/docker/compose-cli/v2/aci/login"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/progress"
+	"github.com/docker/compose-cli/v2/utils/formatter"
 )
 
 type aciComposeService struct {

@@ -23,10 +23,10 @@ import (
 
 	"github.com/AlecAivazis/survey/v2/terminal"
 
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/kube/resources"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/prompt"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/kube/resources"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/prompt"
 )
 
 // ContextParams options for creating a Kubernetes context

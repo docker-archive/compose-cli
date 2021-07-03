@@ -17,7 +17,7 @@
 package context
 
 import (
-	"github.com/docker/compose-cli/cli/mobycli"
+	"github.com/docker/compose-cli/v2/cli/mobycli"
 
 	"github.com/spf13/cobra"
 )

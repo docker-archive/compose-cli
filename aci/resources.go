@@ -22,9 +22,9 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 
-	"github.com/docker/compose-cli/aci/convert"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/api/resources"
+	"github.com/docker/compose-cli/v2/aci/convert"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/api/resources"
 )
 
 type aciResourceService struct {

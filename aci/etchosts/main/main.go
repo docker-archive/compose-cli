@@ -22,7 +22,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/docker/compose-cli/aci/etchosts"
+	"github.com/docker/compose-cli/v2/aci/etchosts"
 )
 
 const hosts = "/etc/hosts"

@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 type composeService struct {

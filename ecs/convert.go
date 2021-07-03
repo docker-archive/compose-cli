@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/ecs/secrets"
+	"github.com/docker/compose-cli/v2/ecs/secrets"
 
 	ecsapi "github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/awslabs/goformation/v4/cloudformation"

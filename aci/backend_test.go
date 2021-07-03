@@ -23,8 +23,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/api/containers"
+	"github.com/docker/compose-cli/v2/aci/login"
+	"github.com/docker/compose-cli/v2/api/containers"
 	"golang.org/x/oauth2"
 )
 

@@ -19,7 +19,7 @@ package ecs
 import (
 	"context"
 
-	"github.com/docker/compose-cli/api/secrets"
+	"github.com/docker/compose-cli/v2/api/secrets"
 )
 
 func (b *ecsAPIService) CreateSecret(ctx context.Context, secret secrets.Secret) (string, error) {

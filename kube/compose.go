@@ -26,15 +26,15 @@ import (
 	"github.com/compose-spec/compose-go/types"
 	"github.com/pkg/errors"
 
-	apicontext "github.com/docker/compose-cli/api/context"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/kube/client"
-	"github.com/docker/compose-cli/kube/helm"
-	"github.com/docker/compose-cli/kube/resources"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/progress"
-	utils2 "github.com/docker/compose-cli/pkg/utils"
-	"github.com/docker/compose-cli/utils"
+	apicontext "github.com/docker/compose-cli/v2/api/context"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/kube/client"
+	"github.com/docker/compose-cli/v2/kube/helm"
+	"github.com/docker/compose-cli/v2/kube/resources"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/progress"
+	utils2 "github.com/docker/compose-cli/v2/pkg/utils"
+	"github.com/docker/compose-cli/v2/utils"
 )
 
 type composeService struct {

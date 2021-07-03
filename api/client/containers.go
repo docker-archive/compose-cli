@@ -19,8 +19,8 @@ package client
 import (
 	"context"
 
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 type containerService struct {

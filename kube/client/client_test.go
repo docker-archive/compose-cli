@@ -26,7 +26,7 @@ import (
 
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 func TestPodToContainerSummary(t *testing.T) {

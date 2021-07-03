@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/utils"
+	"github.com/docker/compose-cli/v2/utils"
 
 	"github.com/compose-spec/compose-go/types"
 	"github.com/containerd/containerd/platforms"
@@ -31,7 +31,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/docker/compose-cli/api/containers"
+	"github.com/docker/compose-cli/v2/api/containers"
 )
 
 // Opts contain run command options

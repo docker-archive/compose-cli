@@ -24,9 +24,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/internal"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/internal"
+	"github.com/docker/compose-cli/v2/pkg/api"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"

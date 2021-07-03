@@ -24,7 +24,7 @@ import (
 
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/api/config"
+	"github.com/docker/compose-cli/v2/api/config"
 )
 
 var contextSetConfig = []byte(`{

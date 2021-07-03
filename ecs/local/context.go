@@ -19,9 +19,9 @@ package local
 import (
 	"context"
 
-	"github.com/docker/compose-cli/api/cloud"
-	"github.com/docker/compose-cli/ecs"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/cloud"
+	"github.com/docker/compose-cli/v2/ecs"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 var _ cloud.Service = ecsLocalSimulation{}

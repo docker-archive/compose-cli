@@ -19,7 +19,7 @@ package login
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/aci"
+	"github.com/docker/compose-cli/v2/aci"
 )
 
 // AzureLoginCommand returns the azure login command

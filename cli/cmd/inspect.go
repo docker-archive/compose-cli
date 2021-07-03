@@ -25,9 +25,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/cli/formatter"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/cli/formatter"
 )
 
 // InspectCommand inspects into containers

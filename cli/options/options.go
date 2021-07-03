@@ -17,7 +17,7 @@
 package options
 
 import (
-	cliconfig "github.com/docker/compose-cli/cli/config"
+	cliconfig "github.com/docker/compose-cli/v2/cli/config"
 
 	cliflags "github.com/docker/cli/cli/flags"
 )

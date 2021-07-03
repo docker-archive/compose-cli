@@ -33,9 +33,9 @@ import (
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/local/moby"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/local/moby"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 type containerService struct {

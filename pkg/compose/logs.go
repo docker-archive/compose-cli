@@ -20,12 +20,12 @@ import (
 	"context"
 	"io"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/pkg/stdcopy"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/docker/compose-cli/pkg/utils"
+	"github.com/docker/compose-cli/v2/pkg/utils"
 )
 
 func (s *composeService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {

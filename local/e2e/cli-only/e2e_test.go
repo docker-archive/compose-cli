@@ -30,7 +30,7 @@ import (
 	"gotest.tools/v3/golden"
 	"gotest.tools/v3/icmd"
 
-	. "github.com/docker/compose-cli/utils/e2e"
+	. "github.com/docker/compose-cli/v2/utils/e2e"
 )
 
 var binDir string

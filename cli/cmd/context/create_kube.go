@@ -19,12 +19,12 @@
 package context
 
 import (
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/kube"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/kube"
 )
 
 func init() {

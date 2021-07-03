@@ -29,11 +29,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/compose-cli/aci/convert"
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/aci/convert"
+	"github.com/docker/compose-cli/v2/aci/login"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 type aciContainerService struct {

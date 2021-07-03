@@ -1,6 +1,12 @@
-module github.com/docker/compose-cli
+module github.com/docker/compose-cli/v2
 
 go 1.16
+
+// v2.0.0-beta.3 was a binary-only release before the module was renamed to "v2".
+retract v2.0.0-beta.3
+
+// v2.0.0-beta.4 was a binary-only release before the module was renamed to "v2".
+retract v2.0.0-beta.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.3

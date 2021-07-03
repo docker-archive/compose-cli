@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/aci/login"
+	"github.com/docker/compose-cli/v2/pkg/api"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"

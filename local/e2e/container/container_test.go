@@ -28,8 +28,8 @@ import (
 	"gotest.tools/v3/icmd"
 	"gotest.tools/v3/poll"
 
-	"github.com/docker/compose-cli/cli/cmd"
-	. "github.com/docker/compose-cli/utils/e2e"
+	"github.com/docker/compose-cli/v2/cli/cmd"
+	. "github.com/docker/compose-cli/v2/utils/e2e"
 )
 
 var binDir string

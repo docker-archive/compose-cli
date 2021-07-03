@@ -28,8 +28,8 @@ import (
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
 
-	"github.com/docker/compose-cli/api/config"
-	apicontext "github.com/docker/compose-cli/api/context"
+	"github.com/docker/compose-cli/v2/api/config"
+	apicontext "github.com/docker/compose-cli/v2/api/context"
 )
 
 func testContext(t *testing.T) context.Context {

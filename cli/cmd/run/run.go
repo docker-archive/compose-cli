@@ -26,11 +26,11 @@ import (
 	"github.com/containerd/console"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/cli/options/run"
-	"github.com/docker/compose-cli/pkg/progress"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/cli/options/run"
+	"github.com/docker/compose-cli/v2/pkg/progress"
 )
 
 // Command runs a container

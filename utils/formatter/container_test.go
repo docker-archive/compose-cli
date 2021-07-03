@@ -21,7 +21,7 @@ import (
 
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/cli/options/run"
+	"github.com/docker/compose-cli/v2/cli/options/run"
 )
 
 func TestDisplayPortsNoDomainname(t *testing.T) {

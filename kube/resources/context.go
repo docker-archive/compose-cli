@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/docker/compose-cli/api/context/store"
+	"github.com/docker/compose-cli/v2/api/context/store"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"

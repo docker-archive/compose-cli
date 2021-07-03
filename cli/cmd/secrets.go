@@ -24,9 +24,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/cli/formatter"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/cli/formatter"
 )
 
 // SecretCommand manage secrets

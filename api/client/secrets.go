@@ -19,8 +19,8 @@ package client
 import (
 	"context"
 
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 type secretsService struct {

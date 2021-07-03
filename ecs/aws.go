@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ecs"
 
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 const (
@@ -31,7 +31,7 @@ const (
 	awsTypeAutoscalingGroup = "AWS::AutoScaling::AutoScalingGroup"
 )
 
-//go:generate mockgen -destination=./aws_mock.go -self_package "github.com/docker/compose-cli/ecs" -package=ecs . API
+//go:generate mockgen -destination=./aws_mock.go -self_package "github.com/docker/compose-cli/v2/ecs" -package=ecs . API
 
 // API hides aws-go-sdk into a simpler, focussed API subset
 type API interface {

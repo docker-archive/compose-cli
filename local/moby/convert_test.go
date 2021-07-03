@@ -23,7 +23,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/api/containers"
+	"github.com/docker/compose-cli/v2/api/containers"
 )
 
 func TestToRuntimeConfig(t *testing.T) {

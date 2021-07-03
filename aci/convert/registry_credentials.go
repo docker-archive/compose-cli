@@ -36,7 +36,7 @@ import (
 	"github.com/docker/cli/cli/config/types"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/aci/login"
+	"github.com/docker/compose-cli/v2/aci/login"
 )
 
 const (

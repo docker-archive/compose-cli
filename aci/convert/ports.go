@@ -24,7 +24,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/api/containers"
+	"github.com/docker/compose-cli/v2/api/containers"
 )
 
 func convertPortsToAci(service serviceConfigAciHelper) ([]containerinstance.ContainerPort, []containerinstance.Port, *string, error) {

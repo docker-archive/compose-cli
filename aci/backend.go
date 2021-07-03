@@ -23,18 +23,18 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/aci/convert"
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/api/backend"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/api/resources"
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/aci/convert"
+	"github.com/docker/compose-cli/v2/aci/login"
+	"github.com/docker/compose-cli/v2/api/backend"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/api/resources"
+	"github.com/docker/compose-cli/v2/api/secrets"
+	"github.com/docker/compose-cli/v2/api/volumes"
+	"github.com/docker/compose-cli/v2/pkg/api"
 
-	"github.com/docker/compose-cli/api/cloud"
-	apicontext "github.com/docker/compose-cli/api/context"
-	"github.com/docker/compose-cli/api/context/store"
+	"github.com/docker/compose-cli/v2/api/cloud"
+	apicontext "github.com/docker/compose-cli/v2/api/context"
+	"github.com/docker/compose-cli/v2/api/context/store"
 )
 
 const (

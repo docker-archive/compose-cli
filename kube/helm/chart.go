@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/kube/resources"
+	"github.com/docker/compose-cli/v2/kube/resources"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 

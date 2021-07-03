@@ -20,7 +20,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/api/containers"
+	"github.com/docker/compose-cli/v2/api/containers"
 )
 
 func (p projectAciHelper) getRestartPolicy() (containerinstance.ContainerGroupRestartPolicy, error) {

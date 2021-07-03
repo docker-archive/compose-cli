@@ -26,8 +26,8 @@ import (
 	"github.com/compose-spec/compose-go/types"
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/progress"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/progress"
 )
 
 func (b *ecsAPIService) Build(ctx context.Context, project *types.Project, options api.BuildOptions) error {

@@ -30,7 +30,7 @@ import (
 	"github.com/awslabs/goformation/v4/cloudformation/efs"
 	"github.com/awslabs/goformation/v4/cloudformation/elasticloadbalancingv2"
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/api"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

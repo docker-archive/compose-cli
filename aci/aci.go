@@ -34,13 +34,13 @@ import (
 	"github.com/morikuni/aec"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/aci/convert"
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/api/containers"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/progress"
+	"github.com/docker/compose-cli/v2/aci/convert"
+	"github.com/docker/compose-cli/v2/aci/login"
+	"github.com/docker/compose-cli/v2/api/client"
+	"github.com/docker/compose-cli/v2/api/containers"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/progress"
 )
 
 func createACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {

@@ -21,7 +21,7 @@ import (
 
 	"gotest.tools/v3/assert"
 
-	"github.com/docker/compose-cli/api/context/store"
+	"github.com/docker/compose-cli/v2/api/context/store"
 )
 
 func TestDelegateContextTypeToMoby(t *testing.T) {

@@ -19,8 +19,8 @@ package ecs
 import (
 	"context"
 
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/utils"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/utils"
 )
 
 func (b *ecsAPIService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {

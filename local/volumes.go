@@ -25,7 +25,7 @@ import (
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 
-	"github.com/docker/compose-cli/api/volumes"
+	"github.com/docker/compose-cli/v2/api/volumes"
 )
 
 type volumeService struct {

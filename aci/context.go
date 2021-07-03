@@ -27,9 +27,9 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/prompt"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/prompt"
 )
 
 // ContextParams options for creating ACI context

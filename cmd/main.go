@@ -25,11 +25,11 @@ import (
 	"github.com/docker/cli/cli/command"
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/context/store"
-	commands "github.com/docker/compose-cli/cmd/compose"
-	"github.com/docker/compose-cli/internal"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/compose"
+	"github.com/docker/compose-cli/v2/api/context/store"
+	commands "github.com/docker/compose-cli/v2/cmd/compose"
+	"github.com/docker/compose-cli/v2/internal"
+	"github.com/docker/compose-cli/v2/pkg/api"
+	"github.com/docker/compose-cli/v2/pkg/compose"
 )
 
 func main() {

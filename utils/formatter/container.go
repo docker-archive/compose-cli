@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/docker/compose-cli/api/containers"
+	"github.com/docker/compose-cli/v2/api/containers"
 )
 
 type portGroup struct {

@@ -20,15 +20,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/docker/compose-cli/utils"
+	"github.com/docker/compose-cli/v2/utils"
 
 	"github.com/compose-spec/compose-go/types"
 	"github.com/containerd/containerd/platforms"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/docker/compose-cli/api/containers"
-	containersv1 "github.com/docker/compose-cli/cli/server/protos/containers/v1"
-	"github.com/docker/compose-cli/cli/server/proxy/streams"
+	"github.com/docker/compose-cli/v2/api/containers"
+	containersv1 "github.com/docker/compose-cli/v2/cli/server/protos/containers/v1"
+	"github.com/docker/compose-cli/v2/cli/server/proxy/streams"
 )
 
 func portsToGrpc(ports []containers.Port) []*containersv1.Port {

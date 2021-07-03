@@ -30,8 +30,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/pkg/errors"
 
-	"github.com/docker/compose-cli/internal"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/v2/internal"
+	"github.com/docker/compose-cli/v2/pkg/api"
 )
 
 // NewContainerGroupsClient get client toi manipulate containerGrouos
