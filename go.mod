@@ -19,7 +19,7 @@ require (
 	github.com/awslabs/goformation/v4 v4.15.6
 	github.com/buger/goterm v1.0.0
 	github.com/cnabio/cnab-to-oci v0.3.1-beta1
-	github.com/compose-spec/compose-go v0.0.0-20210722130045-6e1e1c2b26de
+	github.com/compose-spec/compose-go v0.0.0-20210729053941-ef8509c7a5eb
 	github.com/containerd/console v1.0.2
 	github.com/containerd/containerd v1.5.0
 	github.com/distribution/distribution/v3 v3.0.0-20210316161203-a01c71e2477e
@@ -82,3 +82,5 @@ require (
 
 // (for buildx)
 replace github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402012908-ad4c4a574305
+
+replace github.com/joho/godotenv => github.com/ulyssessouza/godotenv v1.3.1-0.20210720203245-d3051d55ab34
