@@ -201,9 +201,10 @@ func (o *projectOptions) toProjectOptions(po ...cli.ProjectOptionsFn) (*cli.Proj
 func RootCommand(contextType string, backend api.Service) *cobra.Command {
 	opts := projectOptions{}
 	var (
-		ansi    string
-		noAnsi  bool
-		verbose bool
+		ansi     string
+		noAnsi   bool
+		verbose  bool
+		logLevel string
 	)
 	command := &cobra.Command{
 		Short:            "Docker Compose",
@@ -236,6 +237,17 @@ func RootCommand(contextType string, backend api.Service) *cobra.Command {
 				ansi = "never"
 				fmt.Fprint(os.Stderr, aec.Apply("option '--no-ansi' is DEPRECATED ! Please use '--ansi' instead.\n", aec.RedF))
 			}
+
+			level, err := logrus.ParseLevel(logLevel)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to parse logging level: %s\n", logLevel)
+				os.Exit(1)
+			}
+			logrus.SetFormatter(&logrus.TextFormatter{
+				DisableTimestamp:       true,
+				DisableLevelTruncation: true,
+			})
+			logrus.SetLevel(level)
 			if verbose {
 				logrus.SetLevel(logrus.TraceLevel)
 			}
@@ -294,5 +306,6 @@ func RootCommand(contextType string, backend api.Service) *cobra.Command {
 	command.Flags().MarkHidden("no-ansi") //nolint:errcheck
 	command.Flags().BoolVar(&verbose, "verbose", false, "Show more output")
 	command.Flags().MarkHidden("verbose") //nolint:errcheck
+	command.Flags().StringVarP(&logLevel, "log-level", "l", "info", `Set the logging level ("debug"|"info"|"warn"|"error"|"fatal")`)
 	return command
 }
