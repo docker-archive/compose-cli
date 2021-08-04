@@ -24,61 +24,18 @@ import (
 	"syscall"
 
 	"github.com/compose-spec/compose-go/types"
+	"github.com/hashicorp/go-multierror"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/docker/compose-cli/pkg/api"
 	"github.com/docker/compose-cli/pkg/progress"
 )
 
-func (b *ecsAPIService) Build(ctx context.Context, project *types.Project, options api.BuildOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Push(ctx context.Context, project *types.Project, options api.PushOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Pull(ctx context.Context, project *types.Project, options api.PullOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Create(ctx context.Context, project *types.Project, opts api.CreateOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Start(ctx context.Context, project *types.Project, options api.StartOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Restart(ctx context.Context, project *types.Project, options api.RestartOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Stop(ctx context.Context, project *types.Project, options api.StopOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Pause(ctx context.Context, project string, options api.PauseOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) UnPause(ctx context.Context, project string, options api.PauseOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Events(ctx context.Context, project string, options api.EventsOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Port(ctx context.Context, project string, service string, port int, options api.PortOptions) (string, int, error) {
-	return "", 0, api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Copy(ctx context.Context, project *types.Project, options api.CopyOptions) error {
-	return api.ErrNotImplemented
-}
-
 func (b *ecsAPIService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
+	if err := checkUnSupportedUpOptions(options); err != nil {
+		return err
+	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return b.up(ctx, project, options)
 	})
@@ -142,4 +99,42 @@ func (b *ecsAPIService) up(ctx context.Context, project *types.Project, options 
 
 	err = b.WaitStackCompletion(ctx, project.Name, operation, previousEvents...)
 	return err
+}
+
+func checkUnSupportedUpOptions(o api.UpOptions) error {
+	var errs *multierror.Error
+	// Create options
+	if o.Create.Timeout != nil {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "timeout"))
+	}
+	if o.Create.Inherit {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "inherit"))
+	}
+	if o.Create.RemoveOrphans {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "remove orphans"))
+	}
+	if o.Create.QuietPull {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "quiet pull"))
+	}
+	if o.Create.Recreate != "" {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "recreate"))
+	}
+	if o.Create.RecreateDependencies != "" {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "remove dependencies"))
+	}
+	if len(o.Create.Services) != 0 {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "selecting services on up"))
+	}
+
+	// Start options
+	if o.Start.CascadeStop {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "cascade stop"))
+	}
+	if len(o.Start.AttachTo) != 0 {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "attach to"))
+	}
+	if o.Start.ExitCodeFrom != "" {
+		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "exitcode from"))
+	}
+	return errs.ErrorOrNil()
 }

@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	//ExitCodeLoginRequired exit code when command cannot execute because it requires cloud login
+	// ExitCodeLoginRequired exit code when command cannot execute because it requires cloud login
 	// This will be used by VSCode to detect when creating context if the user needs to login first
 	ExitCodeLoginRequired = 5
 )
@@ -42,6 +42,9 @@ var (
 	// ErrNotImplemented is returned when a backend doesn't implement
 	// an action
 	ErrNotImplemented = errors.New("not implemented")
+	// ErrUnSupported is returned when a backend doesn't support
+	// an action
+	ErrUnSupported = errors.New("unsupported")
 	// ErrCanceled is returned when the command was canceled by user
 	ErrCanceled = errors.New("canceled")
 	// ErrParsingFailed is returned when a string cannot be parsed
@@ -74,6 +77,11 @@ func IsUnknownError(err error) bool {
 // IsErrNotImplemented returns true if the unwrapped error is ErrNotImplemented
 func IsErrNotImplemented(err error) bool {
 	return errors.Is(err, ErrNotImplemented)
+}
+
+// IsErrUnSupported returns true if the unwrapped error is ErrUnSupported
+func IsErrUnSupported(err error) bool {
+	return errors.Is(err, ErrUnSupported)
 }
 
 // IsErrParsingFailed returns true if the unwrapped error is ErrParsingFailed
