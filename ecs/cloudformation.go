@@ -45,10 +45,6 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml/merge2"
 )
 
-func (b *ecsAPIService) Kill(ctx context.Context, project *types.Project, options api.KillOptions) error {
-	return api.ErrNotImplemented
-}
-
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
 	err := b.resolveServiceImagesDigests(ctx, project)
 	if err != nil {
@@ -367,8 +363,8 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 		strings.ToUpper(port.Protocol),
 		port.Target,
 	)
-	//add listener to dependsOn
-	//https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
+	// add listener to dependsOn
+	// https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
 	template.Resources[listenerName] = &elasticloadbalancingv2.Listener{
 		DefaultActions: []elasticloadbalancingv2.Listener_Action{
 			{

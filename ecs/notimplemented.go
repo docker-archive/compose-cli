@@ -70,3 +70,27 @@ func (b *ecsAPIService) Port(ctx context.Context, project string, service string
 func (b *ecsAPIService) Copy(ctx context.Context, project *types.Project, options api.CopyOptions) error {
 	return api.ErrNotImplemented
 }
+
+func (b *ecsAPIService) RunOneOffContainer(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+	return 0, api.ErrNotImplemented
+}
+
+func (b *ecsAPIService) Remove(ctx context.Context, project *types.Project, options api.RemoveOptions) error {
+	return api.ErrNotImplemented
+}
+
+func (b *ecsAPIService) Images(ctx context.Context, projectName string, options api.ImagesOptions) ([]api.ImageSummary, error) {
+	return nil, api.ErrNotImplemented
+}
+
+func (b *ecsAPIService) Top(ctx context.Context, projectName string, services []string) ([]api.ContainerProcSummary, error) {
+	return nil, api.ErrNotImplemented
+}
+
+func (b *ecsAPIService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+	return 0, api.ErrNotImplemented
+}
+
+func (b *ecsAPIService) Kill(ctx context.Context, project *types.Project, options api.KillOptions) error {
+	return api.ErrNotImplemented
+}
