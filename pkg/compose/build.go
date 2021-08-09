@@ -130,7 +130,7 @@ func (s *composeService) ensureImagesExists(ctx context.Context, project *types.
 	for i, service := range project.Services {
 		digest, ok := images[getImageName(service, project.Name)]
 		if ok {
-			project.Services[i].Labels[api.ImageDigestLabel] = digest
+			project.Services[i].Labels = project.Services[i].Labels.Add(api.ImageDigestLabel, digest)
 		}
 	}
 	return nil
