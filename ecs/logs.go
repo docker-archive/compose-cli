@@ -37,9 +37,9 @@ func (b *ecsAPIService) Logs(ctx context.Context, projectName string, consumer a
 
 func checkUnSupportedLogOptions(o api.LogOptions) error {
 	var errs *multierror.Error
-	errs = utils.CheckUnsupported(errs, o.Since, "", "--since")
-	errs = utils.CheckUnsupported(errs, o.Tail, "", "--tail")
-	errs = utils.CheckUnsupported(errs, o.Timestamps, false, "--timestamps")
-	errs = utils.CheckUnsupported(errs, o.Until, "", "--until")
+	errs = utils.CheckUnsupported(errs, o.Since, "", "since")
+	errs = utils.CheckUnsupported(errs, o.Tail, "", "tail")
+	errs = utils.CheckUnsupported(errs, o.Timestamps, false, "timestamps")
+	errs = utils.CheckUnsupported(errs, o.Until, "", "until")
 	return errs.ErrorOrNil()
 }

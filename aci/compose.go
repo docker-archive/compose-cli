@@ -22,7 +22,8 @@ import (
 	"net/http"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/pkg/errors"
+	"github.com/docker/compose-cli/utils"
+	"github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
 
 	"github.com/docker/compose-cli/aci/convert"
@@ -86,9 +87,26 @@ func (cs *aciComposeService) Copy(ctx context.Context, project *types.Project, o
 }
 
 func (cs *aciComposeService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
+	if err := checkUnSupportedUpOptions(options); err != nil {
+		return err
+	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return cs.up(ctx, project)
 	})
+}
+
+func checkUnSupportedUpOptions(o api.UpOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Start.CascadeStop, false, "--abort-on-container-exit")
+	errs = utils.CheckUnsupported(errs, o.Create.RecreateDependencies, "", "--always-recreate-deps")
+	errs = utils.CheckUnsupported(errs, len(o.Start.AttachTo), 0, "--attach-dependencies")
+	errs = utils.CheckUnsupported(errs, len(o.Start.ExitCodeFrom), 0, "--exit-code-from")
+	errs = utils.CheckUnsupported(errs, o.Create.Recreate, "", "--force-recreate")
+	errs = utils.CheckUnsupported(errs, o.Create.QuietPull, false, "--quiet-pull")
+	errs = utils.CheckUnsupported(errs, o.Create.RemoveOrphans, false, "--remove-orphans")
+	errs = utils.CheckUnsupported(errs, o.Create.Inherit, false, "--renew-anon-volumes")
+	errs = utils.CheckUnsupportedDurationPtr(errs, o.Create.Timeout, nil, "--timeout")
+	return errs.ErrorOrNil()
 }
 
 func (cs *aciComposeService) up(ctx context.Context, project *types.Project) error {
@@ -130,11 +148,8 @@ func (cs aciComposeService) warnKeepVolumeOnDown(ctx context.Context, projectNam
 }
 
 func (cs *aciComposeService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if options.Volumes {
-		return errors.Wrap(api.ErrNotImplemented, "--volumes option is not supported on ACI")
-	}
-	if options.Images != "" {
-		return errors.Wrap(api.ErrNotImplemented, "--rmi option is not supported on ACI")
+	if err := checkUnSupportedDownOptions(options); err != nil {
+		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		logrus.Debugf("Down on project with name %q", projectName)
@@ -155,7 +170,18 @@ func (cs *aciComposeService) Down(ctx context.Context, projectName string, optio
 	})
 }
 
+func checkUnSupportedDownOptions(o api.DownOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Volumes, false, "volumes")
+	errs = utils.CheckUnsupported(errs, o.Images, "", "images")
+	return errs.ErrorOrNil()
+}
+
 func (cs *aciComposeService) Ps(ctx context.Context, projectName string, options api.PsOptions) ([]api.ContainerSummary, error) {
+	if err := checkUnSupportedPsOptions(options); err != nil {
+		return nil, err
+	}
+
 	groupsClient, err := login.NewContainerGroupsClient(cs.ctx.SubscriptionID)
 	if err != nil {
 		return nil, err
@@ -198,7 +224,17 @@ func (cs *aciComposeService) Ps(ctx context.Context, projectName string, options
 	return res, nil
 }
 
+func checkUnSupportedPsOptions(o api.PsOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.All, false, "all")
+	return errs.ErrorOrNil()
+}
+
 func (cs *aciComposeService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
+	if err := checkUnSupportedListOptions(opts); err != nil {
+		return nil, err
+	}
+
 	containerGroups, err := getACIContainerGroups(ctx, cs.ctx.SubscriptionID, cs.ctx.ResourceGroup)
 	if err != nil {
 		return nil, err
@@ -224,6 +260,12 @@ func (cs *aciComposeService) List(ctx context.Context, opts api.ListOptions) ([]
 		})
 	}
 	return stacks, nil
+}
+
+func checkUnSupportedListOptions(o api.ListOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.All, false, "all")
+	return errs.ErrorOrNil()
 }
 
 func (cs *aciComposeService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {

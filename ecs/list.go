@@ -49,7 +49,7 @@ func (b *ecsAPIService) List(ctx context.Context, opts api.ListOptions) ([]api.S
 
 func checkUnSupportedListOptions(o api.ListOptions) error {
 	var errs *multierror.Error
-	errs = utils.CheckUnsupported(errs, o.All, "", "--all")
+	errs = utils.CheckUnsupported(errs, o.All, false, "all")
 	return errs.ErrorOrNil()
 }
 

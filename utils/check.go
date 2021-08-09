@@ -17,8 +17,12 @@
 package utils
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/docker/compose-cli/api/context/store"
+	"github.com/docker/compose-cli/cli/config"
 	"github.com/docker/compose-cli/pkg/api"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
@@ -41,8 +45,16 @@ func CheckUnsupportedStringSlicePtr(errs *multierror.Error, toCheck, expectedVal
 }
 
 func CheckUnsupported(errs *multierror.Error, toCheck, expectedValue interface{}, msg string) *multierror.Error {
+	ctype := store.DefaultContextType
+	currentContext := config.GetCurrentContext("", config.ConfDir(), nil)
+	s, _ := store.New(config.ConfDir())
+	cc, _ := s.Get(currentContext)
+	if cc != nil {
+		ctype = cc.Type()
+	}
 	if toCheck != expectedValue {
-		return multierror.Append(errs, errors.Wrap(api.ErrUnSupported, msg+" option is not supported on ECS"))
+		return multierror.Append(errs, errors.Wrap(api.ErrUnSupported,
+			fmt.Sprintf(`"--%s" option is not supported on context type %s`, msg, strings.ToUpper(ctype))))
 	}
 	return errs
 }

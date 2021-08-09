@@ -90,7 +90,7 @@ func doDelete(ctx context.Context, delete func(ctx context.Context, arn string) 
 
 func checkUnSupportedDownOptions(o api.DownOptions) error {
 	var errs *multierror.Error
-	errs = utils.CheckUnsupported(errs, o.Volumes, false, "--volumes")
-	errs = utils.CheckUnsupported(errs, o.Images, false, "--rmi")
+	errs = utils.CheckUnsupported(errs, o.Volumes, false, "volumes")
+	errs = utils.CheckUnsupported(errs, o.Images, false, "rmi")
 	return errs.ErrorOrNil()
 }
