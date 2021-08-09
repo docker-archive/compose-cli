@@ -40,12 +40,17 @@ import (
 	cliconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/compose-cli/api/config"
 	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/utils"
+	"github.com/hashicorp/go-multierror"
 	"github.com/opencontainers/go-digest"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/kustomize/kyaml/yaml/merge2"
 )
 
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
+	if err := checkUnSupportedConvertOptions(options); err != nil {
+		return nil, err
+	}
 	err := b.resolveServiceImagesDigests(ctx, project)
 	if err != nil {
 		return nil, err
@@ -95,6 +100,12 @@ func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, opt
 	}
 	bytes = []byte(s)
 	return bytes, err
+}
+
+func checkUnSupportedConvertOptions(o api.ConvertOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Output, "", "output")
+	return errs.ErrorOrNil()
 }
 
 func (b *ecsAPIService) resolveServiceImagesDigests(ctx context.Context, project *types.Project) error {

@@ -24,8 +24,6 @@ import (
 	"strings"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/pkg/errors"
-
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/kube/client"
@@ -35,6 +33,7 @@ import (
 	"github.com/docker/compose-cli/pkg/progress"
 	utils2 "github.com/docker/compose-cli/pkg/utils"
 	"github.com/docker/compose-cli/utils"
+	"github.com/hashicorp/go-multierror"
 )
 
 type composeService struct {
@@ -72,9 +71,25 @@ func NewComposeService() (api.Service, error) {
 
 // Up executes the equivalent to a `compose up`
 func (s *composeService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
+	if err := checkUnSupportedUpOptions(options); err != nil {
+		return err
+	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return s.up(ctx, project)
 	})
+}
+
+func checkUnSupportedUpOptions(o api.UpOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Create.Inherit, false, "renew-anon-volumes")
+	errs = utils.CheckUnsupported(errs, o.Create.RemoveOrphans, false, "remove-orphans")
+	errs = utils.CheckUnsupported(errs, o.Create.QuietPull, false, "quiet-pull")
+	errs = utils.CheckUnsupported(errs, o.Create.Recreate, "", "force-recreate")
+	errs = utils.CheckUnsupported(errs, o.Create.RecreateDependencies, "", "always-recreate-deps")
+	errs = utils.CheckUnsupportedDurationPtr(errs, o.Create.Timeout, nil, "timeout")
+	errs = utils.CheckUnsupported(errs, len(o.Start.AttachTo), 0, "attach-dependencies")
+	errs = utils.CheckUnsupported(errs, len(o.Start.ExitCodeFrom), 0, "exit-code-from")
+	return errs.ErrorOrNil()
 }
 
 func (s *composeService) up(ctx context.Context, project *types.Project) error {
@@ -132,15 +147,19 @@ func (s *composeService) up(ctx context.Context, project *types.Project) error {
 
 // Down executes the equivalent to a `compose down`
 func (s *composeService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if options.Volumes {
-		return errors.Wrap(api.ErrNotImplemented, "--volumes option is not supported on Kubernetes")
-	}
-	if options.Images != "" {
-		return errors.Wrap(api.ErrNotImplemented, "--rmi option is not supported on Kubernetes")
+	if err := checkUnSupportedDownOptions(options); err != nil {
+		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return s.down(ctx, projectName, options)
 	})
+}
+
+func checkUnSupportedDownOptions(o api.DownOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Volumes, false, "volumes")
+	errs = utils.CheckUnsupported(errs, o.Images, "", "images")
+	return errs.ErrorOrNil()
 }
 
 func (s *composeService) down(ctx context.Context, projectName string, options api.DownOptions) error {
@@ -193,7 +212,16 @@ func (s *composeService) down(ctx context.Context, projectName string, options a
 
 // List executes the equivalent to a `docker stack ls`
 func (s *composeService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
+	if err := checkUnSupportedListOptions(opts); err != nil {
+		return nil, err
+	}
 	return s.sdk.ListReleases()
+}
+
+func checkUnSupportedListOptions(o api.ListOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.All, false, "all")
+	return errs.ErrorOrNil()
 }
 
 // Build executes the equivalent to a `compose build`
@@ -238,20 +266,43 @@ func (s *composeService) Copy(ctx context.Context, project *types.Project, optio
 
 // Logs executes the equivalent to a `compose logs`
 func (s *composeService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {
+	if err := checkUnSupportedLogOptions(options); err != nil {
+		return err
+	}
 	if len(options.Services) > 0 {
 		consumer = utils.FilteredLogConsumer(consumer, options.Services)
 	}
 	return s.client.GetLogs(ctx, projectName, consumer, options.Follow)
 }
 
+func checkUnSupportedLogOptions(o api.LogOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Since, "", "since")
+	errs = utils.CheckUnsupported(errs, o.Tail, "", "tail")
+	errs = utils.CheckUnsupported(errs, o.Timestamps, false, "timestamps")
+	errs = utils.CheckUnsupported(errs, o.Until, "", "until")
+	return errs.ErrorOrNil()
+}
+
 // Ps executes the equivalent to a `compose ps`
 func (s *composeService) Ps(ctx context.Context, projectName string, options api.PsOptions) ([]api.ContainerSummary, error) {
+	if err := checkUnSupportedPsOptions(options); err != nil {
+		return nil, err
+	}
 	return s.client.GetContainers(ctx, projectName, options.All)
+}
+
+func checkUnSupportedPsOptions(o api.PsOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.All, false, "all")
+	return nil
 }
 
 // Convert translate compose model into backend's native format
 func (s *composeService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
-
+	if err := checkUnSupportedConvertOptions(options); err != nil {
+		return nil, err
+	}
 	chart, err := helm.GetChartInMemory(project)
 	if err != nil {
 		return nil, err
@@ -272,6 +323,10 @@ func (s *composeService) Convert(ctx context.Context, project *types.Project, op
 	return buff, nil
 }
 
+func checkUnSupportedConvertOptions(o api.ConvertOptions) error {
+	return nil
+}
+
 func (s *composeService) Kill(ctx context.Context, project *types.Project, options api.KillOptions) error {
 	return api.ErrNotImplemented
 }
@@ -287,7 +342,18 @@ func (s *composeService) Remove(ctx context.Context, project *types.Project, opt
 
 // Exec executes a command in a running service container
 func (s *composeService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+	if err := checkUnSupportedExecOptions(opts); err != nil {
+		return 0, err
+	}
 	return 0, s.client.Exec(ctx, project.Name, opts)
+}
+
+func checkUnSupportedExecOptions(o api.RunOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Index, "", "index")
+	errs = utils.CheckUnsupported(errs, o.Privileged, "", "privileged")
+	errs = utils.CheckUnsupported(errs, o.WorkingDir, "", "workdir")
+	return errs.ErrorOrNil()
 }
 
 func (s *composeService) Pause(ctx context.Context, project string, options api.PauseOptions) error {
