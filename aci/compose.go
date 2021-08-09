@@ -97,15 +97,15 @@ func (cs *aciComposeService) Up(ctx context.Context, project *types.Project, opt
 
 func checkUnSupportedUpOptions(o api.UpOptions) error {
 	var errs *multierror.Error
-	errs = utils.CheckUnsupported(errs, o.Start.CascadeStop, false, "--abort-on-container-exit")
-	errs = utils.CheckUnsupported(errs, o.Create.RecreateDependencies, "", "--always-recreate-deps")
-	errs = utils.CheckUnsupported(errs, len(o.Start.AttachTo), 0, "--attach-dependencies")
-	errs = utils.CheckUnsupported(errs, len(o.Start.ExitCodeFrom), 0, "--exit-code-from")
-	errs = utils.CheckUnsupported(errs, o.Create.Recreate, "", "--force-recreate")
-	errs = utils.CheckUnsupported(errs, o.Create.QuietPull, false, "--quiet-pull")
-	errs = utils.CheckUnsupported(errs, o.Create.RemoveOrphans, false, "--remove-orphans")
-	errs = utils.CheckUnsupported(errs, o.Create.Inherit, false, "--renew-anon-volumes")
-	errs = utils.CheckUnsupportedDurationPtr(errs, o.Create.Timeout, nil, "--timeout")
+	errs = utils.CheckUnsupported(errs, o.Start.CascadeStop, false, "abort-on-container-exit")
+	errs = utils.CheckUnsupported(errs, o.Create.RecreateDependencies, "", "always-recreate-deps")
+	errs = utils.CheckUnsupported(errs, len(o.Start.AttachTo), 0, "attach-dependencies")
+	errs = utils.CheckUnsupported(errs, len(o.Start.ExitCodeFrom), 0, "exit-code-from")
+	errs = utils.CheckUnsupported(errs, o.Create.Recreate, "", "force-recreate")
+	errs = utils.CheckUnsupported(errs, o.Create.QuietPull, false, "quiet-pull")
+	errs = utils.CheckUnsupported(errs, o.Create.RemoveOrphans, false, "remove-orphans")
+	errs = utils.CheckUnsupported(errs, o.Create.Inherit, false, "renew-anon-volumes")
+	errs = utils.CheckUnsupportedDurationPtr(errs, o.Create.Timeout, nil, "timeout")
 	return errs.ErrorOrNil()
 }
 

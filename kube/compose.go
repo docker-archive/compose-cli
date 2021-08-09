@@ -295,7 +295,7 @@ func (s *composeService) Ps(ctx context.Context, projectName string, options api
 func checkUnSupportedPsOptions(o api.PsOptions) error {
 	var errs *multierror.Error
 	errs = utils.CheckUnsupported(errs, o.All, false, "all")
-	return nil
+	return errs.ErrorOrNil()
 }
 
 // Convert translate compose model into backend's native format
