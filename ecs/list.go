@@ -21,9 +21,15 @@ import (
 	"fmt"
 
 	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose-cli/utils"
+	"github.com/hashicorp/go-multierror"
 )
 
 func (b *ecsAPIService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
+	if err := checkUnSupportedListOptions(opts); err != nil {
+		return nil, err
+	}
+
 	stacks, err := b.aws.ListStacks(ctx)
 	if err != nil {
 		return nil, err
@@ -39,6 +45,12 @@ func (b *ecsAPIService) List(ctx context.Context, opts api.ListOptions) ([]api.S
 	}
 	return stacks, nil
 
+}
+
+func checkUnSupportedListOptions(o api.ListOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.All, "", "--all")
+	return errs.ErrorOrNil()
 }
 
 func (b *ecsAPIService) checkStackState(ctx context.Context, name string) error {

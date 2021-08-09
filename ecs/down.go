@@ -19,11 +19,10 @@ package ecs
 import (
 	"context"
 
-	"github.com/hashicorp/go-multierror"
-	"github.com/pkg/errors"
-
 	"github.com/docker/compose-cli/pkg/api"
 	"github.com/docker/compose-cli/pkg/progress"
+	"github.com/docker/compose-cli/utils"
+	"github.com/hashicorp/go-multierror"
 )
 
 func (b *ecsAPIService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
@@ -91,11 +90,7 @@ func doDelete(ctx context.Context, delete func(ctx context.Context, arn string) 
 
 func checkUnSupportedDownOptions(o api.DownOptions) error {
 	var errs *multierror.Error
-	if o.Volumes {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "--volumes option is not supported on ECS"))
-	}
-	if o.Images != "" {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "--rmi option is not supported on ECS"))
-	}
+	errs = utils.CheckUnsupported(errs, o.Volumes, false, "--volumes")
+	errs = utils.CheckUnsupported(errs, o.Images, false, "--rmi")
 	return errs.ErrorOrNil()
 }

@@ -24,8 +24,8 @@ import (
 	"syscall"
 
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose-cli/utils"
 	"github.com/hashicorp/go-multierror"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/docker/compose-cli/pkg/api"
@@ -103,38 +103,13 @@ func (b *ecsAPIService) up(ctx context.Context, project *types.Project, options 
 
 func checkUnSupportedUpOptions(o api.UpOptions) error {
 	var errs *multierror.Error
-	// Create options
-	if o.Create.Timeout != nil {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "timeout"))
-	}
-	if o.Create.Inherit {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "inherit"))
-	}
-	if o.Create.RemoveOrphans {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "remove orphans"))
-	}
-	if o.Create.QuietPull {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "quiet pull"))
-	}
-	if o.Create.Recreate != "" {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "recreate"))
-	}
-	if o.Create.RecreateDependencies != "" {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "remove dependencies"))
-	}
-	if len(o.Create.Services) != 0 {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "selecting services on up"))
-	}
-
-	// Start options
-	if o.Start.CascadeStop {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "cascade stop"))
-	}
-	if len(o.Start.AttachTo) != 0 {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "attach to"))
-	}
-	if o.Start.ExitCodeFrom != "" {
-		errs = multierror.Append(errs, errors.Wrap(api.ErrUnSupported, "exitcode from"))
-	}
+	errs = utils.CheckUnsupported(errs, o.Create.Inherit, false, "--renew-anon-volumes")
+	errs = utils.CheckUnsupported(errs, o.Create.RemoveOrphans, false, "--remove-orphans")
+	errs = utils.CheckUnsupported(errs, o.Create.QuietPull, false, "--quiet-pull")
+	errs = utils.CheckUnsupported(errs, o.Create.Recreate, "", "--force-recreate")
+	errs = utils.CheckUnsupported(errs, o.Create.RecreateDependencies, "", "--always-recreate-deps")
+	errs = utils.CheckUnsupportedDurationPtr(errs, o.Create.Timeout, nil, "--timeout")
+	errs = utils.CheckUnsupported(errs, len(o.Start.AttachTo), 0, "--attach-dependencies")
+	errs = utils.CheckUnsupported(errs, len(o.Start.ExitCodeFrom), 0, "--exit-code-from")
 	return errs.ErrorOrNil()
 }

@@ -21,12 +21,25 @@ import (
 
 	"github.com/docker/compose-cli/pkg/api"
 	"github.com/docker/compose-cli/utils"
+	"github.com/hashicorp/go-multierror"
 )
 
 func (b *ecsAPIService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {
+	if err := checkUnSupportedLogOptions(options); err != nil {
+		return err
+	}
 	if len(options.Services) > 0 {
 		consumer = utils.FilteredLogConsumer(consumer, options.Services)
 	}
 	err := b.aws.GetLogs(ctx, projectName, consumer.Log, options.Follow)
 	return err
+}
+
+func checkUnSupportedLogOptions(o api.LogOptions) error {
+	var errs *multierror.Error
+	errs = utils.CheckUnsupported(errs, o.Since, "", "--since")
+	errs = utils.CheckUnsupported(errs, o.Tail, "", "--tail")
+	errs = utils.CheckUnsupported(errs, o.Timestamps, false, "--timestamps")
+	errs = utils.CheckUnsupported(errs, o.Until, "", "--until")
+	return errs.ErrorOrNil()
 }
