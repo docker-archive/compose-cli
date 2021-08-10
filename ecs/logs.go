@@ -25,7 +25,7 @@ import (
 )
 
 func (b *ecsAPIService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {
-	if err := checkUnSupportedLogOptions(options); err != nil {
+	if err := checkUnsupportedLogOptions(options); err != nil {
 		return err
 	}
 	if len(options.Services) > 0 {
@@ -35,11 +35,19 @@ func (b *ecsAPIService) Logs(ctx context.Context, projectName string, consumer a
 	return err
 }
 
-func checkUnSupportedLogOptions(o api.LogOptions) error {
+func checkUnsupportedLogOptions(o api.LogOptions) error {
 	var errs *multierror.Error
-	errs = utils.CheckUnsupported(errs, o.Since, "", "since")
-	errs = utils.CheckUnsupported(errs, o.Tail, "", "tail")
-	errs = utils.CheckUnsupported(errs, o.Timestamps, false, "timestamps")
-	errs = utils.CheckUnsupported(errs, o.Until, "", "until")
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Since, "", "since"},
+		{o.Tail, "", "tail"},
+		{o.Timestamps, false, "timestamps"},
+		{o.Until, "", "until"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "logs", c.option)
+	}
 	return errs.ErrorOrNil()
 }

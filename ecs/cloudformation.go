@@ -48,7 +48,7 @@ import (
 )
 
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
-	if err := checkUnSupportedConvertOptions(options); err != nil {
+	if err := checkUnsupportedConvertOptions(options); err != nil {
 		return nil, err
 	}
 	err := b.resolveServiceImagesDigests(ctx, project)
@@ -102,9 +102,9 @@ func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, opt
 	return bytes, err
 }
 
-func checkUnSupportedConvertOptions(o api.ConvertOptions) error {
+func checkUnsupportedConvertOptions(o api.ConvertOptions) error {
 	var errs *multierror.Error
-	errs = utils.CheckUnsupported(errs, o.Output, "", "output")
+	errs = utils.CheckUnsupported(errs, o.Output, "", "convert", "output")
 	return errs.ErrorOrNil()
 }
 

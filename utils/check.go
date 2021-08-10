@@ -28,23 +28,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CheckUnsupportedDurationPtr(errs *multierror.Error, toCheck, expectedValue interface{}, msg string) *multierror.Error {
-	var nilDurationPtr *time.Duration
-	if expectedValue == nil {
-		expectedValue = nilDurationPtr
-	}
-	return CheckUnsupported(errs, toCheck, expectedValue, msg)
-}
-
-func CheckUnsupportedStringSlicePtr(errs *multierror.Error, toCheck, expectedValue interface{}, msg string) *multierror.Error {
-	var nilStringSlicePtr *[]string
-	if expectedValue == nil {
-		expectedValue = nilStringSlicePtr
-	}
-	return CheckUnsupported(errs, toCheck, expectedValue, msg)
-}
-
-func CheckUnsupported(errs *multierror.Error, toCheck, expectedValue interface{}, msg string) *multierror.Error {
+func CheckUnsupported(errs *multierror.Error, toCheck, expectedValue interface{}, commandName, msg string) *multierror.Error {
 	ctype := store.DefaultContextType
 	currentContext := config.GetCurrentContext("", config.ConfDir(), nil)
 	s, _ := store.New(config.ConfDir())
@@ -52,9 +36,18 @@ func CheckUnsupported(errs *multierror.Error, toCheck, expectedValue interface{}
 	if cc != nil {
 		ctype = cc.Type()
 	}
+	// Fixes type for posterior comparison
+	switch toCheck.(type) {
+	case *time.Duration:
+		if expectedValue == nil {
+			var nilDurationPtr *time.Duration
+			expectedValue = nilDurationPtr
+		}
+	}
 	if toCheck != expectedValue {
 		return multierror.Append(errs, errors.Wrap(api.ErrUnSupported,
-			fmt.Sprintf(`"--%s" option is not supported on context type %s`, msg, strings.ToUpper(ctype))))
+			fmt.Sprintf(`option "%s --%s" on context type %s.`,
+				commandName, msg, strings.ToUpper(ctype))))
 	}
 	return errs
 }
