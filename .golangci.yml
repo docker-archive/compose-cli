@@ -1,8 +1,12 @@
+run:
+  build-tags:
+    - kube
+    - e2e
+  timeout: 10m
+  concurrency: 2
+  skip-dirs:
+    - tests/composefiles 
 linters:
-  run:
-    concurrency: 2
-    skip-dirs:
-      - tests/composefiles
   enable-all: false
   disable-all: true
   enable:
