@@ -29,11 +29,10 @@ jobs:
         run: make import-restrictions
 
       - name: Run golangci-lint
-        env:
-          BUILD_TAGS: kube,e2e
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/bin/ v1.39.0
-          make -f builder.Makefile lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.40.1
+          args: --verbose
 
   # only on main branch, costs too much for the gain on every PR
   validate-cross-build:
