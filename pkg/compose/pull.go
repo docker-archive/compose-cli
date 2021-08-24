@@ -21,7 +21,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/compose-spec/compose-go/types"
@@ -32,17 +34,84 @@ import (
 	"github.com/docker/docker/registry"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/docker/compose-cli/cli/formatter"
 	"github.com/docker/compose-cli/pkg/api"
 	"github.com/docker/compose-cli/pkg/progress"
 )
 
+const (
+	pullPlanFetch = "fetch"
+	pullPlanFail  = "fail"
+	pullPlanSkip  = "skip"
+)
+
+type pullDryRunServiceResult struct {
+	Name               string
+	Image              string
+	LocalDigests       []string
+	DistributionDigest string
+	Plan               string
+}
+
+type pullDryRunResults struct {
+	Services []pullDryRunServiceResult
+}
+
 func (s *composeService) Pull(ctx context.Context, project *types.Project, opts api.PullOptions) error {
+	if opts.DryRun {
+		return s.pullDryRun(ctx, project, opts)
+	}
 	if opts.Quiet {
 		return s.pull(ctx, project, opts)
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return s.pull(ctx, project, opts)
 	})
+}
+
+func (s *composeService) pullDryRun(ctx context.Context, project *types.Project, opts api.PullOptions) error {
+	results, err := s.pullDryRunSimulate(ctx, project, opts)
+	if err != nil {
+		return err
+	}
+	return formatter.Print(results, opts.Format, os.Stdout, func(w io.Writer) {
+		for _, service := range results.Services {
+			d := service.DistributionDigest
+			if d == "" {
+				// follow `docker images --digests` format
+				d = "<none>"
+			}
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", service.Name, service.Image, service.Plan, d)
+		}
+	}, "SERVICE", "IMAGE", "PLAN", "REMOTE DIGEST")
+}
+
+func getEncodedRegistryAuth(image string, info moby.Info, configFile driver.Auth) (string, error) {
+	ref, err := reference.ParseNormalizedNamed(image)
+	if err != nil {
+		return "", err
+	}
+
+	repoInfo, err := registry.ParseRepositoryInfo(ref)
+	if err != nil {
+		return "", err
+	}
+
+	key := repoInfo.Index.Name
+	if repoInfo.Index.Official {
+		key = info.IndexServerAddress
+	}
+
+	authConfig, err := configFile.GetAuthConfig(key)
+	if err != nil {
+		return "", err
+	}
+
+	buf, err := json.Marshal(authConfig)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(buf), nil
 }
 
 func (s *composeService) pull(ctx context.Context, project *types.Project, opts api.PullOptions) error {
@@ -89,33 +158,12 @@ func (s *composeService) pullServiceImage(ctx context.Context, service types.Ser
 		Status: progress.Working,
 		Text:   "Pulling",
 	})
-	ref, err := reference.ParseNormalizedNamed(service.Image)
+	registryAuth, err := getEncodedRegistryAuth(service.Image, info, configFile)
 	if err != nil {
 		return err
 	}
-
-	repoInfo, err := registry.ParseRepositoryInfo(ref)
-	if err != nil {
-		return err
-	}
-
-	key := repoInfo.Index.Name
-	if repoInfo.Index.Official {
-		key = info.IndexServerAddress
-	}
-
-	authConfig, err := configFile.GetAuthConfig(key)
-	if err != nil {
-		return err
-	}
-
-	buf, err := json.Marshal(authConfig)
-	if err != nil {
-		return err
-	}
-
 	stream, err := s.apiClient.ImagePull(ctx, service.Image, moby.ImagePullOptions{
-		RegistryAuth: base64.URLEncoding.EncodeToString(buf),
+		RegistryAuth: registryAuth,
 		Platform:     service.Platform,
 	})
 	if err != nil {
@@ -149,6 +197,60 @@ func (s *composeService) pullServiceImage(ctx context.Context, service types.Ser
 		Text:   "Pulled",
 	})
 	return nil
+}
+
+func getPullPlan(service types.ServiceConfig, localDigests []string, dstrDigest string) (plan string) {
+	canSkip := false
+	for _, l := range localDigests {
+		if dstrDigest == l {
+			canSkip = true
+			break
+		}
+	}
+
+	if service.Image == "" {
+		// build only service
+		plan = pullPlanSkip
+	} else if dstrDigest == "" {
+		plan = pullPlanFail
+	} else if canSkip {
+		plan = pullPlanSkip
+	} else {
+		plan = pullPlanFetch
+	}
+	return
+}
+
+func (s *composeService) pullDryRunSimulate(ctx context.Context, project *types.Project, opts api.PullOptions) (*pullDryRunResults, error) {
+	// ignore errors
+	dstrDigests, _ := s.getDistributionImagesDigests(ctx, project)
+
+	localDigests, err := s.getLocalImagesDigests(ctx, project)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []pullDryRunServiceResult
+
+	for _, service := range project.Services {
+		l, ok := localDigests[service.Image]
+		if !ok {
+			l = []string{}
+		}
+		d := dstrDigests[service.Image]
+		plan := getPullPlan(service, l, d)
+		result := &pullDryRunServiceResult{
+			Name:               service.Name,
+			Image:              service.Image,
+			LocalDigests:       l,
+			DistributionDigest: d,
+			Plan:               plan,
+		}
+		results = append(results, *result)
+	}
+
+	return &pullDryRunResults{Services: results}, nil
+
 }
 
 func (s *composeService) pullRequiredImages(ctx context.Context, project *types.Project, images map[string]string, quietPull bool) error {

@@ -105,6 +105,7 @@ func (s *composeService) getImages(ctx context.Context, images []string) (map[st
 				Repository: repository,
 				Tag:        tag,
 				Size:       inspect.Size,
+				Digests:    inspect.RepoDigests,
 			}
 			l.Unlock()
 			return nil

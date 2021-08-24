@@ -1,0 +1,14 @@
+services:
+  expected-fetch:
+    image: hello-world
+    command: top
+  expected-skip-already-exist:
+    image: alpine
+    command: top
+  expected-fail:
+    # this image is not expected to be registered on any registries
+    image: expected-not-to-be-registered
+    command: top
+  expected-skip-build:
+    build: .
+    command: top
