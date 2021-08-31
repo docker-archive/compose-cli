@@ -23,9 +23,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/pkg/progress"
-
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/docker/compose/v2/pkg/progress"
 	"github.com/iancoleman/strcase"
 )
 

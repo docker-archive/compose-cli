@@ -23,8 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	formatter2 "github.com/docker/compose-cli/cmd/formatter"
-
+	"github.com/docker/compose/v2/cmd/formatter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -69,7 +68,7 @@ func runList(cmd *cobra.Command, opts lsOpts) error {
 		return err
 	}
 	format := strings.ToLower(strings.ReplaceAll(opts.format, " ", ""))
-	if format != "" && format != formatter2.JSON && format != formatter2.PRETTY && format != formatter2.TemplateLegacyJSON {
+	if format != "" && format != formatter.JSON && format != formatter.PRETTY && format != formatter.TemplateLegacyJSON {
 		mobycli.Exec(cmd.Root())
 		return nil
 	}
@@ -92,15 +91,15 @@ func runList(cmd *cobra.Command, opts lsOpts) error {
 		return nil
 	}
 
-	if opts.json || format == formatter2.JSON {
-		opts.format = formatter2.JSON
+	if opts.json || format == formatter.JSON {
+		opts.format = formatter.JSON
 	}
-	if format == formatter2.TemplateLegacyJSON {
-		opts.format = formatter2.TemplateLegacyJSON
+	if format == formatter.TemplateLegacyJSON {
+		opts.format = formatter.TemplateLegacyJSON
 	}
 
 	view := viewFromContextList(contexts, currentContext)
-	return formatter2.Print(view, opts.format, os.Stdout,
+	return formatter.Print(view, opts.format, os.Stdout,
 		func(w io.Writer) {
 			for _, c := range view {
 				contextName := c.Name

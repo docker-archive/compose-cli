@@ -24,12 +24,12 @@ import (
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/subscription/mgmt/subscription"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/prompt"
 	"github.com/hashicorp/go-uuid"
 	"github.com/pkg/errors"
 
 	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/prompt"
 )
 
 // ContextParams options for creating ACI context

@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
 
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"

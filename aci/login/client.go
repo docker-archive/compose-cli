@@ -30,8 +30,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/pkg/errors"
 
+	"github.com/docker/compose/v2/pkg/api"
+
 	"github.com/docker/compose-cli/internal"
-	"github.com/docker/compose-cli/pkg/api"
 )
 
 // UserAgentName is the default user agent used by the cli

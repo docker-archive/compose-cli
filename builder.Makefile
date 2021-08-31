@@ -53,10 +53,6 @@ protos:
 cli:
 	GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o $(BINARY_WITH_EXTENSION) ./cli
 
-.PHONY: compose-plugin
-compose-plugin:
-	GOOS=${GOOS} GOARCH=${GOARCH} $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY_WITH_EXTENSION) ./cmd
-
 .PHONY: cross
 cross:
 	GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-linux-amd64 ./cli
@@ -67,17 +63,6 @@ cross:
 	GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-amd64 ./cli
 	GOOS=darwin  GOARCH=arm64 $(GO_BUILD) $(TAGS) -o $(BINARY)-darwin-arm64 ./cli
 	GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(BINARY)-windows-amd64.exe ./cli
-
-.PHONY: cross-compose-plugin
-cross-compose-plugin:
-	GOOS=linux   GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-linux-amd64 ./cmd
-	GOOS=linux   GOARCH=arm64 $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-linux-arm64 ./cmd
-	GOOS=linux   GOARM=6 GOARCH=arm $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-linux-armv6 ./cmd
-	GOOS=linux   GOARM=7 GOARCH=arm $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-linux-armv7 ./cmd
-	GOOS=linux   GOARCH=s390x $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-linux-s390x ./cmd
-	GOOS=darwin  GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-darwin-amd64 ./cmd
-	GOOS=darwin  GOARCH=arm64 $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-darwin-arm64 ./cmd
-	GOOS=windows GOARCH=amd64 $(GO_BUILD) $(TAGS) -o $(COMPOSE_BINARY)-windows-amd64.exe ./cmd
 
 .PHONY: test
 test:

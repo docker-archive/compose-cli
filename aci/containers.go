@@ -26,6 +26,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -33,7 +34,6 @@ import (
 	"github.com/docker/compose-cli/aci/login"
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
 )
 
 type aciContainerService struct {

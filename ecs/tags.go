@@ -19,8 +19,7 @@ package ecs
 import (
 	"github.com/awslabs/goformation/v4/cloudformation/tags"
 	"github.com/compose-spec/compose-go/types"
-
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
 )
 
 func projectTags(project *types.Project) []tags.Tag {

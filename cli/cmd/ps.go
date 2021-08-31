@@ -23,12 +23,12 @@ import (
 	"os"
 	"strings"
 
+	format "github.com/docker/compose/v2/cmd/formatter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/containers"
-	format "github.com/docker/compose-cli/cmd/formatter"
 	"github.com/docker/compose-cli/utils/formatter"
 )
 

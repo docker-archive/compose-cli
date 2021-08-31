@@ -23,8 +23,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/docker/compose-cli/pkg/api"
-
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/awslabs/goformation/v4/cloudformation"
 	"github.com/awslabs/goformation/v4/cloudformation/ec2"
@@ -35,6 +33,7 @@ import (
 	"github.com/awslabs/goformation/v4/cloudformation/logs"
 	"github.com/compose-spec/compose-go/loader"
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/golang/mock/gomock"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/golden"

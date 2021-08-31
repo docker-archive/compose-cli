@@ -20,13 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	format "github.com/docker/compose-cli/cmd/formatter"
+	format "github.com/docker/compose/v2/cmd/formatter"
+
+	"github.com/docker/compose/v2/pkg/progress"
 
 	"github.com/docker/compose-cli/aci"
 	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/ecs"
-	"github.com/docker/compose-cli/pkg/progress"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"

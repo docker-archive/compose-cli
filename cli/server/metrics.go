@@ -19,11 +19,11 @@ package server
 import (
 	"context"
 
+	"github.com/docker/compose/v2/pkg/compose"
 	"google.golang.org/grpc"
 
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/server/proxy"
-	"github.com/docker/compose-cli/pkg/compose"
 )
 
 var (

@@ -6,12 +6,14 @@ package ecs
 
 import (
 	context "context"
+	reflect "reflect"
+
 	cloudformation "github.com/aws/aws-sdk-go/service/cloudformation"
 	ecs "github.com/aws/aws-sdk-go/service/ecs"
-	secrets "github.com/docker/compose-cli/api/secrets"
-	compose "github.com/docker/compose-cli/pkg/api"
+	compose "github.com/docker/compose/v2/pkg/api"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
+
+	secrets "github.com/docker/compose-cli/api/secrets"
 )
 
 // MockAPI is a mock of API interface

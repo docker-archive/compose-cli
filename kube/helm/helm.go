@@ -21,7 +21,7 @@ package helm
 import (
 	"errors"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	env "helm.sh/helm/v3/pkg/cli"

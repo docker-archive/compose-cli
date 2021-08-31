@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sanathkr/go-yaml"
 
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
 )
 
 func (e ecsLocalSimulation) Build(ctx context.Context, project *types.Project, options api.BuildOptions) error {

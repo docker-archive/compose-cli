@@ -24,10 +24,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/compose-cli/api/secrets"
-	"github.com/docker/compose-cli/internal"
-	"github.com/docker/compose-cli/pkg/api"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -55,10 +51,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/go-uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/docker/compose-cli/api/secrets"
+	"github.com/docker/compose-cli/internal"
 )
 
 type sdk struct {

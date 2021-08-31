@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/sirupsen/logrus"
 
 	"github.com/docker/compose-cli/api/cloud"
@@ -27,7 +28,6 @@ import (
 	"github.com/docker/compose-cli/api/resources"
 	"github.com/docker/compose-cli/api/secrets"
 	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
 )
 
 var (

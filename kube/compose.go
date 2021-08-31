@@ -24,6 +24,9 @@ import (
 	"strings"
 
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/progress"
+	utils2 "github.com/docker/compose/v2/pkg/utils"
 	"github.com/pkg/errors"
 
 	apicontext "github.com/docker/compose-cli/api/context"
@@ -31,9 +34,6 @@ import (
 	"github.com/docker/compose-cli/kube/client"
 	"github.com/docker/compose-cli/kube/helm"
 	"github.com/docker/compose-cli/kube/resources"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/progress"
-	utils2 "github.com/docker/compose-cli/pkg/utils"
 	"github.com/docker/compose-cli/utils"
 )
 

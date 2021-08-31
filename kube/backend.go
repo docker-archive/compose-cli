@@ -19,6 +19,8 @@
 package kube
 
 import (
+	"github.com/docker/compose/v2/pkg/api"
+
 	"github.com/docker/compose-cli/api/backend"
 	"github.com/docker/compose-cli/api/cloud"
 	"github.com/docker/compose-cli/api/containers"
@@ -26,7 +28,6 @@ import (
 	"github.com/docker/compose-cli/api/resources"
 	"github.com/docker/compose-cli/api/secrets"
 	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
 )
 
 const backendType = store.KubeContextType

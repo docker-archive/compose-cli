@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
