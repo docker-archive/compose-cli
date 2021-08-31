@@ -22,13 +22,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/docker/compose-cli/aci/login"
-	"github.com/docker/compose-cli/pkg/api"
-
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/pkg/errors"
+
+	"github.com/docker/compose-cli/aci/login"
 )
 
 const (

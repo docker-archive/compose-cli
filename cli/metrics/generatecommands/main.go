@@ -21,7 +21,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/docker/compose-cli/pkg/utils"
+	"github.com/docker/compose/v2/pkg/utils"
 )
 
 var managementCommands = []string{"ecs", "scan"}

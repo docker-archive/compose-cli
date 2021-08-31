@@ -24,18 +24,18 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/docker/compose-cli/pkg/prompt"
-
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/prompt"
 	"github.com/pkg/errors"
 	"gopkg.in/ini.v1"
+
+	"github.com/docker/compose-cli/api/context/store"
 )
 
 func getEnvVars() ContextParams {

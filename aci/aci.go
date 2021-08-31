@@ -29,6 +29,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	tm "github.com/buger/goterm"
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/progress"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/morikuni/aec"
@@ -39,8 +41,6 @@ import (
 	"github.com/docker/compose-cli/api/client"
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/progress"
 )
 
 func createACIContainers(ctx context.Context, aciContext store.AciContext, groupDefinition containerinstance.ContainerGroup) error {

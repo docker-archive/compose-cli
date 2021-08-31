@@ -17,7 +17,7 @@
 package utils
 
 import (
-	"github.com/docker/compose-cli/pkg/api"
+	"github.com/docker/compose/v2/pkg/api"
 )
 
 // FilteredLogConsumer filters logs for given services

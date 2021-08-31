@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/compose-cli/pkg/utils"
+	"github.com/docker/compose/v2/pkg/utils"
 )
 
 // Track sends the tracking analytics to Docker Desktop

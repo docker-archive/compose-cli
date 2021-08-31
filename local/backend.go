@@ -22,6 +22,8 @@ import (
 	"github.com/docker/cli/cli/command"
 	cliconfig "github.com/docker/cli/cli/config"
 	cliflags "github.com/docker/cli/cli/flags"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/compose"
 	"github.com/docker/docker/client"
 
 	"github.com/docker/compose-cli/api/backend"
@@ -30,8 +32,6 @@ import (
 	"github.com/docker/compose-cli/api/secrets"
 	"github.com/docker/compose-cli/api/volumes"
 	cliopts "github.com/docker/compose-cli/cli/options"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/compose"
 )
 
 type local struct {

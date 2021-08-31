@@ -27,7 +27,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/docker/compose-cli/cmd/compose"
+	"github.com/docker/compose/v2/cmd/compose"
+
 	. "github.com/docker/compose-cli/docs/yaml"
 )
 

@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -35,7 +36,6 @@ import (
 
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/local/moby"
-	"github.com/docker/compose-cli/pkg/api"
 )
 
 type containerService struct {

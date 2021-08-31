@@ -38,6 +38,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/Azure/azure-storage-file-go/azfile"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/docker/pkg/fileutils"
 	"github.com/prometheus/tsdb/fileutil"
 	"gotest.tools/v3/assert"
@@ -51,7 +52,6 @@ import (
 	"github.com/docker/compose-cli/api/containers"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/cmd"
-	"github.com/docker/compose-cli/pkg/api"
 	. "github.com/docker/compose-cli/utils/e2e"
 )
 

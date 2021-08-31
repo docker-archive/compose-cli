@@ -20,8 +20,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/docker/compose-cli/cmd/formatter"
-
+	"github.com/docker/compose/v2/cmd/formatter"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 

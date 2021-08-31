@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/docker/compose-cli/cmd/formatter"
-
+	"github.com/docker/compose/v2/cmd/formatter"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"github.com/docker/compose/v2/pkg/api"
+
 	"github.com/docker/compose-cli/api/client"
-	"github.com/docker/compose-cli/pkg/api"
 )
 
 type stopOpts struct {

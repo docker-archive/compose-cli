@@ -21,13 +21,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/pkg/prompt"
-
+	"github.com/docker/compose/v2/pkg/prompt"
 	"github.com/golang/mock/gomock"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
 	"gotest.tools/v3/golden"
+
+	"github.com/docker/compose-cli/api/context/store"
 )
 
 func TestCreateContextDataFromEnv(t *testing.T) {

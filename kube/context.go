@@ -22,11 +22,11 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/prompt"
 
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/kube/resources"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/prompt"
 )
 
 // ContextParams options for creating a Kubernetes context

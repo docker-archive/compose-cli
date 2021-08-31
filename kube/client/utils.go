@@ -22,9 +22,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/utils"
-
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 )
 

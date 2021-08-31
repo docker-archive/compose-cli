@@ -24,8 +24,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/docker/compose-cli/pkg/api"
-
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
 )

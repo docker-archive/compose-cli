@@ -20,10 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/docker/compose-cli/cmd/formatter"
-
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose/v2/cmd/formatter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
