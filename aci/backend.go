@@ -21,20 +21,19 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/pkg/errors"
 
 	"github.com/docker/compose-cli/aci/convert"
 	"github.com/docker/compose-cli/aci/login"
 	"github.com/docker/compose-cli/api/backend"
+	"github.com/docker/compose-cli/api/cloud"
 	"github.com/docker/compose-cli/api/containers"
+	apicontext "github.com/docker/compose-cli/api/context"
+	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/api/resources"
 	"github.com/docker/compose-cli/api/secrets"
 	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
-
-	"github.com/docker/compose-cli/api/cloud"
-	apicontext "github.com/docker/compose-cli/api/context"
-	"github.com/docker/compose-cli/api/context/store"
 )
 
 const (

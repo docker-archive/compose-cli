@@ -30,6 +30,9 @@ import (
 
 	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/cli/cli"
+	compose2 "github.com/docker/compose/v2/cmd/compose"
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/compose"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -48,10 +51,7 @@ import (
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli"
 	cliopts "github.com/docker/compose-cli/cli/options"
-	compose2 "github.com/docker/compose-cli/cmd/compose"
 	"github.com/docker/compose-cli/local"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/compose"
 
 	// Backend registrations
 	_ "github.com/docker/compose-cli/aci"

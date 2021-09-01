@@ -25,14 +25,14 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/docker/compose/v2/pkg/compose"
+	"github.com/docker/compose/v2/pkg/utils"
+	"github.com/spf13/cobra"
+
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
-	"github.com/spf13/cobra"
-
-	"github.com/docker/compose-cli/pkg/compose"
-	"github.com/docker/compose-cli/pkg/utils"
 )
 
 var delegatedContextTypes = []string{store.DefaultContextType}

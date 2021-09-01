@@ -21,7 +21,7 @@ import (
 	"io"
 	"os"
 
-	formatter2 "github.com/docker/compose-cli/cmd/formatter"
+	formatter2 "github.com/docker/compose/v2/cmd/formatter"
 
 	"github.com/spf13/cobra"
 

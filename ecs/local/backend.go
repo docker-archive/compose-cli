@@ -22,6 +22,9 @@ import (
 	cliconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/docker/client"
 
+	"github.com/docker/compose/v2/pkg/api"
+	"github.com/docker/compose/v2/pkg/compose"
+
 	"github.com/docker/compose-cli/api/backend"
 	"github.com/docker/compose-cli/api/cloud"
 	"github.com/docker/compose-cli/api/containers"
@@ -29,8 +32,6 @@ import (
 	"github.com/docker/compose-cli/api/resources"
 	"github.com/docker/compose-cli/api/secrets"
 	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
-	"github.com/docker/compose-cli/pkg/compose"
 )
 
 const backendType = store.EcsLocalSimulationContextType

@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/docker/compose-cli/api/backend"
-
 	"github.com/docker/compose-cli/api/cloud"
 	"github.com/docker/compose-cli/api/containers"
 	apicontext "github.com/docker/compose-cli/api/context"
@@ -29,10 +28,10 @@ import (
 	"github.com/docker/compose-cli/api/resources"
 	"github.com/docker/compose-cli/api/secrets"
 	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/docker/compose/v2/pkg/api"
 )
 
 const backendType = store.EcsContextType

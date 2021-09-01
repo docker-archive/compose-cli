@@ -20,13 +20,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/docker/compose-cli/api/volumes"
-	"github.com/docker/compose-cli/pkg/api"
-
 	"github.com/awslabs/goformation/v4/cloudformation"
 	"github.com/awslabs/goformation/v4/cloudformation/efs"
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/pkg/errors"
+
+	"github.com/docker/compose-cli/api/volumes"
 )
 
 func (b *ecsAPIService) createNFSMountTarget(project *types.Project, resources awsResources, template *cloudformation.Template) {
