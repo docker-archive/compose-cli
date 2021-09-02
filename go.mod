@@ -19,12 +19,12 @@ require (
 	github.com/awslabs/goformation/v4 v4.15.6
 	github.com/buger/goterm v1.0.0
 	github.com/cnabio/cnab-to-oci v0.3.1-beta1
-	github.com/compose-spec/compose-go v0.0.0-20210901051814-965dc9caf5a0
+	github.com/compose-spec/compose-go v0.0.0-20210901090333-feb401cda7f7
 	github.com/containerd/console v1.0.2
 	github.com/containerd/containerd v1.5.4
 	github.com/distribution/distribution/v3 v3.0.0-20210316161203-a01c71e2477e
 	github.com/docker/cli v20.10.7+incompatible
-	github.com/docker/compose/v2 v2.0.0-00010101000000-000000000000
+	github.com/docker/compose/v2 v2.0.0-20210902070652-5b30accf351f
 	github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.4.0
@@ -75,5 +75,3 @@ require (
 
 // (for buildx)
 replace github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402012908-ad4c4a574305
-
-replace github.com/docker/compose/v2 => github.com/docker/compose-cli/v2 v2.0.0-rc.2.0.20210831165642-09745fa0c3fe
