@@ -315,3 +315,23 @@ func (kc KubeClient) MapPortsToLocalhost(ctx context.Context, opts PortMappingOp
 	}
 	return eg.Wait()
 }
+
+func (kc KubeClient) GetManualReleases(ctx context.Context) ([]api.Stack, error) {
+	configMaps, err := kc.client.CoreV1().ConfigMaps(kc.namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s,%s=%s", api.ProjectLabel, "com.docker.compose.manual", "true"),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := []api.Stack{}
+	for _, configMap := range configMaps.Items {
+		result = append(result, api.Stack{
+			ID:     configMap.ObjectMeta.Labels[api.ProjectLabel],
+			Name:   configMap.ObjectMeta.Labels[api.ProjectLabel],
+			Status: "unknown",
+		})
+	}
+
+	return result, nil
+}
