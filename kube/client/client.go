@@ -85,15 +85,21 @@ func (kc KubeClient) GetPod(ctx context.Context, projectName, serviceName string
 	if pods == nil {
 		return nil, nil
 	}
-	var pod corev1.Pod
+
+	for _, p := range pods.Items {
+		if p.Name == serviceName {
+			return &p, nil
+		}
+	}
+
 	for _, p := range pods.Items {
 		service := p.Labels[api.ServiceLabel]
 		if service == serviceName {
-			pod = p
-			break
+			return &p, nil
 		}
 	}
-	return &pod, nil
+
+	return nil, nil
 }
 
 // Exec executes a command in a container
