@@ -26,11 +26,11 @@ curl -L https://raw.githubusercontent.com/docker/compose-cli/main/scripts/instal
 
 You can download the Compose CLI from [latest release](https://github.com/docker/compose-cli/releases/latest).
 
-You will then need to extract it and make it executable:
+You will then need to rename it and make it executable (the commands below assumes you downloaded the `amd64` version of the binary):
 
 ```console
-$ tar xzf docker-linux-amd64.tar.gz
-$ chmod +x docker/docker
+$ mv docker-linux-amd64 docker
+$ chmod +x docker
 ```
 
 To enable using the local Docker Engine and to use existing Docker contexts, you
@@ -62,7 +62,7 @@ You can verify that this is working by checking that the new CLI works with the
 default context:
 
 ```console
-$ ./docker/docker --context default ps
+$ ./docker --context default ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 $ echo $?
 0
@@ -78,12 +78,12 @@ $ which docker
 /usr/bin/docker
 $ echo $PATH
 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
-$ sudo mv docker/docker /usr/local/bin/docker
+$ sudo mv docker /usr/local/bin/docker
 $ which docker
 /usr/local/bin/docker
 $ docker version
 ...
- Cloud integration  0.1.6
+ Cloud integration  1.0.17
 ...
 ```
 
