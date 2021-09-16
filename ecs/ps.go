@@ -19,10 +19,15 @@ package ecs
 import (
 	"context"
 
+	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 )
 
 func (b *ecsAPIService) Ps(ctx context.Context, projectName string, options api.PsOptions) ([]api.ContainerSummary, error) {
+	if err := checkUnsupportedPsOptions(options); err != nil {
+		return nil, err
+	}
+
 	cluster, err := b.aws.GetStackClusterID(ctx, projectName)
 	if err != nil {
 		return nil, err
@@ -55,4 +60,10 @@ func (b *ecsAPIService) Ps(ctx context.Context, projectName string, options api.
 		summary = append(summary, tasks...)
 	}
 	return summary, nil
+}
+
+func checkUnsupportedPsOptions(o api.PsOptions) error {
+	var errs error
+	errs = utils.CheckUnsupported(errs, o.All, false, "ps", "all")
+	return errs
 }

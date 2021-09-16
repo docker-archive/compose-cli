@@ -27,7 +27,6 @@ import (
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/progress"
 	utils2 "github.com/docker/compose/v2/pkg/utils"
-	"github.com/pkg/errors"
 
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
@@ -72,9 +71,33 @@ func NewComposeService() (api.Service, error) {
 
 // Up executes the equivalent to a `compose up`
 func (s *composeService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
+	if err := checkUnsupportedUpOptions(options); err != nil {
+		return err
+	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return s.up(ctx, project)
 	})
+}
+
+func checkUnsupportedUpOptions(o api.UpOptions) error {
+	var errs error
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Create.Inherit, true, "renew-anon-volumes"},
+		{o.Create.RemoveOrphans, false, "remove-orphans"},
+		{o.Create.QuietPull, false, "quiet-pull"},
+		{o.Create.Recreate, api.RecreateDiverged, "force-recreate"},
+		{o.Create.RecreateDependencies, api.RecreateDiverged, "always-recreate-deps"},
+		{len(o.Start.AttachTo), 0, "attach-dependencies"},
+		{len(o.Start.ExitCodeFrom), 0, "exit-code-from"},
+		{o.Create.Timeout, nil, "timeout"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "up", c.option)
+	}
+	return errs
 }
 
 func (s *composeService) up(ctx context.Context, project *types.Project) error {
@@ -132,15 +155,28 @@ func (s *composeService) up(ctx context.Context, project *types.Project) error {
 
 // Down executes the equivalent to a `compose down`
 func (s *composeService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if options.Volumes {
-		return errors.Wrap(api.ErrNotImplemented, "--volumes option is not supported on Kubernetes")
-	}
-	if options.Images != "" {
-		return errors.Wrap(api.ErrNotImplemented, "--rmi option is not supported on Kubernetes")
+	if err := checkUnsupportedDownOptions(options); err != nil {
+		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return s.down(ctx, projectName, options)
 	})
+}
+
+func checkUnsupportedDownOptions(o api.DownOptions) error {
+	var errs error
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Volumes, false, "volumes"},
+		{o.Images, "", "images"},
+		{o.RemoveOrphans, false, "remove-orphans"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "down", c.option)
+	}
+	return errs
 }
 
 func (s *composeService) down(ctx context.Context, projectName string, options api.DownOptions) error {
@@ -193,7 +229,14 @@ func (s *composeService) down(ctx context.Context, projectName string, options a
 
 // List executes the equivalent to a `docker stack ls`
 func (s *composeService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
+	if err := checkUnsupportedListOptions(opts); err != nil {
+		return nil, err
+	}
 	return s.sdk.ListReleases()
+}
+
+func checkUnsupportedListOptions(o api.ListOptions) error {
+	return utils.CheckUnsupported(nil, o.All, false, "ls", "all")
 }
 
 // Build executes the equivalent to a `compose build`
@@ -238,10 +281,29 @@ func (s *composeService) Copy(ctx context.Context, project *types.Project, optio
 
 // Logs executes the equivalent to a `compose logs`
 func (s *composeService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {
+	if err := checkUnsupportedLogOptions(options); err != nil {
+		return err
+	}
 	if len(options.Services) > 0 {
 		consumer = utils.FilteredLogConsumer(consumer, options.Services)
 	}
 	return s.client.GetLogs(ctx, projectName, consumer, options.Follow)
+}
+
+func checkUnsupportedLogOptions(o api.LogOptions) error {
+	var errs error
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Since, "", "since"},
+		{o.Timestamps, false, "timestamps"},
+		{o.Until, "", "until"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "logs", c.option)
+	}
+	return errs
 }
 
 // Ps executes the equivalent to a `compose ps`
@@ -251,7 +313,6 @@ func (s *composeService) Ps(ctx context.Context, projectName string, options api
 
 // Convert translate compose model into backend's native format
 func (s *composeService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
-
 	chart, err := helm.GetChartInMemory(project)
 	if err != nil {
 		return nil, err
@@ -287,7 +348,26 @@ func (s *composeService) Remove(ctx context.Context, project *types.Project, opt
 
 // Exec executes a command in a running service container
 func (s *composeService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+	if err := checkUnsupportedExecOptions(opts); err != nil {
+		return 0, err
+	}
 	return 0, s.client.Exec(ctx, project.Name, opts)
+}
+
+func checkUnsupportedExecOptions(o api.RunOptions) error {
+	var errs error
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Index, 0, "index"},
+		{o.Privileged, false, "privileged"},
+		{o.WorkingDir, "", "workdir"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "exec", c.option)
+	}
+	return errs
 }
 
 func (s *composeService) Pause(ctx context.Context, project string, options api.PauseOptions) error {

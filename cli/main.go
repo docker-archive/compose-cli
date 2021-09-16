@@ -324,7 +324,7 @@ func exit(ctx string, err error, ctype string) {
 
 	if errors.Is(err, api.ErrNotImplemented) {
 		name := metrics.GetCommand(os.Args[1:])
-		fmt.Fprintf(os.Stderr, "Command %q not available in current context (%s)\n", name, ctx)
+		fmt.Fprintf(os.Stderr, "Command %q not available in current context (%s). %q\n", name, ctx, err)
 
 		os.Exit(1)
 	}
