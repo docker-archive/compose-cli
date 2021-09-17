@@ -38,13 +38,12 @@ import (
 	"github.com/compose-spec/compose-go/types"
 	"github.com/distribution/distribution/v3/reference"
 	cliconfig "github.com/docker/cli/cli/config"
+	"github.com/docker/compose-cli/api/config"
 	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/opencontainers/go-digest"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/kustomize/kyaml/yaml/merge2"
-
-	"github.com/docker/compose-cli/api/config"
 )
 
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {

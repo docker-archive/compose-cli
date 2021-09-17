@@ -63,7 +63,5 @@ func (b *ecsAPIService) Ps(ctx context.Context, projectName string, options api.
 }
 
 func checkUnsupportedPsOptions(o api.PsOptions) error {
-	var errs error
-	errs = utils.CheckUnsupported(errs, o.All, false, "ps", "all")
-	return errs
+	return utils.CheckUnsupported(nil, o.All, false, "ps", "all")
 }

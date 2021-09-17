@@ -356,17 +356,9 @@ func (s *composeService) Exec(ctx context.Context, project *types.Project, opts 
 
 func checkUnsupportedExecOptions(o api.RunOptions) error {
 	var errs error
-	checks := []struct {
-		toCheck, expected interface{}
-		option            string
-	}{
-		{o.Index, 0, "index"},
-		{o.Privileged, false, "privileged"},
-		{o.WorkingDir, "", "workdir"},
-	}
-	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "exec", c.option)
-	}
+	errs = utils.CheckUnsupported(errs, o.Index, 0, "exec", "index")
+	errs = utils.CheckUnsupported(errs, o.Privileged, false, "exec", "privileged")
+	errs = utils.CheckUnsupported(errs, o.WorkingDir, "", "exec", "workdir")
 	return errs
 }
 

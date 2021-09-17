@@ -17,6 +17,8 @@
 package utils
 
 import (
+	"reflect"
+
 	"github.com/docker/go-units"
 )
 
@@ -49,4 +51,15 @@ func (m *MemBytes) Type() string {
 // Value returns the value in int64
 func (m *MemBytes) Value() int64 {
 	return int64(*m)
+}
+
+func isNil(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	}
+	return false
 }

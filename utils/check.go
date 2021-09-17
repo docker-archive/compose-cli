@@ -19,15 +19,13 @@ package utils
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/config"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 )
-
-var ErrUnsupportedFlag = errors.New("unsupported flag")
 
 func CheckUnsupported(errs error, toCheck, expectedValue interface{}, commandName, msg string) error {
 	ctype := store.DefaultContextType
@@ -43,16 +41,9 @@ func CheckUnsupported(errs error, toCheck, expectedValue interface{}, commandNam
 	if cc != nil {
 		ctype = cc.Type()
 	}
-	// Fixes type for posterior comparison
-	switch toCheck.(type) {
-	case *time.Duration:
-		if expectedValue == nil {
-			var nilDurationPtr *time.Duration
-			expectedValue = nilDurationPtr
-		}
-	}
-	if toCheck != expectedValue {
-		return multierror.Append(errs, errors.Wrap(ErrUnsupportedFlag,
+
+	if !(isNil(toCheck) && isNil(expectedValue)) && toCheck != expectedValue {
+		return multierror.Append(errs, errors.Wrap(api.ErrUnsupportedFlag,
 			fmt.Sprintf(`option "%s --%s" on context type %s.`,
 				commandName, msg, strings.ToUpper(ctype))))
 	}
