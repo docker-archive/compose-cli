@@ -86,7 +86,7 @@ func (cs *aciComposeService) Copy(ctx context.Context, project *types.Project, o
 }
 
 func (cs *aciComposeService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
-	if err := checkUnsupportedUpOptions(options); err != nil {
+	if err := checkUnsupportedUpOptions(ctx, options); err != nil {
 		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
@@ -94,7 +94,7 @@ func (cs *aciComposeService) Up(ctx context.Context, project *types.Project, opt
 	})
 }
 
-func checkUnsupportedUpOptions(o api.UpOptions) error {
+func checkUnsupportedUpOptions(ctx context.Context, o api.UpOptions) error {
 	var errs error
 	checks := []struct {
 		toCheck, expected interface{}
@@ -111,7 +111,7 @@ func checkUnsupportedUpOptions(o api.UpOptions) error {
 		{o.Create.Timeout, nil, "timeout"},
 	}
 	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "up", c.option)
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "up", c.option)
 	}
 	return errs
 }
@@ -155,7 +155,7 @@ func (cs aciComposeService) warnKeepVolumeOnDown(ctx context.Context, projectNam
 }
 
 func (cs *aciComposeService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if err := checkUnsupportedDownOptions(options); err != nil {
+	if err := checkUnsupportedDownOptions(ctx, options); err != nil {
 		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
@@ -177,15 +177,15 @@ func (cs *aciComposeService) Down(ctx context.Context, projectName string, optio
 	})
 }
 
-func checkUnsupportedDownOptions(o api.DownOptions) error {
+func checkUnsupportedDownOptions(ctx context.Context, o api.DownOptions) error {
 	var errs error
-	errs = utils.CheckUnsupported(errs, o.Volumes, false, "down", "volumes")
-	errs = utils.CheckUnsupported(errs, o.Images, "", "down", "images")
+	errs = utils.CheckUnsupported(ctx, errs, o.Volumes, false, "down", "volumes")
+	errs = utils.CheckUnsupported(ctx, errs, o.Images, "", "down", "images")
 	return errs
 }
 
 func (cs *aciComposeService) Ps(ctx context.Context, projectName string, options api.PsOptions) ([]api.ContainerSummary, error) {
-	if err := checkUnsupportedPsOptions(options); err != nil {
+	if err := checkUnsupportedPsOptions(ctx, options); err != nil {
 		return nil, err
 	}
 	groupsClient, err := login.NewContainerGroupsClient(cs.ctx.SubscriptionID)
@@ -230,12 +230,12 @@ func (cs *aciComposeService) Ps(ctx context.Context, projectName string, options
 	return res, nil
 }
 
-func checkUnsupportedPsOptions(o api.PsOptions) error {
-	return utils.CheckUnsupported(nil, o.All, false, "ps", "all")
+func checkUnsupportedPsOptions(ctx context.Context, o api.PsOptions) error {
+	return utils.CheckUnsupported(ctx,nil, o.All, false, "ps", "all")
 }
 
 func (cs *aciComposeService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
-	if err := checkUnsupportedListOptions(opts); err != nil {
+	if err := checkUnsupportedListOptions(ctx, opts); err != nil {
 		return nil, err
 	}
 	containerGroups, err := getACIContainerGroups(ctx, cs.ctx.SubscriptionID, cs.ctx.ResourceGroup)
@@ -265,8 +265,8 @@ func (cs *aciComposeService) List(ctx context.Context, opts api.ListOptions) ([]
 	return stacks, nil
 }
 
-func checkUnsupportedListOptions(o api.ListOptions) error {
-	return utils.CheckUnsupported(nil, o.All, false, "ls", "all")
+func checkUnsupportedListOptions(ctx context.Context, o api.ListOptions) error {
+	return utils.CheckUnsupported(ctx, nil, o.All, false, "ls", "all")
 }
 
 func (cs *aciComposeService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {

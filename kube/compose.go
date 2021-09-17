@@ -71,7 +71,7 @@ func NewComposeService() (api.Service, error) {
 
 // Up executes the equivalent to a `compose up`
 func (s *composeService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
-	if err := checkUnsupportedUpOptions(options); err != nil {
+	if err := checkUnsupportedUpOptions(ctx, options); err != nil {
 		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
@@ -79,7 +79,7 @@ func (s *composeService) Up(ctx context.Context, project *types.Project, options
 	})
 }
 
-func checkUnsupportedUpOptions(o api.UpOptions) error {
+func checkUnsupportedUpOptions(ctx context.Context, o api.UpOptions) error {
 	var errs error
 	checks := []struct {
 		toCheck, expected interface{}
@@ -95,7 +95,7 @@ func checkUnsupportedUpOptions(o api.UpOptions) error {
 		{o.Create.Timeout, nil, "timeout"},
 	}
 	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "up", c.option)
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "up", c.option)
 	}
 	return errs
 }
@@ -155,7 +155,7 @@ func (s *composeService) up(ctx context.Context, project *types.Project) error {
 
 // Down executes the equivalent to a `compose down`
 func (s *composeService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if err := checkUnsupportedDownOptions(options); err != nil {
+	if err := checkUnsupportedDownOptions(ctx, options); err != nil {
 		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
@@ -163,7 +163,7 @@ func (s *composeService) Down(ctx context.Context, projectName string, options a
 	})
 }
 
-func checkUnsupportedDownOptions(o api.DownOptions) error {
+func checkUnsupportedDownOptions(ctx context.Context, o api.DownOptions) error {
 	var errs error
 	checks := []struct {
 		toCheck, expected interface{}
@@ -174,7 +174,7 @@ func checkUnsupportedDownOptions(o api.DownOptions) error {
 		{o.RemoveOrphans, false, "remove-orphans"},
 	}
 	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "down", c.option)
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "down", c.option)
 	}
 	return errs
 }
@@ -229,14 +229,14 @@ func (s *composeService) down(ctx context.Context, projectName string, options a
 
 // List executes the equivalent to a `docker stack ls`
 func (s *composeService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
-	if err := checkUnsupportedListOptions(opts); err != nil {
+	if err := checkUnsupportedListOptions(ctx, opts); err != nil {
 		return nil, err
 	}
 	return s.sdk.ListReleases()
 }
 
-func checkUnsupportedListOptions(o api.ListOptions) error {
-	return utils.CheckUnsupported(nil, o.All, false, "ls", "all")
+func checkUnsupportedListOptions(ctx context.Context, o api.ListOptions) error {
+	return utils.CheckUnsupported(ctx, nil, o.All, false, "ls", "all")
 }
 
 // Build executes the equivalent to a `compose build`
@@ -281,7 +281,7 @@ func (s *composeService) Copy(ctx context.Context, project *types.Project, optio
 
 // Logs executes the equivalent to a `compose logs`
 func (s *composeService) Logs(ctx context.Context, projectName string, consumer api.LogConsumer, options api.LogOptions) error {
-	if err := checkUnsupportedLogOptions(options); err != nil {
+	if err := checkUnsupportedLogOptions(ctx, options); err != nil {
 		return err
 	}
 	if len(options.Services) > 0 {
@@ -290,7 +290,7 @@ func (s *composeService) Logs(ctx context.Context, projectName string, consumer 
 	return s.client.GetLogs(ctx, projectName, consumer, options.Follow)
 }
 
-func checkUnsupportedLogOptions(o api.LogOptions) error {
+func checkUnsupportedLogOptions(ctx context.Context, o api.LogOptions) error {
 	var errs error
 	checks := []struct {
 		toCheck, expected interface{}
@@ -301,7 +301,7 @@ func checkUnsupportedLogOptions(o api.LogOptions) error {
 		{o.Until, "", "until"},
 	}
 	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "logs", c.option)
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "logs", c.option)
 	}
 	return errs
 }
@@ -348,17 +348,17 @@ func (s *composeService) Remove(ctx context.Context, project *types.Project, opt
 
 // Exec executes a command in a running service container
 func (s *composeService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
-	if err := checkUnsupportedExecOptions(opts); err != nil {
+	if err := checkUnsupportedExecOptions(ctx, opts); err != nil {
 		return 0, err
 	}
 	return 0, s.client.Exec(ctx, project.Name, opts)
 }
 
-func checkUnsupportedExecOptions(o api.RunOptions) error {
+func checkUnsupportedExecOptions(ctx context.Context, o api.RunOptions) error {
 	var errs error
-	errs = utils.CheckUnsupported(errs, o.Index, 0, "exec", "index")
-	errs = utils.CheckUnsupported(errs, o.Privileged, false, "exec", "privileged")
-	errs = utils.CheckUnsupported(errs, o.WorkingDir, "", "exec", "workdir")
+	errs = utils.CheckUnsupported(ctx, errs, o.Index, 0, "exec", "index")
+	errs = utils.CheckUnsupported(ctx, errs, o.Privileged, false, "exec", "privileged")
+	errs = utils.CheckUnsupported(ctx, errs, o.WorkingDir, "", "exec", "workdir")
 	return errs
 }
 

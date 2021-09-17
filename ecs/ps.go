@@ -24,7 +24,7 @@ import (
 )
 
 func (b *ecsAPIService) Ps(ctx context.Context, projectName string, options api.PsOptions) ([]api.ContainerSummary, error) {
-	if err := checkUnsupportedPsOptions(options); err != nil {
+	if err := checkUnsupportedPsOptions(ctx, options); err != nil {
 		return nil, err
 	}
 
@@ -62,6 +62,6 @@ func (b *ecsAPIService) Ps(ctx context.Context, projectName string, options api.
 	return summary, nil
 }
 
-func checkUnsupportedPsOptions(o api.PsOptions) error {
-	return utils.CheckUnsupported(nil, o.All, false, "ps", "all")
+func checkUnsupportedPsOptions(ctx context.Context, o api.PsOptions) error {
+	return utils.CheckUnsupported(ctx, nil, o.All, false, "ps", "all")
 }

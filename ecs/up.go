@@ -31,7 +31,7 @@ import (
 )
 
 func (b *ecsAPIService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
-	if err := checkUnsupportedUpOptions(options); err != nil {
+	if err := checkUnsupportedUpOptions(ctx, options); err != nil {
 		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
@@ -99,7 +99,7 @@ func (b *ecsAPIService) up(ctx context.Context, project *types.Project, options 
 	return err
 }
 
-func checkUnsupportedUpOptions(o api.UpOptions) error {
+func checkUnsupportedUpOptions(ctx context.Context, o api.UpOptions) error {
 	var errs error
 	checks := []struct {
 		toCheck, expected interface{}
@@ -115,7 +115,7 @@ func checkUnsupportedUpOptions(o api.UpOptions) error {
 		{o.Create.Timeout, nil, "timeout"},
 	}
 	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "up", c.option)
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "up", c.option)
 	}
 	return errs
 }

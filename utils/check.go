@@ -17,32 +17,19 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/docker/compose-cli/api/context/store"
-	"github.com/docker/compose-cli/cli/config"
+	"github.com/docker/compose-cli/api/config"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 )
 
-func CheckUnsupported(errs error, toCheck, expectedValue interface{}, commandName, msg string) error {
-	ctype := store.DefaultContextType
-	currentContext := config.GetCurrentContext("", config.ConfDir(), nil)
-	s, err := store.New(config.ConfDir())
-	if err != nil {
-		return err
-	}
-	cc, err := s.Get(currentContext)
-	if err != nil {
-		return err
-	}
-	if cc != nil {
-		ctype = cc.Type()
-	}
-
+func CheckUnsupported(ctx context.Context, errs error, toCheck, expectedValue interface{}, commandName, msg string) error {
 	if !(isNil(toCheck) && isNil(expectedValue)) && toCheck != expectedValue {
+		ctype := ctx.Value(config.ContextTypeKey).(string)
 		return multierror.Append(errs, errors.Wrap(api.ErrUnsupportedFlag,
 			fmt.Sprintf(`option "%s --%s" on context type %s.`,
 				commandName, msg, strings.ToUpper(ctype))))

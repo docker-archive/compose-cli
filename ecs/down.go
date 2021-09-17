@@ -25,7 +25,7 @@ import (
 )
 
 func (b *ecsAPIService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if err := checkUnsupportedDownOptions(options); err != nil {
+	if err := checkUnsupportedDownOptions(ctx, options); err != nil {
 		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
@@ -87,7 +87,7 @@ func doDelete(ctx context.Context, delete func(ctx context.Context, arn string) 
 	}
 }
 
-func checkUnsupportedDownOptions(o api.DownOptions) error {
+func checkUnsupportedDownOptions(ctx context.Context, o api.DownOptions) error {
 	var errs error
 	checks := []struct {
 		toCheck, expected interface{}
@@ -99,7 +99,7 @@ func checkUnsupportedDownOptions(o api.DownOptions) error {
 		{o.Timeout, nil, "timeout"},
 	}
 	for _, c := range checks {
-		errs = utils.CheckUnsupported(errs, c.toCheck, c.expected, "down", c.option)
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "down", c.option)
 	}
 
 	return errs

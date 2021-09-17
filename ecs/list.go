@@ -25,7 +25,7 @@ import (
 )
 
 func (b *ecsAPIService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {
-	if err := checkUnsupportedListOptions(opts); err != nil {
+	if err := checkUnsupportedListOptions(ctx, opts); err != nil {
 		return nil, err
 	}
 	stacks, err := b.aws.ListStacks(ctx)
@@ -45,8 +45,8 @@ func (b *ecsAPIService) List(ctx context.Context, opts api.ListOptions) ([]api.S
 
 }
 
-func checkUnsupportedListOptions(o api.ListOptions) error {
-	return utils.CheckUnsupported(nil, o.All, false, "ls", "all")
+func checkUnsupportedListOptions(ctx context.Context, o api.ListOptions) error {
+	return utils.CheckUnsupported(ctx, nil, o.All, false, "ls", "all")
 }
 
 func (b *ecsAPIService) checkStackState(ctx context.Context, name string) error {

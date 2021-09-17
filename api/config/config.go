@@ -27,6 +27,8 @@ import (
 	"github.com/docker/compose-cli/api/context/store"
 )
 
+const ContextTypeKey = "context_type"
+
 var configDir string
 
 // WithDir sets the config directory path in the context

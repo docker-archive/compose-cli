@@ -214,6 +214,7 @@ func main() {
 	if cc != nil {
 		ctype = cc.Type()
 	}
+	ctx = context.WithValue(ctx, config.ContextTypeKey, ctype)
 
 	service, err := getBackend(ctype, configDir, opts)
 	if err != nil {
