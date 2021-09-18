@@ -27,7 +27,11 @@ import (
 	"github.com/docker/compose-cli/api/context/store"
 )
 
-const ContextTypeKey = "context_type"
+// ContextKey defines a type for keys in the context passed
+type ContextKey string
+
+// ContextTypeKey is the key for context type stored in context.Context
+const ContextTypeKey ContextKey = "context_type"
 
 var configDir string
 

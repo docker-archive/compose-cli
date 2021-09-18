@@ -231,7 +231,7 @@ func (cs *aciComposeService) Ps(ctx context.Context, projectName string, options
 }
 
 func checkUnsupportedPsOptions(ctx context.Context, o api.PsOptions) error {
-	return utils.CheckUnsupported(ctx,nil, o.All, false, "ps", "all")
+	return utils.CheckUnsupported(ctx, nil, o.All, false, "ps", "all")
 }
 
 func (cs *aciComposeService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {

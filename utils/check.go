@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// CheckUnsupported checks if a flag was used when it shouldn't and adds an error in case
 func CheckUnsupported(ctx context.Context, errs error, toCheck, expectedValue interface{}, commandName, msg string) error {
 	if !(isNil(toCheck) && isNil(expectedValue)) && toCheck != expectedValue {
 		ctype := ctx.Value(config.ContextTypeKey).(string)
