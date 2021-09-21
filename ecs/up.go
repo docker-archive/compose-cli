@@ -24,60 +24,16 @@ import (
 	"syscall"
 
 	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/progress"
 	"github.com/sirupsen/logrus"
 )
 
-func (b *ecsAPIService) Build(ctx context.Context, project *types.Project, options api.BuildOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Push(ctx context.Context, project *types.Project, options api.PushOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Pull(ctx context.Context, project *types.Project, options api.PullOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Create(ctx context.Context, project *types.Project, opts api.CreateOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Start(ctx context.Context, project *types.Project, options api.StartOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Restart(ctx context.Context, project *types.Project, options api.RestartOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Stop(ctx context.Context, project *types.Project, options api.StopOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Pause(ctx context.Context, project string, options api.PauseOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) UnPause(ctx context.Context, project string, options api.PauseOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Events(ctx context.Context, project string, options api.EventsOptions) error {
-	return api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Port(ctx context.Context, project string, service string, port int, options api.PortOptions) (string, int, error) {
-	return "", 0, api.ErrNotImplemented
-}
-
-func (b *ecsAPIService) Copy(ctx context.Context, project *types.Project, options api.CopyOptions) error {
-	return api.ErrNotImplemented
-}
-
 func (b *ecsAPIService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {
+	if err := checkUnsupportedUpOptions(ctx, options); err != nil {
+		return err
+	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return b.up(ctx, project, options)
 	})
@@ -141,4 +97,25 @@ func (b *ecsAPIService) up(ctx context.Context, project *types.Project, options 
 
 	err = b.WaitStackCompletion(ctx, project.Name, operation, previousEvents...)
 	return err
+}
+
+func checkUnsupportedUpOptions(ctx context.Context, o api.UpOptions) error {
+	var errs error
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Create.Inherit, true, "renew-anon-volumes"},
+		{o.Create.RemoveOrphans, false, "remove-orphans"},
+		{o.Create.QuietPull, false, "quiet-pull"},
+		{o.Create.Recreate, api.RecreateDiverged, "force-recreate"},
+		{o.Create.RecreateDependencies, api.RecreateDiverged, "always-recreate-deps"},
+		{len(o.Start.AttachTo), 0, "attach-dependencies"},
+		{len(o.Start.ExitCodeFrom), 0, "exit-code-from"},
+		{o.Create.Timeout, nil, "timeout"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "up", c.option)
+	}
+	return errs
 }

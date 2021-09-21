@@ -38,19 +38,18 @@ import (
 	"github.com/compose-spec/compose-go/types"
 	"github.com/distribution/distribution/v3/reference"
 	cliconfig "github.com/docker/cli/cli/config"
+	"github.com/docker/compose-cli/api/config"
+	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/opencontainers/go-digest"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/kustomize/kyaml/yaml/merge2"
-
-	"github.com/docker/compose-cli/api/config"
 )
 
-func (b *ecsAPIService) Kill(ctx context.Context, project *types.Project, options api.KillOptions) error {
-	return api.ErrNotImplemented
-}
-
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
+	if err := checkUnsupportedConvertOptions(ctx, options); err != nil {
+		return nil, err
+	}
 	err := b.resolveServiceImagesDigests(ctx, project)
 	if err != nil {
 		return nil, err
@@ -100,6 +99,10 @@ func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, opt
 	}
 	bytes = []byte(s)
 	return bytes, err
+}
+
+func checkUnsupportedConvertOptions(ctx context.Context, o api.ConvertOptions) error {
+	return utils.CheckUnsupported(ctx, nil, o.Output, "", "convert", "output")
 }
 
 func (b *ecsAPIService) resolveServiceImagesDigests(ctx context.Context, project *types.Project) error {
@@ -368,8 +371,8 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 		strings.ToUpper(port.Protocol),
 		port.Target,
 	)
-	//add listener to dependsOn
-	//https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
+	// add listener to dependsOn
+	// https://stackoverflow.com/questions/53971873/the-target-group-does-not-have-an-associated-load-balancer
 	template.Resources[listenerName] = &elasticloadbalancingv2.Listener{
 		DefaultActions: []elasticloadbalancingv2.Listener_Action{
 			{

@@ -19,17 +19,14 @@ package ecs
 import (
 	"context"
 
+	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/progress"
-	"github.com/pkg/errors"
 )
 
 func (b *ecsAPIService) Down(ctx context.Context, projectName string, options api.DownOptions) error {
-	if options.Volumes {
-		return errors.Wrap(api.ErrNotImplemented, "--volumes option is not supported on ECS")
-	}
-	if options.Images != "" {
-		return errors.Wrap(api.ErrNotImplemented, "--rmi option is not supported on ECS")
+	if err := checkUnsupportedDownOptions(ctx, options); err != nil {
+		return err
 	}
 	return progress.Run(ctx, func(ctx context.Context) error {
 		return b.down(ctx, projectName)
@@ -88,4 +85,22 @@ func doDelete(ctx context.Context, delete func(ctx context.Context, arn string) 
 		w.Event(progress.RemovedEvent(r.LogicalID))
 		return nil
 	}
+}
+
+func checkUnsupportedDownOptions(ctx context.Context, o api.DownOptions) error {
+	var errs error
+	checks := []struct {
+		toCheck, expected interface{}
+		option            string
+	}{
+		{o.Volumes, false, "volumes"},
+		{o.Images, "", "images"},
+		{o.RemoveOrphans, false, "remove-orphans"},
+		{o.Timeout, nil, "timeout"},
+	}
+	for _, c := range checks {
+		errs = utils.CheckUnsupported(ctx, errs, c.toCheck, c.expected, "down", c.option)
+	}
+
+	return errs
 }

@@ -14,15 +14,26 @@
    limitations under the License.
 */
 
-package ecs
+package utils
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
-	"github.com/compose-spec/compose-go/types"
+	"github.com/docker/compose-cli/api/config"
 	"github.com/docker/compose/v2/pkg/api"
+	"github.com/hashicorp/go-multierror"
+	"github.com/pkg/errors"
 )
 
-func (b *ecsAPIService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
-	return 0, api.ErrNotImplemented
+// CheckUnsupported checks if a flag was used when it shouldn't and adds an error in case
+func CheckUnsupported(ctx context.Context, errs error, toCheck, expectedValue interface{}, commandName, msg string) error {
+	if !(isNil(toCheck) && isNil(expectedValue)) && toCheck != expectedValue {
+		ctype := ctx.Value(config.ContextTypeKey).(string)
+		return multierror.Append(errs, errors.Wrap(api.ErrUnsupportedFlag,
+			fmt.Sprintf(`option "%s --%s" on context type %s.`,
+				commandName, msg, strings.ToUpper(ctype))))
+	}
+	return errs
 }
