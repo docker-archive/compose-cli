@@ -80,7 +80,7 @@ func getOutFromMoby(cmd *cobra.Command, args ...string) (string, error) {
 	// we don't want to fail on error, there is an error if the engine is not available but it displays client version info
 	// Still, technically the [] byte versionResult could be nil, just let the original command display what it has to display
 	if versionResult == nil {
-		mobycli.Exec(cmd.Root())
+		mobycli.Exec()
 		return "", nil
 	}
 	return string(versionResult), err

@@ -56,7 +56,7 @@ $ docker context update my-context --description "some description" --docker "ho
 		Short: "Update a context",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runUpdate(cmd, args[0])
+			return runUpdate(args[0])
 		},
 		Long: longHelp,
 	}
@@ -71,7 +71,7 @@ $ docker context update my-context --description "some description" --docker "ho
 	return cmd
 }
 
-func runUpdate(cmd *cobra.Command, name string) error {
+func runUpdate(name string) error {
 	s := store.Instance()
 	dockerContext, err := s.Get(name)
 	if err == nil && dockerContext != nil {
@@ -80,6 +80,6 @@ func runUpdate(cmd *cobra.Command, name string) error {
 		}
 	}
 
-	mobycli.Exec(cmd.Root())
+	mobycli.Exec()
 	return nil
 }

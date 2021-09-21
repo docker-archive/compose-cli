@@ -53,7 +53,7 @@ func listCommand() *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runList(cmd, opts)
+			return runList(opts)
 		},
 	}
 	cmd.Flags().BoolVarP(&opts.quiet, "quiet", "q", false, "Only show context names")
@@ -62,14 +62,14 @@ func listCommand() *cobra.Command {
 	return cmd
 }
 
-func runList(cmd *cobra.Command, opts lsOpts) error {
+func runList(opts lsOpts) error {
 	err := opts.validate()
 	if err != nil {
 		return err
 	}
 	format := strings.ToLower(strings.ReplaceAll(opts.format, " ", ""))
 	if format != "" && format != formatter.JSON && format != formatter.PRETTY && format != formatter.TemplateLegacyJSON {
-		mobycli.Exec(cmd.Root())
+		mobycli.Exec()
 		return nil
 	}
 

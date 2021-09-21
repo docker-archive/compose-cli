@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path/filepath"
 	"regexp"
 
@@ -49,7 +48,7 @@ func ExecIfDefaultCtxType(ctx context.Context, root *cobra.Command) {
 	currentCtx, err := s.Get(currentContext)
 	// Only run original docker command if the current context is not ours.
 	if err != nil || mustDelegateToMoby(currentCtx.Type()) {
-		Exec(root)
+		Exec()
 	}
 }
 
@@ -63,10 +62,8 @@ func mustDelegateToMoby(ctxType string) bool {
 }
 
 // Exec delegates to com.docker.cli if on moby context
-func Exec(root *cobra.Command) {
-	childExit := make(chan bool)
-	err := RunDocker(childExit, os.Args[1:]...)
-	childExit <- true
+func Exec() {
+	err := RunDocker(os.Args[1:]...)
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			exitCode := exiterr.ExitCode()
@@ -91,7 +88,7 @@ func Exec(root *cobra.Command) {
 }
 
 // RunDocker runs a docker command, and forward signals to the shellout command (stops listening to signals when an event is sent to childExit)
-func RunDocker(childExit chan bool, args ...string) error {
+func RunDocker(args ...string) error {
 	execBinary, err := resolvepath.LookPath(ComDockerCli)
 	if err != nil {
 		execBinary = findBinary(ComDockerCli)
@@ -105,29 +102,6 @@ func RunDocker(childExit chan bool, args ...string) error {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals) // catch all signals
-	go func() {
-		for {
-			select {
-			case sig := <-signals:
-				if cmd.Process == nil {
-					continue // can happen if receiving signal before the process is actually started
-				}
-				// In go1.14+, the go runtime issues SIGURG as an interrupt to
-				// support preemptable system calls on Linux. Since we can't
-				// forward that along we'll check that here.
-				if isRuntimeSig(sig) {
-					continue
-				}
-				_ = cmd.Process.Signal(sig)
-			case <-childExit:
-				return
-			}
-		}
-	}()
-
 	return cmd.Run()
 }
 
