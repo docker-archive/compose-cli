@@ -54,10 +54,10 @@ e2e-kube: ## Run End to end Kube tests. Set E2E_TEST=TestName to run a single te
 	go test -timeout 10m -count=1 -v $(TEST_FLAGS) ./kube/e2e
 
 e2e-aci: ## Run End to end ACI tests. Set E2E_TEST=TestName to run a single test
-	go test -timeout 15m -count=1 -v $(TEST_FLAGS) ./aci/e2e
+	go test -timeout 20m -count=1 -v $(TEST_FLAGS) ./aci/e2e
 
 e2e-ecs: ## Run End to end ECS tests. Set E2E_TEST=TestName to run a single test
-	go test -timeout 20m -count=1 -v $(TEST_FLAGS) ./ecs/e2e/ecs ./ecs/e2e/ecs-local
+	go test -timeout 30m -count=1 -v $(TEST_FLAGS) ./ecs/e2e/ecs ./ecs/e2e/ecs-local
 
 cross: ## Compile the CLI for linux, darwin and windows
 	@docker build . --target cross \

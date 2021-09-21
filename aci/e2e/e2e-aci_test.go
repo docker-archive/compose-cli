@@ -295,7 +295,7 @@ func TestRunVolume(t *testing.T) {
 	})
 
 	t.Run("http get", func(t *testing.T) {
-		output := HTTPGetWithRetry(t, endpoint, http.StatusOK, 2*time.Second, 20*time.Second)
+		output := HTTPGetWithRetry(t, endpoint, http.StatusOK, 2*time.Second, time.Minute)
 		assert.Assert(t, strings.Contains(output, testFileContent), "Actual content: "+output)
 	})
 
@@ -584,12 +584,12 @@ func TestUpSecretsResources(t *testing.T) {
 		assert.Assert(t, is.Len(web1Inspect.Ports, 1))
 		endpoint := fmt.Sprintf("http://%s:%d", web1Inspect.Ports[0].HostIP, web1Inspect.Ports[0].HostPort)
 
-		output := HTTPGetWithRetry(t, endpoint+"/"+secret1Name, http.StatusOK, 2*time.Second, 20*time.Second)
+		output := HTTPGetWithRetry(t, endpoint+"/"+secret1Name, http.StatusOK, 2*time.Second, time.Minute)
 		// replace windows carriage return
 		output = strings.ReplaceAll(output, "\r", "")
 		assert.Equal(t, output, secret1Value)
 
-		output = HTTPGetWithRetry(t, endpoint+"/"+secret2Name, http.StatusOK, 2*time.Second, 20*time.Second)
+		output = HTTPGetWithRetry(t, endpoint+"/"+secret2Name, http.StatusOK, 2*time.Second, time.Minute)
 		output = strings.ReplaceAll(output, "\r", "")
 		assert.Equal(t, output, secret2Value)
 	})
@@ -598,11 +598,11 @@ func TestUpSecretsResources(t *testing.T) {
 		assert.Assert(t, is.Len(web2Inspect.Ports, 1))
 		endpoint := fmt.Sprintf("http://%s:%d", web2Inspect.Ports[0].HostIP, web2Inspect.Ports[0].HostPort)
 
-		output := HTTPGetWithRetry(t, endpoint+"/"+secret2Name, http.StatusOK, 2*time.Second, 20*time.Second)
+		output := HTTPGetWithRetry(t, endpoint+"/"+secret2Name, http.StatusOK, 2*time.Second, time.Minute)
 		output = strings.ReplaceAll(output, "\r", "")
 		assert.Equal(t, output, secret2Value)
 
-		HTTPGetWithRetry(t, endpoint+"/"+secret1Name, http.StatusNotFound, 2*time.Second, 20*time.Second)
+		HTTPGetWithRetry(t, endpoint+"/"+secret1Name, http.StatusNotFound, 2*time.Second, time.Minute)
 	})
 
 	t.Run("check resource limits", func(t *testing.T) {
@@ -627,7 +627,7 @@ func TestUpSecretsResources(t *testing.T) {
 
 	t.Run("healthcheck restart failed app", func(t *testing.T) {
 		endpoint := fmt.Sprintf("http://%s:%d", web1Inspect.Ports[0].HostIP, web1Inspect.Ports[0].HostPort)
-		HTTPGetWithRetry(t, endpoint+"/failtestserver", http.StatusOK, 3*time.Second, 3*time.Second)
+		HTTPGetWithRetry(t, endpoint+"/failtestserver", http.StatusOK, 3*time.Second, time.Minute)
 
 		logs := c.RunDockerCmd("logs", web1).Combined()
 		assert.Assert(t, strings.Contains(logs, "GET /healthz"))
@@ -729,14 +729,14 @@ func TestUpUpdate(t *testing.T) {
 		assert.Assert(t, is.Len(containerInspect.Ports, 1))
 		endpoint := fmt.Sprintf("http://%s:%d", containerInspect.Ports[0].HostIP, containerInspect.Ports[0].HostPort)
 
-		output := HTTPGetWithRetry(t, endpoint+"/words/noun", http.StatusOK, 2*time.Second, 20*time.Second)
+		output := HTTPGetWithRetry(t, endpoint+"/words/noun", http.StatusOK, 2*time.Second, time.Minute)
 
 		assert.Assert(t, strings.Contains(output, `"word":`))
 
 		endpoint = fmt.Sprintf("http://%s:%d", fqdn, containerInspect.Ports[0].HostPort)
-		HTTPGetWithRetry(t, endpoint+"/words/noun", http.StatusOK, 2*time.Second, 20*time.Second)
+		HTTPGetWithRetry(t, endpoint+"/words/noun", http.StatusOK, 2*time.Second, time.Minute)
 
-		body := HTTPGetWithRetry(t, endpoint+"/volume_test/"+testFileName, http.StatusOK, 2*time.Second, 20*time.Second)
+		body := HTTPGetWithRetry(t, endpoint+"/volume_test/"+testFileName, http.StatusOK, 2*time.Second, time.Minute)
 		assert.Assert(t, strings.Contains(body, testFileContent))
 
 		// Try to remove the volume while it's still in use
@@ -760,17 +760,22 @@ func TestUpUpdate(t *testing.T) {
 		for _, line := range l {
 			fields := strings.Fields(line)
 			name := fields[0]
+
 			switch name {
 			case wordsContainer:
 				wordsDisplayed = true
-				assert.Equal(t, fields[2], "Running")
+				assert.Check(t, len(fields) >= 4)
+				assert.Equal(t, fields[3], "Running", "Got -> %q. All fields -> %#v", fields[3], fields)
 			case dbContainer:
 				dbDisplayed = true
-				assert.Equal(t, fields[2], "Running")
+				assert.Check(t, len(fields) >= 4)
+				assert.Equal(t, fields[3], "Running", "Got -> %q. All fields -> %#v", fields[3], fields)
 			case serverContainer:
 				webDisplayed = true
-				assert.Equal(t, fields[2], "Running")
-				assert.Check(t, strings.Contains(fields[3], ":80->80/tcp"))
+				assert.Check(t, len(fields) >= 4)
+				assert.Equal(t, fields[3], "Running", "Got -> %q. All fields -> %#v", fields[3], fields)
+				assert.Check(t, len(fields) >= 5)
+				assert.Check(t, strings.Contains(fields[4], ":80->80/tcp"), "Got -> %q. All fields -> %#v", fields[4], fields)
 			}
 		}
 		assert.Check(t, webDisplayed, "webDisplayed"+res.Stdout())
