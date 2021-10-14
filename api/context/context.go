@@ -20,6 +20,9 @@ var current string
 
 // WithCurrentContext sets the name of the current docker context
 func WithCurrentContext(contextName string) {
+	if contextName == "" {
+		contextName = "default"
+	}
 	current = contextName
 }
 
