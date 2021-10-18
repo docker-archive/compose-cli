@@ -101,10 +101,10 @@ func checkUnsupportedUpOptions(ctx context.Context, o api.UpOptions) error {
 		option            string
 	}{
 		{o.Start.CascadeStop, false, "abort-on-container-exit"},
-		{o.Create.RecreateDependencies, "", "always-recreate-deps"},
+		{o.Create.RecreateDependencies, api.RecreateDiverged, "always-recreate-deps"},
 		{len(o.Start.AttachTo), 0, "attach-dependencies"},
 		{len(o.Start.ExitCodeFrom), 0, "exit-code-from"},
-		{o.Create.Recreate, "", "force-recreate"},
+		{o.Create.Recreate, api.RecreateDiverged, "force-recreate"},
 		{o.Create.QuietPull, false, "quiet-pull"},
 		{o.Create.RemoveOrphans, false, "remove-orphans"},
 		{o.Create.Inherit, true, "renew-anon-volumes"},
