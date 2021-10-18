@@ -35,15 +35,14 @@ import (
 func New(ctx context.Context) (*Client, error) {
 	currentContext := apicontext.Current()
 	s := store.Instance()
-
 	cc, err := s.Get(currentContext)
 	if err != nil {
 		return nil, err
 	}
 
-	service := backend.Current()
-	if service == nil {
-		return nil, api.ErrNotFound
+	service, err := backend.Get(cc.Type())
+	if err != nil {
+		return nil, err
 	}
 
 	client := NewClient(cc.Type(), service)

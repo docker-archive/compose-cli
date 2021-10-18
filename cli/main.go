@@ -216,7 +216,12 @@ func main() {
 	}
 	ctx = context.WithValue(ctx, config.ContextTypeKey, ctype)
 
-	service, err := getBackend(ctype, configDir, opts)
+	initLocalFn := func() (backend.Service, error) {
+		return local.GetLocalBackend(configDir, opts)
+	}
+	backend.Register(store.DefaultContextType, store.DefaultContextType, initLocalFn, nil)
+	backend.Register(store.LocalContextType, store.LocalContextType, initLocalFn, nil)
+	service, err := backend.Get(ctype)
 	if err != nil {
 		fatal(err)
 	}
@@ -257,18 +262,6 @@ func customizeCliForACI(command *cobra.Command, proxy *api.ServiceProxy) {
 			})
 		}
 	}
-}
-
-func getBackend(ctype string, configDir string, opts cliopts.GlobalOpts) (backend.Service, error) {
-	switch ctype {
-	case store.DefaultContextType, store.LocalContextType:
-		return local.GetLocalBackend(configDir, opts)
-	}
-	service, err := backend.Get(ctype)
-	if api.IsNotFoundError(err) {
-		return service, nil
-	}
-	return service, err
 }
 
 func handleError(ctx context.Context, err error, ctype string, currentContext string, cc *store.DockerContext, root *cobra.Command) {

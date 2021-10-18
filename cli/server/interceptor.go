@@ -101,7 +101,6 @@ func getIncomingContext(ctx context.Context) (string, error) {
 // needs: the context store and the api client
 func configureContext(ctx context.Context, currentContext string, method string) (context.Context, error) {
 	configDir := config.Dir()
-
 	apicontext.WithCurrentContext(currentContext)
 
 	// The contexts service doesn't need the client
@@ -111,6 +110,7 @@ func configureContext(ctx context.Context, currentContext string, method string)
 			return nil, err
 		}
 
+		ctx = context.WithValue(ctx, config.ContextTypeKey, c.ContextType())
 		ctx = proxy.WithClient(ctx, c)
 	}
 

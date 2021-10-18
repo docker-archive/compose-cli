@@ -130,6 +130,21 @@ func (p *proxy) Logs(request *containersv1.LogsRequest, stream containersv1.Cont
 }
 
 func toGrpcContainer(c containers.Container) *containersv1.Container {
+	var hostConfig *containersv1.HostConfig
+	if c.HostConfig != nil {
+		hostConfig = &containersv1.HostConfig{
+			MemoryReservation: c.HostConfig.MemoryReservation,
+			MemoryLimit:       c.HostConfig.MemoryLimit,
+			CpuReservation:    uint64(c.HostConfig.CPUReservation),
+			CpuLimit:          uint64(c.HostConfig.CPULimit),
+			RestartPolicy:     c.HostConfig.RestartPolicy,
+			AutoRemove:        c.HostConfig.AutoRemove,
+		}
+	}
+	var labels []string
+	if c.Config != nil {
+		labels = c.Config.Labels
+	}
 	return &containersv1.Container{
 		Id:          c.ID,
 		Image:       c.Image,
@@ -140,16 +155,9 @@ func toGrpcContainer(c containers.Container) *containersv1.Container {
 		Platform:    c.Platform,
 		PidsCurrent: c.PidsCurrent,
 		PidsLimit:   c.PidsLimit,
-		Labels:      c.Config.Labels,
+		Labels:      labels,
 		Ports:       portsToGrpc(c.Ports),
-		HostConfig: &containersv1.HostConfig{
-			MemoryReservation: c.HostConfig.MemoryReservation,
-			MemoryLimit:       c.HostConfig.MemoryLimit,
-			CpuReservation:    uint64(c.HostConfig.CPUReservation),
-			CpuLimit:          uint64(c.HostConfig.CPULimit),
-			RestartPolicy:     c.HostConfig.RestartPolicy,
-			AutoRemove:        c.HostConfig.AutoRemove,
-		},
+		HostConfig:  hostConfig,
 		Healthcheck: &containersv1.Healthcheck{
 			Disable:  c.Healthcheck.Disable,
 			Test:     c.Healthcheck.Test,
