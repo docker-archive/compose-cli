@@ -87,7 +87,7 @@ func (b *ecsAPIService) Top(ctx context.Context, projectName string, services []
 	return nil, api.ErrNotImplemented
 }
 
-func (b *ecsAPIService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+func (b *ecsAPIService) Exec(ctx context.Context, project string, opts api.RunOptions) (int, error) {
 	return 0, api.ErrNotImplemented
 }
 
