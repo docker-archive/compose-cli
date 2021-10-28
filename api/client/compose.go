@@ -90,7 +90,7 @@ func (c *composeService) Remove(ctx context.Context, project *types.Project, opt
 	return api.ErrNotImplemented
 }
 
-func (c *composeService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+func (c *composeService) Exec(ctx context.Context, project string, opts api.RunOptions) (int, error) {
 	return 0, api.ErrNotImplemented
 }
 

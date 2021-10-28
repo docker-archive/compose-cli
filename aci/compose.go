@@ -289,7 +289,7 @@ func (cs *aciComposeService) Remove(ctx context.Context, project *types.Project,
 	return api.ErrNotImplemented
 }
 
-func (cs *aciComposeService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+func (cs *aciComposeService) Exec(ctx context.Context, project string, opts api.RunOptions) (int, error) {
 	return 0, api.ErrNotImplemented
 }
 func (cs *aciComposeService) Top(ctx context.Context, projectName string, services []string) ([]api.ContainerProcSummary, error) {

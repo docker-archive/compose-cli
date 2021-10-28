@@ -347,11 +347,11 @@ func (s *composeService) Remove(ctx context.Context, project *types.Project, opt
 }
 
 // Exec executes a command in a running service container
-func (s *composeService) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+func (s *composeService) Exec(ctx context.Context, project string, opts api.RunOptions) (int, error) {
 	if err := checkUnsupportedExecOptions(ctx, opts); err != nil {
 		return 0, err
 	}
-	return 0, s.client.Exec(ctx, project.Name, opts)
+	return 0, s.client.Exec(ctx, project, opts)
 }
 
 func checkUnsupportedExecOptions(ctx context.Context, o api.RunOptions) error {

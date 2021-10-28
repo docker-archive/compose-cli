@@ -183,7 +183,7 @@ func (e ecsLocalSimulation) Remove(ctx context.Context, project *types.Project, 
 	return e.compose.Remove(ctx, project, options)
 }
 
-func (e ecsLocalSimulation) Exec(ctx context.Context, project *types.Project, opts api.RunOptions) (int, error) {
+func (e ecsLocalSimulation) Exec(ctx context.Context, project string, opts api.RunOptions) (int, error) {
 	return 0, api.ErrNotImplemented
 }
 
