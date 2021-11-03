@@ -101,10 +101,14 @@ func isContextAgnosticCommand(cmd *cobra.Command) bool {
 	if cmd == nil {
 		return false
 	}
-	if _, ok := contextAgnosticCommands[cmd.Name()]; ok {
+	if _, ok := contextAgnosticCommands[cmd.Name()]; ok && isFirstLevelCommand(cmd) {
 		return true
 	}
 	return isContextAgnosticCommand(cmd.Parent())
+}
+
+func isFirstLevelCommand(cmd *cobra.Command) bool {
+	return !cmd.HasParent() || !cmd.Parent().HasParent()
 }
 
 func main() {
