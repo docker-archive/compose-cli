@@ -195,7 +195,7 @@ func main() {
 
 	// --version should immediately be forwarded to the original cli
 	if opts.Version {
-		mobycli.Exec()
+		mobycli.Exec(root)
 	}
 
 	if opts.Config == "" {
@@ -209,7 +209,7 @@ func main() {
 
 	s, err := store.New(configDir)
 	if err != nil {
-		mobycli.Exec()
+		mobycli.Exec(root)
 	}
 	store.WithContextStore(s)
 

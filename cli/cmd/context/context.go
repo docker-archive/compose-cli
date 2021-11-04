@@ -48,7 +48,7 @@ func exportCommand() *cobra.Command {
 		Use:   "export",
 		Short: "Export a context to a tar or kubeconfig file",
 		Run: func(cmd *cobra.Command, args []string) {
-			mobycli.Exec()
+			mobycli.Exec(cmd.Root())
 		},
 	}
 	cmd.Flags().Bool("kubeconfig", false, "Export as a kubeconfig file")
@@ -60,7 +60,7 @@ func importCommand() *cobra.Command {
 		Use:   "import",
 		Short: "Import a context from a tar or zip file",
 		Run: func(cmd *cobra.Command, args []string) {
-			mobycli.Exec()
+			mobycli.Exec(cmd.Root())
 		},
 	}
 	return cmd

@@ -14,25 +14,10 @@
    limitations under the License.
 */
 
-package context
+package mobycli
 
-import (
-	"github.com/docker/compose-cli/cli/mobycli"
+import "os"
 
-	"github.com/spf13/cobra"
-)
-
-func inspectCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "inspect",
-		Short: "Display detailed information on one or more contexts",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			mobycli.Exec(cmd.Root())
-			return nil
-		},
-	}
-	// flags matching delegated command in moby cli
-	flags := cmd.Flags()
-	flags.StringP("format", "f", "", "Format the output using the given Go template")
-	return cmd
+func isRuntimeSig(s os.Signal) bool {
+	return false
 }
