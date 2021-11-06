@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"sort"
 	"strings"
 
 	"github.com/docker/compose/v2/pkg/utils"
@@ -33,6 +34,9 @@ func main() {
 	getCommands()
 	getCommands("buildx")
 	getCommands("compose")
+
+	sort.Strings(managementCommands)
+	sort.Strings(commands)
 
 	fmt.Printf(`
 var managementCommands = []string{
