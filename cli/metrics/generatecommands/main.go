@@ -26,11 +26,12 @@ import (
 
 var managementCommands = []string{"ecs", "scan"}
 
-var commands = []string{}
+var commands []string
 
 func main() {
 	fmt.Println("Walking through docker help to list commands...")
 	getCommands()
+	getCommands("buildx")
 	getCommands("compose")
 
 	fmt.Printf(`
@@ -71,7 +72,9 @@ func getCommands(execCommands ...string) {
 			section = commandsSection
 			if len(execCommands) > 0 {
 				command := execCommands[len(execCommands)-1]
-				managementCommands = append(managementCommands, command)
+				if !utils.StringContains(managementCommands, command) {
+					managementCommands = append(managementCommands, command)
+				}
 			}
 			continue
 		}
