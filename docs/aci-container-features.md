@@ -3,7 +3,7 @@ title: ACI integration container features
 description: Reference list of container ACI features
 keywords: Docker, Azure, Integration, ACI, container, cli, deploy, cloud
 ---
-# Azure Container Instances: running single containerrs
+# Azure Container Instances: running single containers
 
 Single containers can be executed on ACI with the `docker run` command.
 A single container is executed in its own ACI container group, that will container only one container.
