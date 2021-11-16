@@ -25,9 +25,10 @@ import (
 	"github.com/docker/compose/v2/pkg/utils"
 )
 
-var managementCommands = []string{"ecs", "scan"}
-
-var commands []string
+var (
+	managementCommands = []string{"ecs", "scan"}
+	commands           = []string{"bundle", "completion", "install", "merge", "render", "split", "status", "uninstall", "validate"}
+)
 
 func main() {
 	fmt.Println("Walking through docker help to list commands...")
