@@ -84,6 +84,7 @@ var compatibleComposeAttributes = []string{
 	"services.healthcheck.timeout",
 	"services.image",
 	"services.init",
+	"services.labels",
 	"services.logging",
 	"services.logging.options",
 	"services.networks",
