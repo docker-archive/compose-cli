@@ -115,6 +115,7 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 		DependsOnProp:          dependencies,
 		DnsSearchDomains:       service.DNSSearch,
 		DnsServers:             service.DNS,
+		DockerLabels:           service.Labels,
 		DockerSecurityOptions:  service.SecurityOpt,
 		EntryPoint:             service.Entrypoint,
 		Environment:            pairs,
