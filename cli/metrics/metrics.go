@@ -20,6 +20,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/docker/compose-cli/cli/metrics/metadata"
 	"github.com/docker/compose/v2/pkg/utils"
 )
 
@@ -34,7 +35,7 @@ func Track(context string, args []string, status string) {
 		c.Send(Command{
 			Command: command,
 			Context: context,
-			Source:  CLISource,
+			Source:  metadata.Get(CLISource, args),
 			Status:  status,
 		})
 	}

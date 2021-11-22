@@ -1,0 +1,1 @@
+{"Name":"builder","Driver":"docker-container","Nodes":[{"Name":"builder0","Endpoint":"unix:///var/run/docker.sock","Platforms":null,"Flags":["--allow-insecure-entitlement","security.insecure","--allow-insecure-entitlement","network.host"],"DriverOpts":{"env.JAEGER_TRACE":"localhost:6831","image":"moby/buildkit:latest","network":"host"},"Files":null}],"Dynamic":false}

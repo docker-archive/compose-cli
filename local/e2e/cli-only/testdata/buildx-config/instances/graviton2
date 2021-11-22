@@ -1,0 +1,1 @@
+{"Name":"graviton2","Driver":"docker-container","Nodes":[{"Name":"node1","Endpoint":"ssh://ubuntu@18.246.77.142","Platforms":[{"architecture":"arm64","os":"linux"}],"Flags":null,"ConfigFile":"","DriverOpts":{}}],"Dynamic":false}
