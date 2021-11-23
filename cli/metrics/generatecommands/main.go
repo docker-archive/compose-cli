@@ -19,19 +19,25 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"sort"
 	"strings"
 
 	"github.com/docker/compose/v2/pkg/utils"
 )
 
-var managementCommands = []string{"ecs", "scan"}
-
-var commands = []string{}
+var (
+	managementCommands = []string{"ecs", "scan"}
+	commands           = []string{"bundle", "completion", "install", "merge", "render", "split", "status", "uninstall", "validate"}
+)
 
 func main() {
 	fmt.Println("Walking through docker help to list commands...")
 	getCommands()
+	getCommands("buildx")
 	getCommands("compose")
+
+	sort.Strings(managementCommands)
+	sort.Strings(commands)
 
 	fmt.Printf(`
 var managementCommands = []string{
@@ -71,7 +77,9 @@ func getCommands(execCommands ...string) {
 			section = commandsSection
 			if len(execCommands) > 0 {
 				command := execCommands[len(execCommands)-1]
-				managementCommands = append(managementCommands, command)
+				if !utils.StringContains(managementCommands, command) {
+					managementCommands = append(managementCommands, command)
+				}
 			}
 			continue
 		}

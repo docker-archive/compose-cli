@@ -210,6 +210,22 @@ func TestContextMetrics(t *testing.T) {
 			`{"command":"context ls","context":"moby","source":"cli","status":"success"}`,
 		}, usage)
 	})
+
+	t.Run("metrics on build", func(t *testing.T) {
+		s.ResetUsage()
+
+		_ = os.Setenv("BUILDX_CONFIG", "./testdata/buildx-config")
+		c.RunDockerOrExitError("build", "-t", "foo:bar", ".")
+		c.RunDockerOrExitError("buildx", "build", "-t", "foo:bar", ".")
+		c.RunDockerOrExitError("buildx", "--builder", "graviton2", "build", "-t", "foo:bar", ".")
+
+		usage := s.GetUsage()
+		assert.DeepEqual(t, []string{
+			`{"command":"build","context":"moby","source":"cli-docker;buildkit","status":"failure"}`,
+			`{"command":"buildx build","context":"moby","source":"cli-buildx;docker-container","status":"failure"}`,
+			`{"command":"buildx --builder build","context":"moby","source":"cli-buildx;docker-container","status":"failure"}`,
+		}, usage)
+	})
 }
 
 func TestContextDuplicateACI(t *testing.T) {
