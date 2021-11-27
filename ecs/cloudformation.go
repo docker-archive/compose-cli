@@ -173,7 +173,10 @@ func (b *ecsAPIService) convert(ctx context.Context, project *types.Project) (*c
 
 func (b *ecsAPIService) createService(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources) error {
 	taskExecutionRole := b.createTaskExecutionRole(project, service, template)
-	taskRole := b.createTaskRole(project, service, template, resources)
+	taskRole, err := b.createTaskRole(project, service, template, resources)
+	if err != nil {
+		return err
+	}
 
 	definition, err := b.createTaskDefinition(project, service, resources)
 	if err != nil {
@@ -452,7 +455,7 @@ func (b *ecsAPIService) createTaskExecutionRole(project *types.Project, service 
 	return taskExecutionRole
 }
 
-func (b *ecsAPIService) createTaskRole(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources) string {
+func (b *ecsAPIService) createTaskRole(project *types.Project, service types.ServiceConfig, template *cloudformation.Template, resources awsResources) (string, error) {
 	taskRole := fmt.Sprintf("%sTaskRole", normalizeResourceName(service.Name))
 	rolePolicies := []iam.Role_Policy{}
 	if roles, ok := service.Extensions[extensionRole]; ok {
@@ -462,6 +465,13 @@ func (b *ecsAPIService) createTaskRole(project *types.Project, service types.Ser
 		})
 	}
 	for _, vol := range service.Volumes {
+		if vol.Source == "" {
+			return "", fmt.Errorf(
+				"service %s has an invalid volume %s: ECS does not support sourceless volumes",
+				service.Name,
+				vol.Target,
+			)
+		}
 		rolePolicies = append(rolePolicies, iam.Role_Policy{
 			PolicyName:     fmt.Sprintf("%s%sVolumeMountPolicy", normalizeResourceName(service.Name), normalizeResourceName(vol.Source)),
 			PolicyDocument: volumeMountPolicyDocument(vol.Source, resources.filesystems[vol.Source].ARN()),
@@ -474,7 +484,7 @@ func (b *ecsAPIService) createTaskRole(project *types.Project, service types.Ser
 		}
 	}
 	if len(rolePolicies) == 0 && len(managedPolicies) == 0 {
-		return ""
+		return "", nil
 	}
 	template.Resources[taskRole] = &iam.Role{
 		AssumeRolePolicyDocument: ecsTaskAssumeRolePolicyDocument,
@@ -482,7 +492,7 @@ func (b *ecsAPIService) createTaskRole(project *types.Project, service types.Ser
 		ManagedPolicyArns:        managedPolicies,
 		Tags:                     serviceTags(project, service),
 	}
-	return taskRole
+	return taskRole, nil
 }
 
 func (b *ecsAPIService) createCloudMap(project *types.Project, template *cloudformation.Template, vpc string) {
