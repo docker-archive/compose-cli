@@ -18,6 +18,7 @@ package ecs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -42,7 +43,7 @@ import (
 func TestSimpleConvert(t *testing.T) {
 	bytes, err := ioutil.ReadFile("testdata/input/simple-single-service.yaml")
 	assert.NilError(t, err)
-	template := convertYaml(t, string(bytes), useDefaultVPC)
+	template := convertYaml(t, string(bytes), nil, useDefaultVPC)
 	resultAsJSON, err := marshall(template, "yaml")
 	assert.NilError(t, err)
 	result := fmt.Sprintf("%s\n", string(resultAsJSON))
@@ -60,7 +61,7 @@ services:
         awslogs-datetime-pattern: "FOO"
 
 x-aws-logs_retention: 10
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def := template.Resources["FooTaskDefinition"].(*ecs.TaskDefinition)
 	logging := getMainContainer(def, t).LogConfiguration
 	if logging != nil {
@@ -80,7 +81,7 @@ services:
     image: hello_world
     env_file:
       - testdata/input/envfile
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def := template.Resources["FooTaskDefinition"].(*ecs.TaskDefinition)
 	env := getMainContainer(def, t).Environment
 	var found bool
@@ -102,7 +103,7 @@ services:
       - testdata/input/envfile
     environment:
       - "FOO=ZOT"
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def := template.Resources["FooTaskDefinition"].(*ecs.TaskDefinition)
 	env := getMainContainer(def, t).Environment
 	var found bool
@@ -124,7 +125,7 @@ services:
       replicas: 4 
       update_config:
         parallelism: 2
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	service := template.Resources["FooService"].(*ecs.Service)
 	assert.Check(t, service.DeploymentConfiguration.MaximumPercent == 150)
 	assert.Check(t, service.DeploymentConfiguration.MinimumHealthyPercent == 50)
@@ -139,7 +140,7 @@ services:
       update_config:
         x-aws-min_percent: 25
         x-aws-max_percent: 125
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	service := template.Resources["FooService"].(*ecs.Service)
 	assert.Check(t, service.DeploymentConfiguration.MaximumPercent == 125)
 	assert.Check(t, service.DeploymentConfiguration.MinimumHealthyPercent == 25)
@@ -151,7 +152,7 @@ services:
   foo:
     image: hello_world
     x-aws-pull_credentials: "secret"
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	x := template.Resources["FooTaskExecutionRole"]
 	assert.Check(t, x != nil)
 	role := *(x.(*iam.Role))
@@ -179,7 +180,7 @@ networks:
     name: public
   back-tier:
     internal: true
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	assert.Check(t, template.Resources["FronttierNetwork"] != nil)
 	assert.Check(t, template.Resources["BacktierNetwork"] != nil)
 	assert.Check(t, template.Resources["BacktierNetworkIngress"] != nil)
@@ -207,7 +208,7 @@ func TestLoadBalancerTypeApplication(t *testing.T) {
 `,
 	}
 	for _, y := range cases {
-		template := convertYaml(t, y, useDefaultVPC)
+		template := convertYaml(t, y, nil, useDefaultVPC)
 		lb := template.Resources["LoadBalancer"]
 		assert.Check(t, lb != nil)
 		loadBalancer := *lb.(*elasticloadbalancingv2.LoadBalancer)
@@ -224,7 +225,7 @@ services:
     image: nginx
   foo:
     image: bar
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	for _, r := range template.Resources {
 		assert.Check(t, r.AWSCloudFormationType() != "AWS::ElasticLoadBalancingV2::TargetGroup")
 		assert.Check(t, r.AWSCloudFormationType() != "AWS::ElasticLoadBalancingV2::Listener")
@@ -239,7 +240,7 @@ services:
     image: nginx
     deploy:
       replicas: 10
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	s := template.Resources["TestService"]
 	assert.Check(t, s != nil)
 	service := *s.(*ecs.Service)
@@ -251,7 +252,7 @@ func TestTaskSizeConvert(t *testing.T) {
 services:
   test:
     image: nginx
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def := template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	assert.Equal(t, def.Cpu, "256")
 	assert.Equal(t, def.Memory, "512")
@@ -265,7 +266,7 @@ services:
         limits:
           cpus: '0.5'
           memory: 2048M
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	assert.Equal(t, def.Cpu, "512")
 	assert.Equal(t, def.Memory, "2048")
@@ -279,7 +280,7 @@ services:
         limits:
           cpus: '4'
           memory: 8192M
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	assert.Equal(t, def.Cpu, "4096")
 	assert.Equal(t, def.Memory, "8192")
@@ -298,7 +299,7 @@ services:
             - discrete_resource_spec:
                 kind: gpus
                 value: 2
-`, useDefaultVPC, useGPU)
+`, nil, useDefaultVPC, useGPU)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	assert.Equal(t, def.Cpu, "4000")
 	assert.Equal(t, def.Memory, "792")
@@ -314,7 +315,7 @@ services:
             - discrete_resource_spec:
                 kind: gpus
                 value: 2
-`, useDefaultVPC, useGPU)
+`, nil, useDefaultVPC, useGPU)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	assert.Equal(t, def.Cpu, "")
 	assert.Equal(t, def.Memory, "")
@@ -329,7 +330,7 @@ services:
           devices: 
             - capabilities: [gpu]
               count: 2
-`, useDefaultVPC, useGPU)
+`, nil, useDefaultVPC, useGPU)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	assert.Equal(t, def.Cpu, "")
 	assert.Equal(t, def.Memory, "")
@@ -343,7 +344,7 @@ services:
     ports:
       - 80:80
       - 88:88
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	lb := template.Resources["LoadBalancer"]
 	assert.Check(t, lb != nil)
 	loadBalancer := *lb.(*elasticloadbalancingv2.LoadBalancer)
@@ -359,7 +360,7 @@ networks:
   default:
     external: true
     name: sg-123abc
-`, useDefaultVPC, func(m *MockAPIMockRecorder) {
+`, nil, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.SecurityGroupExists(gomock.Any(), "sg-123abc").Return(true, nil)
 	})
 	assert.Check(t, template.Resources["DefaultNetwork"] == nil)
@@ -378,7 +379,7 @@ volumes:
   db-data:
     external: true
     name: fs-123abc
-`, useDefaultVPC, func(m *MockAPIMockRecorder) {
+`, nil, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ResolveFileSystem(gomock.Any(), "fs-123abc").Return(existingAWSResource{id: "fs-123abc"}, nil)
 	})
 	s := template.Resources["DbdataNFSMountTargetOnSubnet1"].(*efs.MountTarget)
@@ -403,7 +404,7 @@ volumes:
         performance_mode: maxIO
         throughput_mode: provisioned
         provisioned_throughput: 1024
-`, useDefaultVPC, func(m *MockAPIMockRecorder) {
+`, nil, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ListFileSystems(gomock.Any(), map[string]string{
 			api.ProjectLabel: t.Name(),
 			api.VolumeLabel:  "db-data",
@@ -423,6 +424,25 @@ volumes:
 	assert.Equal(t, s.FileSystemId, cloudformation.Ref(n)) //nolint:staticcheck
 }
 
+func TestCreateSourcelessVolume(t *testing.T) {
+	convertYaml(t, `
+services:
+  test:
+    image: nginx
+    volumes:
+      - db-data
+volumes:
+    db-data:
+`,
+		errors.New("service test has an invalid volume db-data: ECS does not support sourceless volumes"),
+		useDefaultVPC, func(m *MockAPIMockRecorder) {
+			m.ListFileSystems(gomock.Any(), map[string]string{
+				api.ProjectLabel: t.Name(),
+				api.VolumeLabel:  "db-data",
+			}).Return(nil, nil)
+		})
+}
+
 func TestCreateAccessPoint(t *testing.T) {
 	template := convertYaml(t, `
 services:
@@ -433,7 +453,7 @@ volumes:
     driver_opts:
       uid: 1002
       gid: 1002
-`, useDefaultVPC, func(m *MockAPIMockRecorder) {
+`, nil, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ListFileSystems(gomock.Any(), gomock.Any()).Return(nil, nil)
 	})
 	a := template.Resources["DbdataAccessPoint"].(*efs.AccessPoint)
@@ -449,7 +469,7 @@ services:
     image: nginx
 volumes:
   db-data: {}
-`, useDefaultVPC, func(m *MockAPIMockRecorder) {
+`, nil, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ListFileSystems(gomock.Any(), map[string]string{
 			api.ProjectLabel: t.Name(),
 			api.VolumeLabel:  "db-data",
@@ -480,7 +500,7 @@ services:
     init: true
     user: "user"
     working_dir: "working_dir"
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	def := template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
 	container := getMainContainer(def, t)
 	assert.Equal(t, container.Image, "image")
@@ -511,7 +531,7 @@ services:
     ports:
       - 80:80
       - 88:88
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	for _, r := range template.Resources {
 		tags := reflect.Indirect(reflect.ValueOf(r)).FieldByName("Tags")
 		if !tags.IsValid() {
@@ -533,7 +553,7 @@ x-aws-cluster: "arn:aws:ecs:region:account:cluster/name"
 services:
   test:
     image: nginx
-`, useDefaultVPC, func(m *MockAPIMockRecorder) {
+`, nil, useDefaultVPC, func(m *MockAPIMockRecorder) {
 		m.ResolveCluster(gomock.Any(), "arn:aws:ecs:region:account:cluster/name").Return(existingAWSResource{
 			arn: "arn:aws:ecs:region:account:cluster/name",
 			id:  "name",
@@ -548,7 +568,7 @@ x-aws-vpc: "arn:aws:ec2:us-west-1:EXAMPLE:vpc/vpc-1234acbd"
 services:
   test:
     image: nginx
-`, func(m *MockAPIMockRecorder) {
+`, nil, func(m *MockAPIMockRecorder) {
 		m.CheckVPC(gomock.Any(), "vpc-1234acbd").Return(nil)
 		m.GetSubNets(gomock.Any(), "vpc-1234acbd").Return([]awsResource{
 			existingAWSResource{id: "subnet1"},
@@ -559,7 +579,7 @@ services:
 	})
 }
 
-func convertYaml(t *testing.T, yaml string, fn ...func(m *MockAPIMockRecorder)) *cloudformation.Template {
+func convertYaml(t *testing.T, yaml string, assertErr error, fn ...func(m *MockAPIMockRecorder)) *cloudformation.Template {
 	project := loadConfig(t, yaml)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -573,7 +593,12 @@ func convertYaml(t *testing.T, yaml string, fn ...func(m *MockAPIMockRecorder)) 
 		aws: m,
 	}
 	template, err := backend.convert(context.TODO(), project)
-	assert.NilError(t, err)
+	if assertErr == nil {
+		assert.NilError(t, err)
+	} else {
+		assert.Error(t, err, assertErr.Error())
+	}
+
 	return template
 }
 

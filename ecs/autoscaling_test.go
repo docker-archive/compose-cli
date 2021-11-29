@@ -32,7 +32,7 @@ services:
       x-aws-autoscaling: 
         cpu: 75
         max: 10
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	target := template.Resources["FooScalableTarget"].(*autoscaling.ScalableTarget)
 	assert.Check(t, target != nil)            //nolint:staticcheck
 	assert.Check(t, target.MaxCapacity == 10) //nolint:staticcheck

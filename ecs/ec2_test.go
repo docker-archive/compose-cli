@@ -42,7 +42,7 @@ services:
             - discrete_resource_spec:
                 kind: gpus
                 value: 1                    
-`, useDefaultVPC)
+`, nil, useDefaultVPC)
 	lc := template.Resources["LaunchConfiguration"].(*autoscaling.LaunchConfiguration)
 	assert.Check(t, lc.ImageId == "ami123456789")
 	assert.Check(t, lc.InstanceType == "t0.femto")
