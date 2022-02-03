@@ -42,7 +42,7 @@ func checkUnsupportedLogOptions(ctx context.Context, o api.LogOptions) error {
 		option            string
 	}{
 		{o.Since, "", "since"},
-		{o.Tail, "", "tail"},
+		{o.Tail, "all", "tail"},
 		{o.Timestamps, false, "timestamps"},
 		{o.Until, "", "until"},
 	}
