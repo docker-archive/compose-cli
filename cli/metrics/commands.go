@@ -45,6 +45,7 @@ var managementCommands = []string{
 	"network",
 	"node",
 	"plugin",
+	"sbom",
 	"scan",
 	"secret",
 	"service",
