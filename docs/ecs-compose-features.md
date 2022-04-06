@@ -55,7 +55,7 @@ __Legend:__
 | service.hostname               | x |
 | service.image                  | ✓ |  Private images will be accessible by passing x-aws-pull_policy with ARN of a username+password secret
 | service.isolation              | x |
-| service.labels                 | x |
+| service.labels                 | ✓ |
 | service.links                  | x |
 | service.logging                | ✓ |  Can be used to customize CloudWatch Logs configuration
 | service.network_mode           | x |
@@ -64,7 +64,7 @@ __Legend:__
 | service.ports                  | ✓ |  Only symetrical port mapping is supported in ECS. See [Exposing ports](#exposing-ports).
 | service.secrets                | ✓ |  See [Secrets](#secrets).
 | service.security_opt           | x |
-| service.stop_grace_period      | x |
+| service.stop_grace_period      | ✓ |
 | service.stop_signal            | x |
 | service.sysctls                | x |
 | service.ulimits                | ✓ |  Only support `nofile` ulimit due to Fargate limitations
