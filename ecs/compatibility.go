@@ -95,6 +95,7 @@ var compatibleComposeAttributes = []string{
 	"services.secrets",
 	"services.secrets.source",
 	"services.secrets.target",
+	"services.stop_grace_period",
 	"services.user",
 	"services.volumes",
 	"services.volumes.read_only",
