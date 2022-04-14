@@ -173,6 +173,11 @@ func TestGetCommand(t *testing.T) {
 			args:     []string{"--debug", "compose", "-f", "titi.yaml", "up"},
 			expected: "compose up",
 		},
+		{
+			name:     "extension install myorg/my-extension",
+			args:     []string{"extension", "install", "myorg/my-extension"},
+			expected: "extension install",
+		},
 	}
 
 	for _, testCase := range testCases {
