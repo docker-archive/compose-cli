@@ -174,14 +174,10 @@ func buildxDriver(dockercfg *configfile.ConfigFile, buildArgs []string) string {
 // buildxBuilder returns the builder being used in the build command
 func buildxBuilder(buildArgs []string) string {
 	var builder string
-	fset := pflag.NewFlagSet("buildx", pflag.ContinueOnError)
-	fset.String("builder", "", "")
-	_ = fset.ParseAll(buildArgs, func(flag *pflag.Flag, value string) error {
-		if flag.Name == "builder" {
-			builder = value
-		}
-		return nil
-	})
+	flags := pflag.NewFlagSet("buildx", pflag.ContinueOnError)
+	flags.Usage = func() {}
+	flags.StringVar(&builder, "builder", "", "")
+	_ = flags.Parse(buildArgs)
 	if len(builder) == 0 {
 		builder = os.Getenv("BUILDX_BUILDER")
 	}
