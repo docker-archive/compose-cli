@@ -2,15 +2,14 @@ name: Windows CI
 
 on:
   push:
-    branches:
-      - main
+    branches:  "Main" 
   pull_request:
 
 jobs:
   check-optional-tests:
     name: Check if needs to run Windows build and tests
-    runs-on: ubuntu-latest
-    outputs:
+  runs-on: ubuntu-latest
+   output:
       trigger-windows: ${{steps.runwindowstest.outputs.triggered}}
     steps:
       - uses: khan/pull-request-comment-trigger@master
@@ -23,16 +22,16 @@ jobs:
 
   windows-build:
     name: Windows Build
-    runs-on: windows-latest
+    runs-on: Windows-latest
     env:
       GO111MODULE: "on"
     needs: check-optional-tests
-    if: github.ref == 'refs/heads/main' || needs.check-optional-tests.outputs.trigger-windows == 'true'
+    if: github.ref == 'refs/heads/main' || needs.check-optional-tests.outputs.trigger-Windows == 'true'
     steps:
-      - name: Set up Go 1.16
+      - name: Set up Go v1.16
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 'v1.16'
         id: go
 
       - name: Setup docker CLI
@@ -43,9 +42,9 @@ jobs:
           docker version
 
       - name: Checkout code into the Go module directory
-        uses: actions/checkout@v2
+        uses: 'actions/checkout@v2'
 
-      - uses: actions/cache@v2
+      - uses: 'actions/cache@v2'
         with:
           path: ~/go/pkg/mod
           key: go-${{ hashFiles('**/go.sum') }}
@@ -66,7 +65,7 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        # need to docker logout on windows nodes, it seems GHActions does a `docker login --user githubactions` specifically on windows nodes
+        # need to docker logout on Windows nodes, it seems GHActions does a `docker login --user githubactions` specifically on windows nodes
         run: |
           docker logout
           make e2e-aci
