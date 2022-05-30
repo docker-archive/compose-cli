@@ -69,3 +69,4 @@ jobs:
         run: |
           docker logout
           make e2e-aci
+Signed-off-by: Emanuelle Pharand <pharandemanuelle2608@gmail.com>
