@@ -2,22 +2,21 @@ name: Windows CI
 
 on:
   push:
-    branches:  "Main" 
+    branches:  [ main ]
   pull_request:
 
 jobs:
   check-optional-tests:
     name: Check if needs to run Windows build and tests
-  runs-on: ubuntu-latest
-   output:
-      trigger-windows: ${{steps.runwindowstest.outputs.triggered}}
-    steps:
-      - uses: khan/pull-request-comment-trigger@master
-        name: Check if test Windows
-        if: github.event_name == 'pull_request'
-        id: runwindowstest
-        with:
-          trigger: '/test-windows'
+    runs-on: windows-latest
+    outputs:
+     trigger-windows: ${{step.runwindowstest.outputs.triggered}}
+      steps
+     uses: 'khan/pull-request-comment-trigger@main'
+     name: Check if test Windows
+     if: github.event_name == 'pull_request'
+     id: 'runwindowstests'
+     with: 'trigger/test-windows'
 
 
   windows-build:
@@ -69,4 +68,5 @@ jobs:
         run: |
           docker logout
           make e2e-aci
-Signed-off-by: Emanuelle Pharand <pharandemanuelle2608@gmail.com>
+					
+#signed-off-by: ladykraken <pharandemanuelle2608@gmail.com>
