@@ -3,8 +3,7 @@ name: Windows CI
 on:
   push: [ Opened ]
   branches: [ main ]
-	
-pull_requests: [ main ]
+  pull_requests: [ main ]
 
 jobs:
   check-optional-tests:
@@ -15,7 +14,7 @@ jobs:
   steps:
      uses: khan/pull-request-comment-trigger@main
      name: check if Windows tests triggered
-     uses: pull_requests
+     uses: pull_request
      name: run-windows-test
      uses: trigger/test-test-Windows
 
