@@ -1,29 +1,30 @@
 name: Windows CI
 
 on:
-  push:
-    branches:  [ main ]
-  pull_request:
+  push: [ Opened ]
+  branches: [ main ]
+	
+pull_requests: [ main ]
 
 jobs:
   check-optional-tests:
     name: Check if needs to run Windows build and tests
-    runs-on: windows-latest
-    outputs:
-     trigger-windows: ${{step.runwindowstest.outputs.triggered}}
-      steps
-     uses: 'khan/pull-request-comment-trigger@main'
-     name: Check if test Windows
-     if: github.event_name == 'pull_request'
-     id: 'runwindowstests'
-     with: 'trigger/test-windows'
+    runs-on: Windows-latest
+    outputs: tested
+    trigger-Windows-tests: ${{steps.runwindowstests.outputs.triggered}}
+  steps:
+     uses: khan/pull-request-comment-trigger@main
+     name: check if Windows tests triggered
+     uses: pull_requests
+     name: run-windows-test
+     uses: trigger/test-test-Windows
 
 
-  windows-build:
-    name: Windows Build
+Windows-build-tests:
+    name: Windows Build-test
     runs-on: Windows-latest
     env:
-      GO111MODULE: "on"
+      GO11MODULE: "on"
     needs: check-optional-tests
     if: github.ref == 'refs/heads/main' || needs.check-optional-tests.outputs.trigger-Windows == 'true'
     steps:
@@ -48,7 +49,7 @@ jobs:
           path: ~/go/pkg/mod
           key: go-${{ hashFiles('**/go.sum') }}
 
-      - name: Test
+      - name: Tests
         run: make -f builder.Makefile test
 
       - name: Build
