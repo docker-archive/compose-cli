@@ -1,7 +1,7 @@
 name: Windows CI
 
 on:
-  push: [ Opened ]
+  push: [ go.mod ]
   branches: [ main ]
   pull_requests: [ main ]
 
@@ -14,7 +14,7 @@ jobs:
   steps:
      uses: khan/pull-request-comment-trigger@main
      name: check if Windows tests triggered
-     uses: pull_request
+     uses: pull_requests
      name: run-windows-test
      uses: trigger/test-test-Windows
 
@@ -27,17 +27,17 @@ Windows-build-tests:
     needs: check-optional-tests
     if: github.ref == 'refs/heads/main' || needs.check-optional-tests.outputs.trigger-Windows == 'true'
     steps:
-      - name: Set up Go v1.16
+      - name: Set up Go.mod v1.16
         uses: actions/setup-go@v2
         with:
-          go-version: 'v1.16'
-        id: go
+          go-version: '1.16'
+        id: go.mod
 
       - name: Setup docker CLI
         run: |
           docker version
           curl -L -o docker.exe https://github.com/StefanScherer/docker-cli-builder/releases/download/20.10.5/docker.exe
-          mv -Force ./docker.exe "C:\Program Files\Docker\"
+          mv -Force ./docker.exe "C:\ProgramFiles\Docker\"
           docker version
 
       - name: Checkout code into the Go module directory
@@ -59,7 +59,7 @@ Windows-build-tests:
       - name: E2E Test
         run: make e2e-win-ci
 
-      - name: ACI e2e Test
+      - name: ASCI e2e Test
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -67,6 +67,6 @@ Windows-build-tests:
         # need to docker logout on Windows nodes, it seems GHActions does a `docker login --user githubactions` specifically on windows nodes
         run: |
           docker logout
-          make e2e-aci
+          make e2e-asci
 					
-#signed-off-by: ladykraken <pharandemanuelle2608@gmail.com>
+#signed-off-by: LadyK-21 <ab91f3265aef33ee.live@outlook.com>
