@@ -96,8 +96,8 @@ The Docker ACI integration does not currently support aggregated logs for contai
 ## Exposing ports
 
 When one or more services expose ports, the entire ACI container group will be exposed and will get a public IP allocated.
-As all services are mapped to containers in the same container group, only one service cannot expose a given port number.
-[ACI does not support port mapping](https://feedback.azure.com/forums/602224-azure-container-instances/suggestions/34082284-support-for-port-mapping), so the source and target ports defined in the Compose file must be the same.
+As all services are mapped to containers in the same container group, only one service can expose a given port number.
+[ACI does not support port mapping](https://docs.microsoft.com/en-us/azure/container-instances/container-instances-troubleshooting#container-group-ip-address-may-not-be-accessible-due-to-mismatched-ports), so the source and target ports defined in the Compose file must be the same.
 
 When exposing ports, a service can also specify the service `domainname` field to set a DNS hostname. `domainname` will be used to specify the ACI DNS Label Name, and the ACI container group will be reachable at <domainname>.<region>.azurecontainer.io.
 All services specifying a `domainname` must set the same value, as it is applied to the entire container group.
