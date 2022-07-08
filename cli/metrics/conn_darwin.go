@@ -1,8 +1,8 @@
-//go:build windows
-// +build windows
+//go:build darwin
+// +build darwin
 
 /*
-   Copyright 2020, 2022 Docker Compose CLI authors
+   Copyright 2022 Docker Compose CLI authors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,24 +21,23 @@ package metrics
 
 import (
 	"net"
-	"strings"
-	"time"
+	"path/filepath"
 
-	"github.com/Microsoft/go-winio"
+	"github.com/docker/docker/pkg/homedir"
 )
 
 var (
-	socket = `\\.\pipe\docker_cli`
+	socket = "/var/run/docker-cli.sock"
 )
 
 func init() {
-	overrideSocket() // no-op, unless built for e2e testing
+	// Attempt to retrieve the Docker CLI socket for the current user.
+	if home := homedir.Get(); home != "" {
+		socket = filepath.Join(home, "/Library/Containers/com.docker.docker/Data/docker-cli.sock")
+	} // else: On macOS Docker Desktop creates symlinks in /var/run, so fall back to the old default.
+	overrideSocket() // nop, unless built for e2e testing
 }
 
 func conn() (net.Conn, error) {
-	if strings.HasPrefix(socket, `\\.\pipe\`) {
-		timeout := 200 * time.Millisecond
-		return winio.DialPipe(socket, &timeout)
-	}
 	return net.Dial("unix", socket)
 }
