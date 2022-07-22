@@ -21,7 +21,7 @@ require (
 	github.com/cnabio/cnab-to-oci v0.3.1-beta1
 	github.com/compose-spec/compose-go v1.0.8
 	github.com/containerd/console v1.0.2
-	github.com/containerd/containerd v1.5.10
+	github.com/containerd/containerd v1.5.13
 	github.com/distribution/distribution/v3 v3.0.0-20210316161203-a01c71e2477e
 	github.com/docker/cli v20.10.7+incompatible
 	github.com/docker/compose/v2 v2.2.0
@@ -57,7 +57,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
 	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/ini.v1 v1.62.0
