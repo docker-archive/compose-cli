@@ -1,7 +1,8 @@
+//go:build e2e
 // +build e2e
 
 /*
-   Copyright 2020 Docker Compose CLI authors
+   Copyright 2020, 2022 Docker Compose CLI authors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +23,7 @@ import (
 	"os"
 )
 
-func init() {
+func overrideSocket() {
 	testSocket, defined := os.LookupEnv("TEST_METRICS_SOCKET")
 	if defined {
 		socket = testSocket

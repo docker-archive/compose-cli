@@ -1,7 +1,8 @@
-// +build !windows
+//go:build !windows,!darwin
+// +build !windows,!darwin
 
 /*
-   Copyright 2020 Docker Compose CLI authors
+   Copyright 2020, 2022 Docker Compose CLI authors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +19,24 @@
 
 package metrics
 
-import "net"
+import (
+	"net"
+	"path/filepath"
+
+	"github.com/docker/docker/pkg/homedir"
+)
 
 var (
-	socket = "/var/run/docker-cli.sock"
+	socket = ""
 )
+
+func init() {
+	// Attempt to retrieve the Docker CLI socket for the current user.
+	if home := homedir.Get(); home != "" {
+		socket = filepath.Join(home, ".docker/desktop/docker-cli.sock")
+	} // else: On Linux we don't expect to have a global CLI socket, so leave it empty and let connections fail.
+	overrideSocket() // nop, unless built for e2e testing
+}
 
 func conn() (net.Conn, error) {
 	return net.Dial("unix", socket)

@@ -1,5 +1,8 @@
+//go:build !e2e
+// +build !e2e
+
 /*
-   Copyright 2020 Docker Compose CLI authors
+   Copyright 2022 Docker Compose CLI authors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,3 +17,7 @@
    limitations under the License.
 */
 
+package metrics
+
+func overrideSocket() {
+}

@@ -108,7 +108,7 @@ RUN --mount=target=. \
     make -f builder.Makefile test
 
 FROM base AS check-license-headers
-RUN go get -u github.com/kunalkushwaha/ltag
+RUN go install github.com/google/addlicense@latest
 RUN --mount=target=. \
     make -f builder.Makefile check-license-headers
 
