@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  GO_VERSION: 1.18
+
 jobs:
   check-optional-tests:
     name: Check if needs to run Kube tests
@@ -20,20 +23,16 @@ jobs:
         with:
           trigger: '/test-kube'
 
-
   kube-tests:
     name: Kube e2e tests
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: "on"
     needs: check-optional-tests
     if: github.ref == 'refs/heads/main' || needs.check-optional-tests.outputs.trigger-kube == 'true'
     steps:
-      - name: Set up Go 1.16
-        uses: actions/setup-go@v2
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16
-        id: go
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Setup docker CLI
         run: |

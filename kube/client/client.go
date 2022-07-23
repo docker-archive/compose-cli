@@ -1,3 +1,4 @@
+//go:build kube
 // +build kube
 
 /*
