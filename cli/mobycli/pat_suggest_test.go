@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/docker/docker/registry"
-	"gotest.tools/assert"
+	"gotest.tools/v3/assert"
 )
 
 func TestIsUsingDefaultRegistry(t *testing.T) {
