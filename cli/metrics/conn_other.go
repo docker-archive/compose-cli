@@ -21,21 +21,25 @@ package metrics
 
 import (
 	"net"
+	"os"
 	"path/filepath"
 
 	"github.com/docker/docker/pkg/homedir"
 )
 
 var (
-	socket = ""
+	socket = "/var/run/docker-cli.sock"
 )
 
 func init() {
 	// Attempt to retrieve the Docker CLI socket for the current user.
 	if home := homedir.Get(); home != "" {
-		socket = filepath.Join(home, ".docker/desktop/docker-cli.sock")
-	} // else: On Linux we don't expect to have a global CLI socket, so leave it empty and let connections fail.
-	overrideSocket() // nop, unless built for e2e testing
+		tmp := filepath.Join(home, ".docker/desktop/docker-cli.sock")
+		if _, err := os.Stat(tmp); err == nil {
+			socket = tmp
+		} // else: fall back to the global CLI socket path (used by DD in WSL)
+	} // else: fall back to the global CLI socket path (used by DD in WSL)
+	overrideSocket() // no-op, unless built for e2e testing
 }
 
 func conn() (net.Conn, error) {
