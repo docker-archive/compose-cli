@@ -24,21 +24,30 @@ import (
 	"github.com/docker/compose/v2/pkg/utils"
 )
 
-// Track sends the tracking analytics to Docker Desktop
-func Track(context string, args []string, status string) {
+func (c *client) Track(context string, args []string, status string) {
 	if isInvokedAsCliBackend() {
 		return
 	}
 	command := GetCommand(args)
 	if command != "" {
-		c := NewClient()
 		c.Send(Command{
 			Command: command,
 			Context: context,
-			Source:  metadata.Get(CLISource, args),
+			Source:  c.getMetadata(CLISource, args),
 			Status:  status,
 		})
 	}
+}
+
+func (c *client) getMetadata(cliSource string, args []string) string {
+	if len(args) == 0 {
+		return cliSource
+	}
+	switch args[0] {
+	case "build", "buildx":
+		cliSource = metadata.BuildMetadata(cliSource, c.cliversion.f(), args[0], args[1:])
+	}
+	return cliSource
 }
 
 func isInvokedAsCliBackend() bool {

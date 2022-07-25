@@ -31,23 +31,34 @@ import (
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/docker/api/types"
 	dockerclient "github.com/docker/docker/client"
+	"github.com/hashicorp/go-version"
 	"github.com/spf13/pflag"
 )
 
-// getBuildMetadata returns build metadata for this command
-func getBuildMetadata(cliSource string, command string, args []string) string {
+// BuildMetadata returns build metadata for this command
+func BuildMetadata(cliSource, cliVersion, command string, args []string) string {
 	var cli, builder string
 	dockercfg := config.LoadDefaultConfigFile(io.Discard)
 	if alias, ok := dockercfg.Aliases["builder"]; ok {
+		if alias != "buildx" {
+			return cliSource
+		}
 		command = alias
 	}
 	if command == "build" {
-		cli = "docker"
-		builder = "buildkit"
-		if enabled, _ := isBuildKitEnabled(); !enabled {
-			builder = "legacy"
+		buildkitEnabled, _ := isBuildKitEnabled()
+		if buildkitEnabled && isBuildxDefault(cliVersion) {
+			command = "buildx"
+			args = append([]string{"build"}, args...)
+		} else {
+			cli = "docker"
+			builder = "buildkit"
+			if !buildkitEnabled {
+				builder = "legacy"
+			}
 		}
-	} else if command == "buildx" {
+	}
+	if command == "buildx" {
 		cli = "buildx"
 		builder = buildxDriver(dockercfg, args)
 	}
@@ -182,4 +193,25 @@ func buildxBuilder(buildArgs []string) string {
 		builder = os.Getenv("BUILDX_BUILDER")
 	}
 	return builder
+}
+
+// isBuildxDefault returns true if buildx by default is used
+// through "docker build" command which is already an alias to
+// "docker buildx build" in docker cli.
+// more info: https://github.com/docker/cli/pull/3314
+func isBuildxDefault(cliVersion string) bool {
+	if cliVersion == "" {
+		// empty means DWARF symbol table is stripped from cli binary
+		// which is the case with docker cli < 22.06
+		return false
+	}
+	verCurrent, err := version.NewVersion(cliVersion)
+	if err != nil {
+		return false
+	}
+	// 21.0.0 is an arbitrary version number because next major is not
+	// intended to be 21 but 22 and buildx by default will never be part
+	// of a 20 release version anyway.
+	verBuildxDefault, _ := version.NewVersion("21.0.0")
+	return verCurrent.GreaterThanOrEqual(verBuildxDefault)
 }

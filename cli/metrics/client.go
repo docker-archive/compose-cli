@@ -27,7 +27,13 @@ import (
 )
 
 type client struct {
+	cliversion *cliversion
 	httpClient *http.Client
+}
+
+type cliversion struct {
+	version string
+	f       func() string
 }
 
 // Command is a command
@@ -47,17 +53,23 @@ func init() {
 	}
 }
 
-// Client sends metrics to Docker Desktopn
+// Client sends metrics to Docker Desktop
 type Client interface {
+	// WithCliVersionFunc sets the docker cli version func
+	// that returns the docker cli version (com.docker.cli)
+	WithCliVersionFunc(f func() string)
 	// Send sends the command to Docker Desktop. Note that the function doesn't
 	// return anything, not even an error, this is because we don't really care
 	// if the metrics were sent or not. We only fire and forget.
 	Send(Command)
+	// Track sends the tracking analytics to Docker Desktop
+	Track(context string, args []string, status string)
 }
 
 // NewClient returns a new metrics client
 func NewClient() Client {
 	return &client{
+		cliversion: &cliversion{},
 		httpClient: &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
@@ -66,6 +78,10 @@ func NewClient() Client {
 			},
 		},
 	}
+}
+
+func (c *client) WithCliVersionFunc(f func() string) {
+	c.cliversion.f = f
 }
 
 func (c *client) Send(command Command) {
