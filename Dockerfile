@@ -15,8 +15,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-ARG GO_VERSION=1.16-alpine
-ARG GOLANGCI_LINT_VERSION=v1.40.1-alpine
+ARG GO_VERSION=1.18-alpine
+ARG GOLANGCI_LINT_VERSION=v1.45.2-alpine
 ARG PROTOC_GEN_GO_VERSION=v1.5.2
 
 FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS base
@@ -34,13 +34,14 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM base AS make-protos
 ARG PROTOC_GEN_GO_VERSION
-RUN go get github.com/golang/protobuf/protoc-gen-go@${PROTOC_GEN_GO_VERSION}
+RUN go install github.com/golang/protobuf/protoc-gen-go@${PROTOC_GEN_GO_VERSION}
 COPY . .
 RUN make -f builder.Makefile protos
 
 FROM golangci/golangci-lint:${GOLANGCI_LINT_VERSION} AS lint-base
 
 FROM base AS lint
+ENV GOFLAGS="-buildvcs=false"
 ENV CGO_ENABLED=0
 COPY --from=lint-base /usr/bin/golangci-lint /usr/bin/golangci-lint
 ARG BUILD_TAGS
@@ -54,7 +55,7 @@ RUN --mount=target=. \
     make -f builder.Makefile lint
 
 FROM base AS import-restrictions-base
-RUN go get github.com/docker/import-restrictions
+RUN go install github.com/docker/import-restrictions@latest
 
 FROM import-restrictions-base AS import-restrictions
 RUN --mount=target=. \

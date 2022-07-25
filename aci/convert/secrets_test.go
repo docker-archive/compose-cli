@@ -149,7 +149,7 @@ func TestConvertSecrets(t *testing.T) {
 
 		_, err := service.getAciSecretsVolumeMounts()
 		assert.Equal(t, err.Error(),
-			fmt.Sprintf(`mount paths %q and %q collide. A volume mount cannot include another one.`,
+			fmt.Sprintf(`mount paths %q and %q collide. A volume mount cannot include another one`,
 				path.Dir(targetName1), path.Dir(targetName2)))
 	})
 
@@ -173,7 +173,7 @@ func TestConvertSecrets(t *testing.T) {
 
 		_, err := service.getAciSecretsVolumeMounts()
 		assert.Equal(t, err.Error(),
-			fmt.Sprintf(`mount paths %q and %q collide. A volume mount cannot include another one.`,
+			fmt.Sprintf(`mount paths %q and %q collide. A volume mount cannot include another one`,
 				path.Dir(targetName1), path.Dir(targetName2)))
 	})
 }

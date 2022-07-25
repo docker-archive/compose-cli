@@ -6,21 +6,22 @@ on:
       - main
   pull_request:
 
+env:
+  GO_VERSION: 1.18
+
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: "on"
     steps:
-      - name: Set up Go 1.16
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16
-        id: go
-
       - name: Checkout code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: Validate go-mod is up-to-date and license headers
         run: make validate
@@ -29,7 +30,7 @@ jobs:
         env:
           BUILD_TAGS: kube,e2e
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/bin/ v1.39.0
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/bin/ v1.45.2
           make -f builder.Makefile lint
 
   # only on main branch, costs too much for the gain on every PR
@@ -37,22 +38,15 @@ jobs:
     name: Validate cross build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    env:
-      GO111MODULE: "on"
     steps:
-      - name: Set up Go 1.16
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16
-        id: go
-
       - name: Checkout code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: actions/cache@v2
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
-          path: ~/go/pkg/mod
-          key: go-${{ hashFiles('**/go.sum') }}
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       # Ensure we don't discover cross platform build issues at release time.
       # Time used to build linux here is gained back in the build for local E2E step
@@ -62,31 +56,24 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: "on"
     steps:
-      - name: Set up Go 1.16
-        uses: actions/setup-go@v2
+      - name: Checkout code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16
-        id: go
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: Set up gosum
         run: |
-          go get -u gotest.tools/gotestsum
+          go install gotest.tools/gotestsum@latest
 
       - name: Setup docker CLI
         run: |
           curl https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz | tar xz
           sudo cp ./docker/docker /usr/bin/ && rm -rf docker && docker version
-
-      - name: Checkout code into the Go module directory
-        uses: actions/checkout@v2
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: go-${{ hashFiles('**/go.sum') }}
 
       - name: Test
         env:

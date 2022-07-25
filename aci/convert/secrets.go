@@ -136,7 +136,7 @@ func validateMountPathCollisions(vms []containerinstance.VolumeMount) error {
 				}
 			}
 			if isPrefixed {
-				return errors.Errorf("mount paths %q and %q collide. A volume mount cannot include another one.", *vm1.MountPath, *vm2.MountPath)
+				return errors.Errorf("mount paths %q and %q collide. A volume mount cannot include another one", *vm1.MountPath, *vm2.MountPath)
 			}
 		}
 	}

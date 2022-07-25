@@ -289,12 +289,12 @@ func (login *azureLoginService) GetValidToken() (oauth2.Token, string, error) {
 
 	ce, err := login.cloudEnvironmentSvc.Get(loginInfo.CloudEnvironment)
 	if err != nil {
-		return oauth2.Token{}, "", errors.Wrap(err, "access token request failed--cloud environment could not be determined.")
+		return oauth2.Token{}, "", errors.Wrap(err, "access token request failed--cloud environment could not be determined")
 	}
 
 	token, err = login.refreshToken(token.RefreshToken, tenantID, ce)
 	if err != nil {
-		return oauth2.Token{}, "", errors.Wrap(err, "access token request failed. Maybe you need to login to Azure again.")
+		return oauth2.Token{}, "", errors.Wrap(err, "access token request failed. Maybe you need to login to Azure again")
 	}
 	err = login.tokenStore.writeLoginInfo(TokenInfo{TenantID: tenantID, Token: token, CloudEnvironment: ce.Name})
 	if err != nil {
