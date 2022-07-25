@@ -33,7 +33,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-//go login process, derived from code sample provided by MS at https://github.com/devigned/go-az-cli-stuff
+// go login process, derived from code sample provided by MS at https://github.com/devigned/go-az-cli-stuff
 const (
 	clientID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46" // Azure CLI client id
 )

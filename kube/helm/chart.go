@@ -37,7 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-//ConvertToChart convert Kube objects to helm chart
+// ConvertToChart convert Kube objects to helm chart
 func ConvertToChart(name string, objects map[string]runtime.Object) (*chart.Chart, error) {
 
 	files := []*loader.BufferedFile{

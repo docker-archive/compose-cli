@@ -285,7 +285,7 @@ func (kc KubeClient) WaitForPodState(ctx context.Context, opts WaitForStatusOpti
 	return nil
 }
 
-//MapPortsToLocalhost runs a port-forwarder daemon process
+// MapPortsToLocalhost runs a port-forwarder daemon process
 func (kc KubeClient) MapPortsToLocalhost(ctx context.Context, opts PortMappingOptions) error {
 	stopChannel := make(chan struct{}, 1)
 	readyChannel := make(chan struct{})

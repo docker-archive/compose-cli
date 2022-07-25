@@ -39,7 +39,7 @@ const (
 	clusterIPHeadless = "None"
 )
 
-//MapToKubernetesObjects maps compose project to Kubernetes objects
+// MapToKubernetesObjects maps compose project to Kubernetes objects
 func MapToKubernetesObjects(project *types.Project) (map[string]runtime.Object, error) {
 	objects := map[string]runtime.Object{}
 
