@@ -19,7 +19,7 @@ package cmd
 import (
 	"testing"
 
-	"gotest.tools/assert"
+	"gotest.tools/v3/assert"
 )
 
 type caze struct {
