@@ -62,13 +62,6 @@ func mustDelegateToMoby(ctxType string) bool {
 	return false
 }
 
-func comDockerCli() string {
-	if v := os.Getenv("DOCKER_COM_DOCKER_CLI"); v != "" {
-		return v
-	}
-	return ComDockerCli
-}
-
 // Exec delegates to com.docker.cli if on moby context
 func Exec(root *cobra.Command) {
 	childExit := make(chan bool)
@@ -99,20 +92,7 @@ func Exec(root *cobra.Command) {
 
 // RunDocker runs a docker command, and forward signals to the shellout command (stops listening to signals when an event is sent to childExit)
 func RunDocker(childExit chan bool, args ...string) error {
-	execBinary := comDockerCli()
-	if execBinary == ComDockerCli {
-		var err error
-		execBinary, err = resolvepath.LookPath(ComDockerCli)
-		if err != nil {
-			execBinary = findBinary(ComDockerCli)
-			if execBinary == "" {
-				fmt.Fprintln(os.Stderr, err)
-				fmt.Fprintln(os.Stderr, "Current PATH : "+os.Getenv("PATH"))
-				os.Exit(1)
-			}
-		}
-	}
-	cmd := exec.Command(execBinary, args...)
+	cmd := exec.Command(comDockerCli(), args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -140,6 +120,25 @@ func RunDocker(childExit chan bool, args ...string) error {
 	}()
 
 	return cmd.Run()
+}
+
+func comDockerCli() string {
+	if v := os.Getenv("DOCKER_COM_DOCKER_CLI"); v != "" {
+		return v
+	}
+
+	execBinary := findBinary(ComDockerCli)
+	if execBinary == "" {
+		var err error
+		execBinary, err = resolvepath.LookPath(ComDockerCli)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, "Current PATH : "+os.Getenv("PATH"))
+			os.Exit(1)
+		}
+	}
+
+	return execBinary
 }
 
 func findBinary(filename string) string {
