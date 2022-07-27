@@ -286,7 +286,7 @@ func GoldenFile(name string) string {
 	return name + ".golden"
 }
 
-//Lines split output into lines
+// Lines split output into lines
 func Lines(output string) []string {
 	return strings.Split(strings.TrimSpace(output), "\n")
 }
