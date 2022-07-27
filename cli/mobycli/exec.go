@@ -24,6 +24,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"runtime"
 
 	"github.com/docker/compose/v2/pkg/compose"
 	"github.com/docker/compose/v2/pkg/utils"
@@ -38,7 +39,13 @@ import (
 var delegatedContextTypes = []string{store.DefaultContextType}
 
 // ComDockerCli name of the classic cli binary
-const ComDockerCli = "com.docker.cli"
+var ComDockerCli = "com.docker.cli"
+
+func init() {
+	if runtime.GOOS == "windows" {
+		ComDockerCli += ".exe"
+	}
+}
 
 // ExecIfDefaultCtxType delegates to com.docker.cli if on moby context
 func ExecIfDefaultCtxType(ctx context.Context, root *cobra.Command) {
@@ -92,16 +99,7 @@ func Exec(root *cobra.Command) {
 
 // RunDocker runs a docker command, and forward signals to the shellout command (stops listening to signals when an event is sent to childExit)
 func RunDocker(childExit chan bool, args ...string) error {
-	execBinary, err := resolvepath.LookPath(ComDockerCli)
-	if err != nil {
-		execBinary = findBinary(ComDockerCli)
-		if execBinary == "" {
-			fmt.Fprintln(os.Stderr, err)
-			fmt.Fprintln(os.Stderr, "Current PATH : "+os.Getenv("PATH"))
-			os.Exit(1)
-		}
-	}
-	cmd := exec.Command(execBinary, args...)
+	cmd := exec.Command(comDockerCli(), args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -131,6 +129,25 @@ func RunDocker(childExit chan bool, args ...string) error {
 	return cmd.Run()
 }
 
+func comDockerCli() string {
+	if v := os.Getenv("DOCKER_COM_DOCKER_CLI"); v != "" {
+		return v
+	}
+
+	execBinary := findBinary(ComDockerCli)
+	if execBinary == "" {
+		var err error
+		execBinary, err = resolvepath.LookPath(ComDockerCli)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, "Current PATH : "+os.Getenv("PATH"))
+			os.Exit(1)
+		}
+	}
+
+	return execBinary
+}
+
 func findBinary(filename string) string {
 	currentBinaryPath, err := os.Executable()
 	if err != nil {
@@ -149,7 +166,7 @@ func findBinary(filename string) string {
 
 // IsDefaultContextCommand checks if the command exists in the classic cli (issues a shellout --help)
 func IsDefaultContextCommand(dockerCommand string) bool {
-	cmd := exec.Command(ComDockerCli, dockerCommand, "--help")
+	cmd := exec.Command(comDockerCli(), dockerCommand, "--help")
 	b, e := cmd.CombinedOutput()
 	if e != nil {
 		fmt.Println(e)
@@ -162,7 +179,7 @@ func ExecSilent(ctx context.Context, args ...string) ([]byte, error) {
 	if len(args) == 0 {
 		args = os.Args[1:]
 	}
-	cmd := exec.CommandContext(ctx, ComDockerCli, args...)
+	cmd := exec.CommandContext(ctx, comDockerCli(), args...)
 	cmd.Stderr = os.Stderr
 	return cmd.Output()
 }

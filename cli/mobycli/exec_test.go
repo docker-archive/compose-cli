@@ -17,11 +17,14 @@
 package mobycli
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"gotest.tools/v3/assert"
 
 	"github.com/docker/compose-cli/api/context/store"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDelegateContextTypeToMoby(t *testing.T) {
@@ -43,4 +46,45 @@ func TestDelegateContextTypeToMoby(t *testing.T) {
 		}
 		assert.Assert(t, !mustDelegateToMoby(ctx))
 	}
+}
+
+func TestFindComDockerCli(t *testing.T) {
+	tmp := t.TempDir()
+	bin := filepath.Join(tmp, "bin")
+
+	// com.docker.cli on path
+	pathFile := filepath.Join(bin, ComDockerCli)
+	require.NoError(t, os.MkdirAll(bin, os.ModePerm))
+	require.NoError(t, os.WriteFile(pathFile, []byte(""), os.ModePerm))
+
+	exe, err := os.Executable()
+	require.NoError(t, err)
+	exe, err = filepath.EvalSymlinks(exe)
+	require.NoError(t, err)
+
+	// com.docker.cli in same directory as current executable
+	currFile := filepath.Join(filepath.Dir(exe), ComDockerCli)
+	require.NoError(t, os.WriteFile(currFile, []byte(""), os.ModePerm))
+
+	savePath := os.Getenv("PATH")
+	t.Cleanup(func() { _ = os.Setenv("PATH", savePath) })
+
+	_ = os.Setenv("PATH", bin)
+
+	t.Run("from $DOCKER_COM_DOCKER_CLI", func(t *testing.T) {
+		fromenv := filepath.Join(tmp, "fromenv")
+		_ = os.Setenv("DOCKER_COM_DOCKER_CLI", fromenv)
+		t.Cleanup(func() { _ = os.Unsetenv("DOCKER_COM_DOCKER_CLI") })
+
+		assert.Equal(t, fromenv, comDockerCli())
+	})
+
+	t.Run("from binary next to current executable", func(t *testing.T) {
+		assert.Equal(t, currFile, comDockerCli())
+	})
+
+	t.Run("from binary on path", func(t *testing.T) {
+		_ = os.Remove(currFile)
+		assert.Equal(t, pathFile, comDockerCli())
+	})
 }
