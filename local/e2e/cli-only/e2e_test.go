@@ -30,6 +30,7 @@ import (
 	"gotest.tools/v3/golden"
 	"gotest.tools/v3/icmd"
 
+	"github.com/docker/compose-cli/cli/mobycli"
 	. "github.com/docker/compose-cli/utils/e2e"
 )
 
@@ -354,7 +355,7 @@ func TestMissingExistingCLI(t *testing.T) {
 	res := icmd.RunCmd(c)
 	res.Assert(t, icmd.Expected{
 		ExitCode: 1,
-		Err:      `"com.docker.cli": executable file not found`,
+		Err:      fmt.Sprintf(`"%s": executable file not found`, mobycli.ComDockerCli),
 	})
 }
 
