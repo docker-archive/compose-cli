@@ -85,3 +85,32 @@ func TestBuildxDriver(t *testing.T) {
 		})
 	}
 }
+
+func TestIsBuildxDefault(t *testing.T) {
+	tts := []struct {
+		cliVersion string
+		expected   bool
+	}{
+		{
+			cliVersion: "",
+			expected:   false,
+		},
+		{
+			cliVersion: "20.10.15",
+			expected:   false,
+		},
+		{
+			cliVersion: "20.10.2-575-g22edabb584.m",
+			expected:   false,
+		},
+		{
+			cliVersion: "22.05.0",
+			expected:   true,
+		},
+	}
+	for _, tt := range tts {
+		t.Run(tt.cliVersion, func(t *testing.T) {
+			assert.Equal(t, tt.expected, isBuildxDefault(tt.cliVersion))
+		})
+	}
+}

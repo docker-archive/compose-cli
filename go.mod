@@ -30,8 +30,10 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.5
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/go-uuid v1.0.2
+	github.com/hashicorp/go-version v1.4.0
 	github.com/iancoleman/strcase v0.1.2
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.10+incompatible
@@ -115,7 +117,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
@@ -124,7 +125,6 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
-	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect

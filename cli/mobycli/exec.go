@@ -18,6 +18,7 @@ package mobycli
 
 import (
 	"context"
+	"debug/buildinfo"
 	"fmt"
 	"os"
 	"os/exec"
@@ -25,15 +26,16 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
-
-	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/docker/compose/v2/pkg/utils"
-	"github.com/spf13/cobra"
+	"strings"
 
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
+	"github.com/docker/compose/v2/pkg/compose"
+	"github.com/docker/compose/v2/pkg/utils"
+	"github.com/google/shlex"
+	"github.com/spf13/cobra"
 )
 
 var delegatedContextTypes = []string{store.DefaultContextType}
@@ -71,16 +73,20 @@ func mustDelegateToMoby(ctxType string) bool {
 
 // Exec delegates to com.docker.cli if on moby context
 func Exec(root *cobra.Command) {
+	metricsClient := metrics.NewClient()
+	metricsClient.WithCliVersionFunc(func() string {
+		return CliVersion()
+	})
 	childExit := make(chan bool)
 	err := RunDocker(childExit, os.Args[1:]...)
 	childExit <- true
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			exitCode := exiterr.ExitCode()
-			metrics.Track(store.DefaultContextType, os.Args[1:], compose.ByExitCode(exitCode).MetricsStatus)
+			metricsClient.Track(store.DefaultContextType, os.Args[1:], compose.ByExitCode(exitCode).MetricsStatus)
 			os.Exit(exitCode)
 		}
-		metrics.Track(store.DefaultContextType, os.Args[1:], compose.FailureStatus)
+		metricsClient.Track(store.DefaultContextType, os.Args[1:], compose.FailureStatus)
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -92,7 +98,7 @@ func Exec(root *cobra.Command) {
 	if command == "login" && !metrics.HasQuietFlag(commandArgs) {
 		displayPATSuggestMsg(commandArgs)
 	}
-	metrics.Track(store.DefaultContextType, os.Args[1:], compose.SuccessStatus)
+	metricsClient.Track(store.DefaultContextType, os.Args[1:], compose.SuccessStatus)
 
 	os.Exit(0)
 }
@@ -172,6 +178,35 @@ func IsDefaultContextCommand(dockerCommand string) bool {
 		fmt.Println(e)
 	}
 	return regexp.MustCompile("Usage:\\s*docker\\s*" + dockerCommand).Match(b)
+}
+
+// CliVersion returns the docker cli version
+func CliVersion() string {
+	info, err := buildinfo.ReadFile(ComDockerCli)
+	if err != nil {
+		return ""
+	}
+	for _, s := range info.Settings {
+		if s.Key != "-ldflags" {
+			continue
+		}
+		args, err := shlex.Split(s.Value)
+		if err != nil {
+			return ""
+		}
+		for _, a := range args {
+			// https://github.com/docker/cli/blob/f1615facb1ca44e4336ab20e621315fc2cfb845a/scripts/build/.variables#L77
+			if !strings.HasPrefix(a, "github.com/docker/cli/cli/version.Version") {
+				continue
+			}
+			parts := strings.Split(a, "=")
+			if len(parts) != 2 {
+				return ""
+			}
+			return parts[1]
+		}
+	}
+	return ""
 }
 
 // ExecSilent executes a command and do redirect output to stdOut, return output
