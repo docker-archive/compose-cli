@@ -24,6 +24,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"runtime"
 
 	"github.com/docker/compose/v2/pkg/compose"
 	"github.com/docker/compose/v2/pkg/utils"
@@ -38,7 +39,13 @@ import (
 var delegatedContextTypes = []string{store.DefaultContextType}
 
 // ComDockerCli name of the classic cli binary
-const ComDockerCli = "com.docker.cli"
+var ComDockerCli = "com.docker.cli"
+
+func init() {
+	if runtime.GOOS == "windows" {
+		ComDockerCli += ".exe"
+	}
+}
 
 // ExecIfDefaultCtxType delegates to com.docker.cli if on moby context
 func ExecIfDefaultCtxType(ctx context.Context, root *cobra.Command) {
