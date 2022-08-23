@@ -70,7 +70,7 @@ __Legend:__
 | service.ulimits                | ✓ |  Only support `nofile` ulimit due to Fargate limitations
 | service.userns_mode            | x |
 | service.volumes                | ✓ |  Mapped to EFS File Systems. See [Persistent volumes](#persistent-volumes).
-| service.restart                | x |  Replaced by service.deployment.restart_policy
+| service.restart                | x |  Replaced by service.deploy.restart_policy
 |                                |   |
 | __Volume__                     | x |
 | driver                         | ✓ |  See [Persistent volumes](#persistent-volumes).
