@@ -35,7 +35,7 @@ __Legend:__
 | service.deploy.placement       | ✓ |  Used with EC2 support to select a machine type and AMI
 | service.deploy.update_config   | ✓ |
 | service.deploy.resources       | ✓ |  Fargate resource is selected with the lowest instance type for configured memory and cpu
-| service.deploy.restart_policy  | ✓ |
+| service.deploy.restart_policy  | x |
 | service.deploy.labels          | ✓ |
 | service.devices                | x |
 | service.depends_on             | ✓ |  Implemented using CloudFormation Depends_on
@@ -70,7 +70,7 @@ __Legend:__
 | service.ulimits                | ✓ |  Only support `nofile` ulimit due to Fargate limitations
 | service.userns_mode            | x |
 | service.volumes                | ✓ |  Mapped to EFS File Systems. See [Persistent volumes](#persistent-volumes).
-| service.restart                | x |  Replaced by service.deploy.restart_policy
+| service.restart                | x |
 |                                |   |
 | __Volume__                     | x |
 | driver                         | ✓ |  See [Persistent volumes](#persistent-volumes).
