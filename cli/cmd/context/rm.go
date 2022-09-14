@@ -17,15 +17,8 @@
 package context
 
 import (
-	"errors"
-	"fmt"
-
-	"github.com/docker/compose/v2/cmd/formatter"
-	"github.com/hashicorp/go-multierror"
+	"github.com/docker/compose-cli/cli/mobycli"
 	"github.com/spf13/cobra"
-
-	apicontext "github.com/docker/compose-cli/api/context"
-	"github.com/docker/compose-cli/api/context/store"
 )
 
 type removeOpts struct {
@@ -40,43 +33,11 @@ func removeCommand() *cobra.Command {
 		Aliases: []string{"remove"},
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runRemove(args, opts.force)
+			mobycli.Exec(cmd.Root())
+			return nil
 		},
 	}
 	cmd.Flags().BoolVarP(&opts.force, "force", "f", false, "Force removing current context")
 
 	return cmd
-}
-
-func runRemove(args []string, force bool) error {
-	currentContext := apicontext.Current()
-	s := store.Instance()
-
-	var errs *multierror.Error
-	for _, contextName := range args {
-		if currentContext == contextName {
-			if force {
-				if err := runUse("default"); err != nil {
-					errs = multierror.Append(errs, errors.New("cannot delete current context"))
-				} else {
-					errs = removeContext(s, contextName, errs)
-				}
-			} else {
-				errs = multierror.Append(errs, errors.New("cannot delete current context"))
-			}
-		} else {
-			errs = removeContext(s, contextName, errs)
-		}
-	}
-	formatter.SetMultiErrorFormat(errs)
-	return errs.ErrorOrNil()
-}
-
-func removeContext(s store.Store, n string, errs *multierror.Error) *multierror.Error {
-	if err := s.Remove(n); err != nil {
-		errs = multierror.Append(errs, err)
-	} else {
-		fmt.Println(n)
-	}
-	return errs
 }
