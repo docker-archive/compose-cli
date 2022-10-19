@@ -17,12 +17,9 @@
 package context
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
-	"github.com/docker/compose-cli/api/config"
-	"github.com/docker/compose-cli/api/context/store"
+	"github.com/docker/compose-cli/cli/mobycli"
 )
 
 func useCommand() *cobra.Command {
@@ -31,22 +28,8 @@ func useCommand() *cobra.Command {
 		Short: "Set the default context",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runUse(args[0])
+			mobycli.Exec(cmd.Root())
+			return nil
 		},
 	}
-}
-
-func runUse(name string) error {
-	s := store.Instance()
-	// Match behavior of existing CLI
-	if name != store.DefaultContextName {
-		if _, err := s.Get(name); err != nil {
-			return err
-		}
-	}
-	if err := config.WriteCurrentContext(config.Dir(), name); err != nil {
-		return err
-	}
-	fmt.Println(name)
-	return nil
 }
