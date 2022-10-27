@@ -31,8 +31,8 @@ import (
 var constraintEquals = regexp.MustCompile(`([\w\.]*)\W*(==|!=)\W*([\w\.]*)`)
 
 const (
-	kubernetesOs       = "beta.kubernetes.io/os"
-	kubernetesArch     = "beta.kubernetes.io/arch"
+	kubernetesOs       = "kubernetes.io/os"
+	kubernetesArch     = "kubernetes.io/arch"
 	kubernetesHostname = "kubernetes.io/hostname"
 )
 
