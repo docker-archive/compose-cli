@@ -33,7 +33,6 @@ import (
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
 	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/docker/compose/v2/pkg/utils"
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 )
@@ -92,9 +91,6 @@ func Exec(root *cobra.Command) {
 	}
 	commandArgs := os.Args[1:]
 	command := metrics.GetCommand(commandArgs)
-	if command == "build" && !metrics.HasQuietFlag(commandArgs) {
-		utils.DisplayScanSuggestMsg()
-	}
 	if command == "login" && !metrics.HasQuietFlag(commandArgs) {
 		displayPATSuggestMsg(commandArgs)
 	}
