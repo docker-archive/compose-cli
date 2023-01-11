@@ -1,0 +1,8 @@
+services:
+  entrance:
+    image: nginx
+    ports:
+      - "80:80"
+
+  sensitive:
+    image: httpd
