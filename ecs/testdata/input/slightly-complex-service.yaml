@@ -3,6 +3,7 @@ services:
     image: nginx
     ports:
       - "80:80"
+    x-aws-assign_public_ip: true
 
   sensitive:
     image: httpd
