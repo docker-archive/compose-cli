@@ -13,16 +13,6 @@ Resources:
       - Key: com.docker.compose.project
         Value: TestSimpleConvert
     Type: AWS::ECS::Cluster
-  Default80Ingress:
-    Properties:
-      CidrIp: 0.0.0.0/0
-      Description: simple:80/tcp on default network
-      FromPort: 80
-      GroupId:
-        Ref: DefaultNetwork
-      IpProtocol: TCP
-      ToPort: 80
-    Type: AWS::EC2::SecurityGroupIngress
   DefaultNetwork:
     Properties:
       GroupDescription: TestSimpleConvert Security Group for default network
@@ -46,7 +36,7 @@ Resources:
     Properties:
       Scheme: internet-facing
       SecurityGroups:
-      - Ref: DefaultNetwork
+      - Ref: SimpleLBIngressSecurityGroup
       Subnets:
       - subnet1
       - subnet2
@@ -59,6 +49,38 @@ Resources:
     Properties:
       LogGroupName: /docker-compose/TestSimpleConvert
     Type: AWS::Logs::LogGroup
+  SimpleLBIngressSecurityGroup:
+    Properties:
+      GroupDescription: TestSimpleConvert Security Group for service simple ingress,
+        LB side
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSimpleConvert
+      - Key: com.docker.compose.service
+        Value: simple
+      VpcId: vpc-123
+    Type: AWS::EC2::SecurityGroup
+  SimpleLBIngressSecurityGroup80Ingress:
+    Properties:
+      CidrIp: 0.0.0.0/0
+      Description: simple:80/tcp on SimpleLBIngressSecurityGroup network
+      FromPort: 80
+      GroupId:
+        Ref: SimpleLBIngressSecurityGroup
+      IpProtocol: TCP
+      ToPort: 80
+    Type: AWS::EC2::SecurityGroupIngress
+  SimpleLBIngressSecurityGroup80SimpleServiceIngressSecurityGroupIngress:
+    Properties:
+      Description: LB connectivity on 80
+      FromPort: 80
+      GroupId:
+        Ref: SimpleServiceIngressSecurityGroup
+      IpProtocol: TCP
+      SourceSecurityGroupId:
+        Ref: SimpleLBIngressSecurityGroup
+      ToPort: 80
+    Type: AWS::EC2::SecurityGroupIngress
   SimpleService:
     DependsOn:
     - SimpleTCP80Listener
@@ -84,6 +106,7 @@ Resources:
           AssignPublicIp: ENABLED
           SecurityGroups:
           - Ref: DefaultNetwork
+          - Ref: SimpleServiceIngressSecurityGroup
           Subnets:
           - subnet1
           - subnet2
@@ -117,6 +140,17 @@ Resources:
       NamespaceId:
         Ref: CloudMap
     Type: AWS::ServiceDiscovery::Service
+  SimpleServiceIngressSecurityGroup:
+    Properties:
+      GroupDescription: TestSimpleConvert Security Group for service simple ingress,
+        Service side
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSimpleConvert
+      - Key: com.docker.compose.service
+        Value: simple
+      VpcId: vpc-123
+    Type: AWS::EC2::SecurityGroup
   SimpleTCP80Listener:
     Properties:
       DefaultActions:
