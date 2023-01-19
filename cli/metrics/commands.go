@@ -133,6 +133,7 @@ var commands = []string{
 	"search",
 	"services",
 	"set",
+	"share",
 	"show",
 	"sign",
 	"split",
