@@ -19,7 +19,7 @@ code has moved to [github.com/docker/compose](https://github.com/docker/compose/
 
 ## Getting started
 
-To get started with Compose CLI, all you need is:
+To proceed with Compose CLI, all you need is:
 
 * macOS, Windows, or Windows WSL2: The current release of
   [Docker Desktop](https://www.docker.com/products/docker-desktop)
