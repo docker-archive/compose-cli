@@ -17,18 +17,18 @@
 package metrics
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"net"
-	"net/http"
 	"os"
 	"time"
 )
 
+// EnvVarDebugMetricsPath is an optional environment variable used to debug
+// metrics by triggering all events to also be written as JSON lines to the
+// specified file path.
+const EnvVarDebugMetricsPath = "DOCKER_METRICS_DEBUG_LOG"
+
 type client struct {
 	cliversion *cliversion
-	httpClient *http.Client
+	reporter   Reporter
 }
 
 type cliversion struct {
@@ -65,18 +65,33 @@ type Client interface {
 	Track(context string, args []string, status string)
 }
 
-// NewClient returns a new metrics client
-func NewClient() Client {
+// NewClient returns a new metrics client that will send metrics using the
+// provided Reporter instance.
+func NewClient(reporter Reporter) Client {
 	return &client{
 		cliversion: &cliversion{},
-		httpClient: &http.Client{
-			Transport: &http.Transport{
-				DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-					return conn()
-				},
-			},
-		},
+		reporter:   reporter,
 	}
+}
+
+// NewDefaultClient returns a new metrics client that will send metrics using
+// the default Reporter configuration, which reports via HTTP, and, optionally,
+// to a local file for debugging. (No format guarantees are made!)
+func NewDefaultClient() Client {
+	httpClient := newHTTPClient()
+
+	var reporter Reporter = NewHTTPReporter(httpClient)
+	if metricsLogPath := os.Getenv(EnvVarDebugMetricsPath); metricsLogPath != "" {
+		if f, err := os.OpenFile(metricsLogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
+			panic(err)
+		} else {
+			reporter = NewMuxReporter(
+				NewWriterReporter(f),
+				reporter,
+			)
+		}
+	}
+	return NewClient(reporter)
 }
 
 func (c *client) WithCliVersionFunc(f func() string) {
@@ -86,7 +101,7 @@ func (c *client) WithCliVersionFunc(f func() string) {
 func (c *client) Send(command Command) {
 	result := make(chan bool, 1)
 	go func() {
-		postMetrics(command, c)
+		c.reporter.Heartbeat(command)
 		result <- true
 	}()
 
@@ -95,12 +110,5 @@ func (c *client) Send(command Command) {
 	select {
 	case <-result:
 	case <-time.After(50 * time.Millisecond):
-	}
-}
-
-func postMetrics(command Command, c *client) {
-	req, err := json.Marshal(command)
-	if err == nil {
-		_, _ = c.httpClient.Post("http://localhost/usage", "application/json", bytes.NewBuffer(req))
 	}
 }

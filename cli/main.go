@@ -88,7 +88,7 @@ func init() {
 		panic(err)
 	}
 
-	metricsClient = metrics.NewClient()
+	metricsClient = metrics.NewDefaultClient()
 	metricsClient.WithCliVersionFunc(func() string {
 		return mobycli.CliVersion()
 	})
