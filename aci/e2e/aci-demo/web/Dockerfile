@@ -12,7 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # BUILD
-FROM golang:1.18-alpine AS build
+FROM golang:1.19-alpine AS build
 COPY dispatcher.go .
 RUN mkdir -p /out && go build -o /out/dispatcher dispatcher.go
 

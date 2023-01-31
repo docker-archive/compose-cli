@@ -76,7 +76,7 @@ lint:
 import-restrictions:
 	import-restrictions --configuration import-restrictions.yaml
 
-.PHONY: check-licese-headers
+.PHONY: check-license-headers
 check-license-headers:
 	./scripts/validate/fileheader
 
