@@ -19,7 +19,6 @@ package server
 import (
 	"context"
 
-	"github.com/docker/compose/v2/pkg/compose"
 	"google.golang.org/grpc"
 
 	"github.com/docker/compose-cli/cli/metrics"
@@ -61,16 +60,16 @@ func metricsServerInterceptor(client metrics.Client) grpc.UnaryServerInterceptor
 
 		data, err := handler(ctx, req)
 
-		status := compose.SuccessStatus
+		status := metrics.SuccessStatus
 		if err != nil {
-			status = compose.FailureStatus
+			status = metrics.FailureStatus
 		}
 		command := methodMapping[info.FullMethod]
 		if command != "" {
-			client.Send(metrics.Command{
+			client.SendUsage(metrics.Command{
 				Command: command,
 				Context: contextType,
-				Source:  compose.APISource,
+				Source:  metrics.APISource,
 				Status:  status,
 			})
 		}
