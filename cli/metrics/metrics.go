@@ -31,7 +31,7 @@ func (c *client) Track(context string, args []string, status string) {
 	}
 	command := GetCommand(args)
 	if command != "" {
-		c.Send(Command{
+		c.SendUsage(Command{
 			Command: command,
 			Context: context,
 			Source:  c.getMetadata(CLISource, args),

@@ -57,11 +57,11 @@ type Client interface {
 	// WithCliVersionFunc sets the docker cli version func
 	// that returns the docker cli version (com.docker.cli)
 	WithCliVersionFunc(f func() string)
-	// Send sends the command to Docker Desktop. Note that the function doesn't
-	// return anything, not even an error, this is because we don't really care
-	// if the metrics were sent or not. We only fire and forget.
-	Send(Command)
-	// Track sends the tracking analytics to Docker Desktop
+	// SendUsage sends the command to Docker Desktop.
+	//
+	// Note that metric collection is best-effort, so any errors are ignored.
+	SendUsage(Command)
+	// Track creates an event for a command execution and reports it.
 	Track(context string, args []string, status string)
 }
 
@@ -98,7 +98,7 @@ func (c *client) WithCliVersionFunc(f func() string) {
 	c.cliversion.f = f
 }
 
-func (c *client) Send(command Command) {
+func (c *client) SendUsage(command Command) {
 	result := make(chan bool, 1)
 	go func() {
 		c.reporter.Heartbeat(command)
