@@ -938,7 +938,8 @@ func (s sdk) DescribeServiceTasks(ctx context.Context, cluster string, project s
 				Name:    id.Resource,
 				Project: project,
 				Service: service,
-				State:   strings.Title(strings.ToLower(aws.StringValue(t.LastStatus))),
+				//nolint:staticcheck // Preserving for compatibility
+				State: strings.Title(strings.ToLower(aws.StringValue(t.LastStatus))),
 			})
 		}
 

@@ -19,7 +19,6 @@ package secrets
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -42,7 +41,7 @@ func CreateSecretFiles(secret Secret, path string) error {
 	if len(secret.Keys) == 0 {
 		// raw Secret
 		fmt.Printf("inject Secret %q info %s\n", secret.Name, secrets)
-		return ioutil.WriteFile(secrets, []byte(value), 0444)
+		return os.WriteFile(secrets, []byte(value), 0444)
 	}
 
 	var unmarshalled interface{}
@@ -87,7 +86,7 @@ func CreateSecretFiles(secret Secret, path string) error {
 			}
 		}
 
-		err = ioutil.WriteFile(path, raw, 0444)
+		err = os.WriteFile(path, raw, 0444)
 		if err != nil {
 			return err
 		}

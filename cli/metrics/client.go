@@ -32,8 +32,7 @@ type client struct {
 }
 
 type cliversion struct {
-	version string
-	f       func() string
+	f func() string
 }
 
 // Command is a command

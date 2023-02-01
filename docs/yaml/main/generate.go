@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -82,7 +81,7 @@ func loadLongDescription(cmd *cobra.Command, path ...string) error {
 			continue
 		}
 
-		content, err := ioutil.ReadFile(fullpath)
+		content, err := os.ReadFile(fullpath)
 		if err != nil {
 			return err
 		}

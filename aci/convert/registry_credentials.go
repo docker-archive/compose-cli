@@ -19,7 +19,7 @@ package convert
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -165,7 +165,7 @@ func (c cliRegistryHelper) autoLoginAcr(registry string, loginService login.Azur
 	if err != nil {
 		return errors.Wrap(err, "could not query ACR token")
 	}
-	bits, err := ioutil.ReadAll(res.Body)
+	bits, err := io.ReadAll(res.Body)
 	if err != nil {
 		return errors.Wrap(err, "could not read response body")
 	}

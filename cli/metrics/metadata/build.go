@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -115,7 +114,7 @@ func buildxDriver(dockercfg *configfile.ConfigFile, buildArgs []string) string {
 		//   "Name": "builder",
 		//   "Global": false
 		// }
-		rawCurrent, err := ioutil.ReadFile(fileCurrent)
+		rawCurrent, err := os.ReadFile(fileCurrent)
 		if err != nil {
 			return driver
 		}
@@ -167,7 +166,7 @@ func buildxDriver(dockercfg *configfile.ConfigFile, buildArgs []string) string {
 	//   ],
 	//   "Dynamic": false
 	// }
-	rawBuilder, err := ioutil.ReadFile(fileBuilder)
+	rawBuilder, err := os.ReadFile(fileBuilder)
 	if err != nil {
 		return driver
 	}

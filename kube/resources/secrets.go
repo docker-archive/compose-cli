@@ -20,7 +20,7 @@
 package resources
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/compose-spec/compose-go/types"
@@ -37,7 +37,7 @@ func toSecretSpecs(project *types.Project) ([]corev1.Secret, error) {
 		}
 		name := strings.ReplaceAll(s.Name, "_", "-")
 		// load secret file content
-		sensitiveData, err := ioutil.ReadFile(s.File)
+		sensitiveData, err := os.ReadFile(s.File)
 		if err != nil {
 			return nil, err
 		}

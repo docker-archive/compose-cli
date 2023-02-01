@@ -28,13 +28,14 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/docker/compose/v2/pkg/compose"
+	"github.com/google/shlex"
+	"github.com/spf13/cobra"
+
 	apicontext "github.com/docker/compose-cli/api/context"
 	"github.com/docker/compose-cli/api/context/store"
 	"github.com/docker/compose-cli/cli/metrics"
 	"github.com/docker/compose-cli/cli/mobycli/resolvepath"
-	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/google/shlex"
-	"github.com/spf13/cobra"
 )
 
 var delegatedContextTypes = []string{store.DefaultContextType}

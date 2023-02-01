@@ -23,9 +23,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"gotest.tools/v3/assert"
 
+	"golang.org/x/oauth2"
+
 	"github.com/docker/compose-cli/aci/login"
 	"github.com/docker/compose-cli/api/containers"
-	"golang.org/x/oauth2"
 )
 
 func TestGetContainerName(t *testing.T) {

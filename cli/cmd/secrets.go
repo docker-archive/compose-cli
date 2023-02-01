@@ -19,7 +19,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/docker/compose/v2/cmd/formatter"
@@ -73,7 +72,7 @@ func createSecret() *cobra.Command {
 				}
 				defer func() { _ = in.Close() }()
 			}
-			content, err := ioutil.ReadAll(in)
+			content, err := io.ReadAll(in)
 			if err != nil {
 				return fmt.Errorf("failed to read content from %q: %v", file, err)
 			}

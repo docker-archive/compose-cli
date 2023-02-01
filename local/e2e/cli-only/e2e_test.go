@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -326,13 +325,13 @@ func TestLoginCommandDelegation(t *testing.T) {
 
 func TestMissingExistingCLI(t *testing.T) {
 	t.Parallel()
-	home, err := ioutil.TempDir("", "")
+	home, err := os.MkdirTemp("", "")
 	assert.NilError(t, err)
 	t.Cleanup(func() {
 		_ = os.RemoveAll(home)
 	})
 
-	bin, err := ioutil.TempDir("", "")
+	bin, err := os.MkdirTemp("", "")
 	assert.NilError(t, err)
 	t.Cleanup(func() {
 		_ = os.RemoveAll(bin)

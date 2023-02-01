@@ -20,8 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
+
+	"github.com/docker/compose-cli/utils"
 )
 
 func (b *ecsAPIService) List(ctx context.Context, opts api.ListOptions) ([]api.Stack, error) {

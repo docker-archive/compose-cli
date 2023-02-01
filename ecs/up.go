@@ -24,10 +24,11 @@ import (
 	"syscall"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/progress"
 	"github.com/sirupsen/logrus"
+
+	"github.com/docker/compose-cli/utils"
 )
 
 func (b *ecsAPIService) Up(ctx context.Context, project *types.Project, options api.UpOptions) error {

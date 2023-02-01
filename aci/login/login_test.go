@@ -19,7 +19,6 @@ package login
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -39,7 +38,7 @@ import (
 )
 
 func testLoginService(t *testing.T, apiHelperMock *MockAzureHelper, cloudEnvironmentSvc CloudEnvironmentService) (*azureLoginService, error) {
-	dir, err := ioutil.TempDir("", "test_store")
+	dir, err := os.MkdirTemp("", "test_store")
 	if err != nil {
 		return nil, err
 	}

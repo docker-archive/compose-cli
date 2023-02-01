@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -41,7 +41,7 @@ import (
 )
 
 func TestSimpleConvert(t *testing.T) {
-	bytes, err := ioutil.ReadFile("testdata/input/simple-single-service.yaml")
+	bytes, err := os.ReadFile("testdata/input/simple-single-service.yaml")
 	assert.NilError(t, err)
 	template := convertYaml(t, string(bytes), nil, useDefaultVPC)
 	resultAsJSON, err := marshall(template, "yaml")

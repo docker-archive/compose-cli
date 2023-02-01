@@ -17,7 +17,6 @@
 package login
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +25,7 @@ import (
 )
 
 func TestCreateStoreFromExistingFolder(t *testing.T) {
-	existingDir, err := ioutil.TempDir("", "test_store")
+	existingDir, err := os.MkdirTemp("", "test_store")
 	assert.NilError(t, err)
 
 	storePath := filepath.Join(existingDir, tokenStoreFilename)
@@ -36,7 +35,7 @@ func TestCreateStoreFromExistingFolder(t *testing.T) {
 }
 
 func TestCreateStoreFromNonExistingFolder(t *testing.T) {
-	existingDir, err := ioutil.TempDir("", "test_store")
+	existingDir, err := os.MkdirTemp("", "test_store")
 	assert.NilError(t, err)
 
 	storePath := filepath.Join(existingDir, "new", tokenStoreFilename)
@@ -50,7 +49,7 @@ func TestCreateStoreFromNonExistingFolder(t *testing.T) {
 }
 
 func TestErrorIfParentFolderIsAFile(t *testing.T) {
-	existingDir, err := ioutil.TempFile("", "test_store")
+	existingDir, err := os.CreateTemp("", "test_store")
 	assert.NilError(t, err)
 
 	storePath := filepath.Join(existingDir.Name(), tokenStoreFilename)

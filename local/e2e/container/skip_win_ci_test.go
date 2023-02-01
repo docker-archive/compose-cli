@@ -17,7 +17,6 @@
 package e2e
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -71,12 +70,12 @@ func TestKillChildProcess(t *testing.T) {
 }
 
 func writeDockerfile(t *testing.T) string {
-	d, err := ioutil.TempDir("", "")
+	d, err := os.MkdirTemp("", "")
 	assert.NilError(t, err)
 	t.Cleanup(func() {
 		_ = os.RemoveAll(d)
 	})
-	err = ioutil.WriteFile(filepath.Join(d, "Dockerfile"), []byte(`FROM alpine:3.10
+	err = os.WriteFile(filepath.Join(d, "Dockerfile"), []byte(`FROM alpine:3.10
 RUN sleep 100`), 0644)
 	assert.NilError(t, err)
 	return d

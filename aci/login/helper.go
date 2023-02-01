@@ -20,10 +20,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -74,7 +75,7 @@ func (helper azureAPIHelper) queryAPIWithHeader(ctx context.Context, authorizati
 	if err != nil {
 		return nil, 0, err
 	}
-	bits, err := ioutil.ReadAll(res.Body)
+	bits, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -89,7 +90,7 @@ func (helper azureAPIHelper) queryToken(ce CloudEnvironment, data url.Values, te
 	if res.StatusCode != 200 {
 		return azureToken{}, errors.Errorf("error while renewing access token, status : %s", res.Status)
 	}
-	bits, err := ioutil.ReadAll(res.Body)
+	bits, err := io.ReadAll(res.Body)
 	if err != nil {
 		return azureToken{}, err
 	}
@@ -117,7 +118,7 @@ func openbrowser(address string) error {
 }
 
 func isWsl() bool {
-	b, err := ioutil.ReadFile("/proc/version")
+	b, err := os.ReadFile("/proc/version")
 	if err != nil {
 		return false
 	}

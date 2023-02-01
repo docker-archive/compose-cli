@@ -218,7 +218,7 @@ func (s serviceConfigAciHelper) getResourceRequestsLimits() (*containerinstance.
 	}
 
 	if hasCPURequest() {
-		cpuRequest, err = strconv.ParseFloat(s.Deploy.Resources.Reservations.NanoCPUs, 0)
+		cpuRequest, err = strconv.ParseFloat(s.Deploy.Resources.Reservations.NanoCPUs, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -233,7 +233,7 @@ func (s serviceConfigAciHelper) getResourceRequestsLimits() (*containerinstance.
 			}
 		}
 		if s.Deploy.Resources.Limits.NanoCPUs != "" {
-			cpuLimit, err = strconv.ParseFloat(s.Deploy.Resources.Limits.NanoCPUs, 0)
+			cpuLimit, err = strconv.ParseFloat(s.Deploy.Resources.Limits.NanoCPUs, 64)
 			if err != nil {
 				return nil, err
 			}

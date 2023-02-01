@@ -19,7 +19,7 @@ package login
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -110,7 +110,7 @@ func (ces *cloudEnvironmentService) Get(name string) (CloudEnvironment, error) {
 			return CloudEnvironment{}, errors.Errorf("Cloud metadata retrieval from '%s' failed: server response was '%s'", ces.cloudMetadataURL, res.Status)
 		}
 
-		bytes, err := ioutil.ReadAll(res.Body)
+		bytes, err := io.ReadAll(res.Body)
 		if err != nil {
 			return CloudEnvironment{}, fmt.Errorf("Cloud metadata retrieval from '%s' failed: %w", ces.cloudMetadataURL, err)
 		}
