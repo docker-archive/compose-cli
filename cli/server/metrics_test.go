@@ -20,6 +20,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/stretchr/testify/mock"
@@ -130,6 +131,6 @@ func (s *mockMetricsClient) SendUsage(command metrics.Command) {
 	s.Called(command)
 }
 
-func (s *mockMetricsClient) Track(context string, args []string, status string) {
-	s.Called(context, args, status)
+func (s *mockMetricsClient) Track(context string, args []string, status string, duration time.Duration) {
+	s.Called(context, args, status, duration)
 }

@@ -19,13 +19,14 @@ package metrics
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/docker/compose/v2/pkg/utils"
 
 	"github.com/docker/compose-cli/cli/metrics/metadata"
 )
 
-func (c *client) Track(context string, args []string, status string) {
+func (c *client) Track(context string, args []string, status string, duration time.Duration) {
 	if isInvokedAsCliBackend() {
 		return
 	}

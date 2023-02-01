@@ -62,7 +62,7 @@ type Client interface {
 	// Note that metric collection is best-effort, so any errors are ignored.
 	SendUsage(Command)
 	// Track creates an event for a command execution and reports it.
-	Track(context string, args []string, status string)
+	Track(context string, args []string, status string, duration time.Duration)
 }
 
 // NewClient returns a new metrics client that will send metrics using the
