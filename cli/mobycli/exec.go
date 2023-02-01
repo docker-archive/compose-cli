@@ -27,6 +27,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
@@ -76,20 +77,35 @@ func Exec(_ *cobra.Command) {
 	metricsClient.WithCliVersionFunc(func() string {
 		return CliVersion()
 	})
+	start := time.Now().UTC()
 	childExit := make(chan bool)
 	err := RunDocker(childExit, os.Args[1:]...)
 	childExit <- true
+	duration := time.Since(start)
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			exitCode := exiterr.ExitCode()
 			metricsClient.Track(
-				store.DefaultContextType,
-				os.Args[1:],
-				metrics.FailureCategoryFromExitCode(exitCode).MetricsStatus,
+				metrics.CmdMeta{
+					ContextType: store.DefaultContextType,
+					Args:        os.Args[1:],
+					Status:      metrics.FailureCategoryFromExitCode(exitCode).MetricsStatus,
+					ExitCode:    exitCode,
+					Start:       start,
+					Duration:    duration,
+				},
 			)
 			os.Exit(exitCode)
 		}
-		metricsClient.Track(store.DefaultContextType, os.Args[1:], metrics.FailureStatus)
+		metricsClient.Track(
+			metrics.CmdMeta{
+				ContextType: store.DefaultContextType,
+				Args:        os.Args[1:],
+				Status:      metrics.FailureStatus,
+				Start:       start,
+				Duration:    duration,
+			},
+		)
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -98,7 +114,16 @@ func Exec(_ *cobra.Command) {
 	if command == "login" && !metrics.HasQuietFlag(commandArgs) {
 		displayPATSuggestMsg(commandArgs)
 	}
-	metricsClient.Track(store.DefaultContextType, os.Args[1:], metrics.SuccessStatus)
+	metricsClient.Track(
+		metrics.CmdMeta{
+			ContextType: store.DefaultContextType,
+			Args:        os.Args[1:],
+			Status:      metrics.SuccessStatus,
+			ExitCode:    0,
+			Start:       start,
+			Duration:    duration,
+		},
+	)
 
 	os.Exit(0)
 }
