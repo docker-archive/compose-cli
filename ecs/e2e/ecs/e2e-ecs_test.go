@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -54,7 +53,7 @@ func TestSecrets(t *testing.T) {
 
 	t.Run("create secret", func(t *testing.T) {
 		secretFile := filepath.Join(cmd.BinDir, "secret.txt")
-		err := ioutil.WriteFile(secretFile, []byte("pass1"), 0644)
+		err := os.WriteFile(secretFile, []byte("pass1"), 0644)
 		assert.Check(t, err == nil)
 		res := cmd.RunDockerCmd("secret", "create", secretName, secretFile)
 		assert.Check(t, strings.Contains(res.Stdout(), secretName), res.Stdout())

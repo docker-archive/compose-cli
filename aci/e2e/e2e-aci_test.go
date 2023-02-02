@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -533,10 +532,10 @@ func TestContainerRunAttached(t *testing.T) {
 }
 
 func overwriteFileStorageAccount(t *testing.T, absComposefileName string, storageAccount string) {
-	data, err := ioutil.ReadFile(absComposefileName)
+	data, err := os.ReadFile(absComposefileName)
 	assert.NilError(t, err)
 	override := strings.Replace(string(data), "dockertestvolumeaccount", storageAccount, 1)
-	err = ioutil.WriteFile(absComposefileName, []byte(override), 0644)
+	err = os.WriteFile(absComposefileName, []byte(override), 0644)
 	assert.NilError(t, err)
 }
 

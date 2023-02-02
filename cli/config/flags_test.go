@@ -17,7 +17,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -32,11 +31,11 @@ var contextSetConfig = []byte(`{
 }`)
 
 func TestDetermineCurrentContext(t *testing.T) {
-	d, err := ioutil.TempDir("", "")
+	d, err := os.MkdirTemp("", "")
 	// nolint errcheck
 	defer os.RemoveAll(d)
 	assert.NilError(t, err)
-	err = ioutil.WriteFile(filepath.Join(d, config.ConfigFileName), contextSetConfig, 0644)
+	err = os.WriteFile(filepath.Join(d, config.ConfigFileName), contextSetConfig, 0644)
 	assert.NilError(t, err)
 
 	// If nothing set, fallback to default

@@ -18,7 +18,6 @@ package server
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -33,7 +32,7 @@ import (
 )
 
 func testContext(t *testing.T) context.Context {
-	dir, err := ioutil.TempDir("", "example")
+	dir, err := os.MkdirTemp("", "example")
 	assert.NilError(t, err)
 
 	t.Cleanup(func() {
@@ -42,7 +41,7 @@ func testContext(t *testing.T) context.Context {
 
 	ctx := context.Background()
 	config.WithDir(dir)
-	err = ioutil.WriteFile(path.Join(dir, "config.json"), []byte(`{"currentContext": "default"}`), 0644)
+	err = os.WriteFile(path.Join(dir, "config.json"), []byte(`{"currentContext": "default"}`), 0644)
 	assert.NilError(t, err)
 
 	return ctx

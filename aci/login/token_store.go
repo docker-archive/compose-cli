@@ -19,7 +19,6 @@ package login
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -71,11 +70,11 @@ func (store tokenStore) writeLoginInfo(info TokenInfo) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(store.filePath, bytes, 0644)
+	return os.WriteFile(store.filePath, bytes, 0644)
 }
 
 func (store tokenStore) readToken() (TokenInfo, error) {
-	bytes, err := ioutil.ReadFile(store.filePath)
+	bytes, err := os.ReadFile(store.filePath)
 	if err != nil {
 		return TokenInfo{}, err
 	}

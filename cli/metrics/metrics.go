@@ -20,8 +20,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/compose-cli/cli/metrics/metadata"
 	"github.com/docker/compose/v2/pkg/utils"
+
+	"github.com/docker/compose-cli/cli/metrics/metadata"
 )
 
 func (c *client) Track(context string, args []string, status string) {

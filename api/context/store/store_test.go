@@ -18,7 +18,6 @@ package store
 
 import (
 	_ "crypto/sha256"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -29,7 +28,7 @@ import (
 )
 
 func testStore(t *testing.T) Store {
-	d, err := ioutil.TempDir("", "store")
+	d, err := os.MkdirTemp("", "store")
 	assert.NilError(t, err)
 
 	t.Cleanup(func() {

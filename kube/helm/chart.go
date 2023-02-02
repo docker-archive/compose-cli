@@ -28,9 +28,10 @@ import (
 	"strings"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/kube/resources"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
+
+	"github.com/docker/compose-cli/kube/resources"
 
 	chart "helm.sh/helm/v3/pkg/chart"
 	loader "helm.sh/helm/v3/pkg/chart/loader"

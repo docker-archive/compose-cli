@@ -17,7 +17,7 @@
 package e2e
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -42,7 +42,7 @@ func NewMetricsServer(socket string) *MockMetricsServer {
 }
 
 func (s *MockMetricsServer) handlePostUsage(c echo.Context) error {
-	body, error := ioutil.ReadAll(c.Request().Body)
+	body, error := io.ReadAll(c.Request().Body)
 	if error != nil {
 		return error
 	}

@@ -17,7 +17,6 @@
 package etchosts
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -35,7 +34,7 @@ func TestSetDomain(t *testing.T) {
 	err := SetHostNames(f, "foo", "bar", "zot")
 	assert.NilError(t, err)
 
-	got, err := ioutil.ReadFile(f)
+	got, err := os.ReadFile(f)
 	assert.NilError(t, err)
 	golden.Assert(t, string(got), "etchosts.golden")
 }

@@ -17,7 +17,6 @@
 package secrets
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -37,7 +36,7 @@ func TestRawSecret(t *testing.T) {
 		Keys: nil,
 	}, dir)
 	assert.NilError(t, err)
-	file, err := ioutil.ReadFile(filepath.Join(dir, "raw"))
+	file, err := os.ReadFile(filepath.Join(dir, "raw"))
 	assert.NilError(t, err)
 	content := string(file)
 	assert.Equal(t, content, "something_secret")
@@ -58,7 +57,7 @@ func TestSelectedKeysSecret(t *testing.T) {
 		Keys: []string{"foo"},
 	}, dir)
 	assert.NilError(t, err)
-	file, err := ioutil.ReadFile(filepath.Join(dir, "json", "foo"))
+	file, err := os.ReadFile(filepath.Join(dir, "json", "foo"))
 	assert.NilError(t, err)
 	content := string(file)
 	assert.Equal(t, content, "bar")
@@ -82,12 +81,12 @@ func TestAllKeysSecret(t *testing.T) {
 		Keys: []string{"*"},
 	}, dir)
 	assert.NilError(t, err)
-	file, err := ioutil.ReadFile(filepath.Join(dir, "json", "foo"))
+	file, err := os.ReadFile(filepath.Join(dir, "json", "foo"))
 	assert.NilError(t, err)
 	content := string(file)
 	assert.Equal(t, content, "bar")
 
-	file, err = ioutil.ReadFile(filepath.Join(dir, "json", "zot"))
+	file, err = os.ReadFile(filepath.Join(dir, "json", "zot"))
 	assert.NilError(t, err)
 	content = string(file)
 	assert.Equal(t, content, "qix")

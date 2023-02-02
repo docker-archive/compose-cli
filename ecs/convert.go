@@ -499,7 +499,7 @@ func toLinuxParameters(service types.ServiceConfig) *ecs.TaskDefinition_LinuxPar
 }
 
 func toTmpfs(tmpfs types.StringList) []ecs.TaskDefinition_Tmpfs {
-	if tmpfs == nil || len(tmpfs) == 0 {
+	if len(tmpfs) == 0 {
 		return nil
 	}
 	o := []ecs.TaskDefinition_Tmpfs{}
@@ -549,7 +549,7 @@ func durationToInt(interval *types.Duration) int {
 }
 
 func toHostEntryPtr(hosts types.HostsList) []ecs.TaskDefinition_HostEntry {
-	if hosts == nil || len(hosts) == 0 {
+	if len(hosts) == 0 {
 		return nil
 	}
 	e := []ecs.TaskDefinition_HostEntry{}

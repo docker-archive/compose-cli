@@ -22,10 +22,11 @@ import (
 	"net/http"
 
 	"github.com/compose-spec/compose-go/types"
-	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/progress"
 	"github.com/sirupsen/logrus"
+
+	"github.com/docker/compose-cli/utils"
 
 	"github.com/docker/compose-cli/aci/convert"
 	"github.com/docker/compose-cli/aci/login"

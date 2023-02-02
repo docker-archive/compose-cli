@@ -25,10 +25,11 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/compose-spec/compose-go/types"
 	cliconfigtypes "github.com/docker/cli/cli/config/types"
-	"github.com/docker/compose-cli/aci/login"
 	"github.com/stretchr/testify/mock"
 	"gotest.tools/v3/assert"
 	is "gotest.tools/v3/assert/cmp"
+
+	"github.com/docker/compose-cli/aci/login"
 )
 
 const getAllCredentials = "getAllRegistryCredentials"

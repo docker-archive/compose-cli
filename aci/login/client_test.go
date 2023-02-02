@@ -17,7 +17,6 @@
 package login
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +25,7 @@ import (
 )
 
 func TestClearErrorMessageIfNotAlreadyLoggedIn(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test_store")
+	dir, err := os.MkdirTemp("", "test_store")
 	assert.NilError(t, err)
 	t.Cleanup(func() {
 		_ = os.RemoveAll(dir)

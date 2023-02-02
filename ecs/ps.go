@@ -19,8 +19,9 @@ package ecs
 import (
 	"context"
 
-	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
+
+	"github.com/docker/compose-cli/utils"
 )
 
 func (b *ecsAPIService) Ps(ctx context.Context, projectName string, options api.PsOptions) ([]api.ContainerSummary, error) {

@@ -19,7 +19,6 @@ package e2e
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -70,12 +69,12 @@ func NewE2eCLI(t *testing.T, binDir string) *E2eCLI {
 }
 
 func newE2eCLI(t *testing.T, binDir string) *E2eCLI {
-	d, err := ioutil.TempDir("", "")
+	d, err := os.MkdirTemp("", "")
 	assert.Check(t, is.Nil(err))
 
 	t.Cleanup(func() {
 		if t.Failed() {
-			conf, _ := ioutil.ReadFile(filepath.Join(d, "config.json"))
+			conf, _ := os.ReadFile(filepath.Join(d, "config.json"))
 			t.Errorf("Config: %s\n", string(conf))
 			t.Error("Contents of config dir:")
 			for _, p := range dirContents(d) {
@@ -124,7 +123,7 @@ func SetupExistingCLI() (string, func(), error) {
 		}
 	}
 
-	d, err := ioutil.TempDir("", "")
+	d, err := os.MkdirTemp("", "")
 	if err != nil {
 		return "", nil, err
 	}
@@ -315,7 +314,7 @@ func HTTPGetWithRetry(t *testing.T, endpoint string, expectedStatus int, retryDe
 	}
 	poll.WaitOn(t, checkUp, poll.WithDelay(retryDelay), poll.WithTimeout(timeout))
 	if r != nil {
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		assert.NilError(t, err)
 		return string(b)
 	}

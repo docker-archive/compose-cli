@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1.2
-
+# syntax=docker/dockerfile:1
 
 #   Copyright 2020 Docker Compose CLI authors
 
@@ -15,8 +14,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-ARG GO_VERSION=1.18-alpine
-ARG GOLANGCI_LINT_VERSION=v1.45.2-alpine
+ARG GO_VERSION=1.19-alpine
+ARG GOLANGCI_LINT_VERSION=v1.50.1-alpine
 ARG PROTOC_GEN_GO_VERSION=v1.5.2
 
 FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS base
@@ -43,7 +42,7 @@ FROM golangci/golangci-lint:${GOLANGCI_LINT_VERSION} AS lint-base
 FROM base AS lint
 ENV GOFLAGS="-buildvcs=false"
 ENV CGO_ENABLED=0
-COPY --from=lint-base /usr/bin/golangci-lint /usr/bin/golangci-lint
+COPY --from=lint-base --link /usr/bin/golangci-lint /usr/bin/golangci-lint
 ARG BUILD_TAGS
 ARG GIT_TAG
 RUN --mount=target=. \
@@ -89,13 +88,13 @@ RUN --mount=target=. \
     make BINARY=/out/docker -f builder.Makefile cross
 
 FROM scratch AS protos
-COPY --from=make-protos /compose-cli/cli/server/protos .
+COPY --from=make-protos --link /compose-cli/cli/server/protos .
 
 FROM scratch AS cli
-COPY --from=make-cli /out/* .
+COPY --from=make-cli --link /out/* .
 
 FROM scratch AS cross
-COPY --from=make-cross /out/* .
+COPY --from=make-cross --link /out/* .
 
 FROM base AS test
 ENV CGO_ENABLED=0
@@ -120,9 +119,11 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go mod tidy
 
 FROM scratch AS go-mod-tidy
-COPY --from=make-go-mod-tidy /compose-cli/go.mod .
-COPY --from=make-go-mod-tidy /compose-cli/go.sum .
+COPY --from=make-go-mod-tidy --link /compose-cli/go.mod .
+COPY --from=make-go-mod-tidy --link /compose-cli/go.sum .
 
 FROM base AS check-go-mod
 COPY . .
-RUN make -f builder.Makefile check-go-mod
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    make -f builder.Makefile check-go-mod

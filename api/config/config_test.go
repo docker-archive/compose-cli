@@ -17,7 +17,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -31,7 +30,7 @@ var sampleConfig = []byte(`{
 }`)
 
 func testConfigDir(t *testing.T) string {
-	d, _ := ioutil.TempDir("", "")
+	d, _ := os.MkdirTemp("", "")
 	t.Cleanup(func() {
 		_ = os.RemoveAll(d)
 	})
@@ -39,7 +38,7 @@ func testConfigDir(t *testing.T) string {
 }
 
 func writeSampleConfig(t *testing.T, d string) {
-	err := ioutil.WriteFile(filepath.Join(d, ConfigFileName), sampleConfig, 0644)
+	err := os.WriteFile(filepath.Join(d, ConfigFileName), sampleConfig, 0644)
 	assert.NilError(t, err)
 }
 
@@ -77,7 +76,7 @@ func TestWriteDefaultContextToEmptyConfig(t *testing.T) {
 	d := testConfigDir(t)
 	err := WriteCurrentContext(d, "default")
 	assert.NilError(t, err)
-	c, err := ioutil.ReadFile(filepath.Join(d, ConfigFileName))
+	c, err := os.ReadFile(filepath.Join(d, ConfigFileName))
 	assert.NilError(t, err)
 	assert.Equal(t, string(c), "{}")
 }

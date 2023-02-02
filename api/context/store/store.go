@@ -19,7 +19,6 @@ package store
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -160,7 +159,7 @@ func (s *store) GetEndpoint(name string, data interface{}) error {
 }
 
 func read(meta string) (*DockerContext, error) {
-	bytes, err := ioutil.ReadFile(meta)
+	bytes, err := os.ReadFile(meta)
 	if err != nil {
 		return nil, err
 	}
@@ -246,12 +245,12 @@ func (s *store) Create(name string, contextType string, description string, data
 		return err
 	}
 
-	return ioutil.WriteFile(filepath.Join(metaDir, metaFile), bytes, 0644)
+	return os.WriteFile(filepath.Join(metaDir, metaFile), bytes, 0644)
 }
 
 func (s *store) List() ([]*DockerContext, error) {
 	root := filepath.Join(s.root, contextsDir, metadataDir)
-	c, err := ioutil.ReadDir(root)
+	c, err := os.ReadDir(root)
 	if err != nil {
 		return nil, err
 	}

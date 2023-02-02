@@ -17,8 +17,9 @@
 package context
 
 import (
-	"github.com/docker/compose-cli/cli/mobycli"
 	"github.com/spf13/cobra"
+
+	"github.com/docker/compose-cli/cli/mobycli"
 )
 
 // Command manages contexts

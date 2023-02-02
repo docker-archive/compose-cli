@@ -19,7 +19,7 @@ package ecs
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 
@@ -38,12 +38,13 @@ import (
 	"github.com/compose-spec/compose-go/types"
 	"github.com/distribution/distribution/v3/reference"
 	cliconfig "github.com/docker/cli/cli/config"
-	"github.com/docker/compose-cli/api/config"
-	"github.com/docker/compose-cli/utils"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/opencontainers/go-digest"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/kustomize/kyaml/yaml/merge2"
+
+	"github.com/docker/compose-cli/api/config"
+	"github.com/docker/compose-cli/utils"
 )
 
 func (b *ecsAPIService) Convert(ctx context.Context, project *types.Project, options api.ConvertOptions) ([]byte, error) {
@@ -297,7 +298,7 @@ func (b *ecsAPIService) createSecret(project *types.Project, name string, s type
 	if s.External.External {
 		return nil
 	}
-	sensitiveData, err := ioutil.ReadFile(s.File)
+	sensitiveData, err := os.ReadFile(s.File)
 	if err != nil {
 		return err
 	}
@@ -543,5 +544,6 @@ func volumeResourceName(service string) string {
 }
 
 func normalizeResourceName(s string) string {
+	//nolint:staticcheck // Preserving for compatibility
 	return strings.Title(regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(s, ""))
 }

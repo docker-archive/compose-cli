@@ -18,7 +18,6 @@ package convert
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -31,7 +30,7 @@ func TestConvertSecrets(t *testing.T) {
 	serviceName := "testservice"
 	secretName := "testsecret"
 	absBasePath := "/home/user"
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "TestConvertProjectSecrets-")
+	tmpFile, err := os.CreateTemp(os.TempDir(), "TestConvertProjectSecrets-")
 	assert.NilError(t, err)
 	_, err = tmpFile.Write([]byte("test content"))
 	assert.NilError(t, err)
