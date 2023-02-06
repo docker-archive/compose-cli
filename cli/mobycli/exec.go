@@ -73,7 +73,7 @@ func mustDelegateToMoby(ctxType string) bool {
 
 // Exec delegates to com.docker.cli if on moby context
 func Exec(root *cobra.Command) {
-	metricsClient := metrics.NewClient()
+	metricsClient := metrics.NewDefaultClient()
 	metricsClient.WithCliVersionFunc(func() string {
 		return CliVersion()
 	})
