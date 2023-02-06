@@ -66,7 +66,7 @@ func metricsServerInterceptor(client metrics.Client) grpc.UnaryServerInterceptor
 		}
 		command := methodMapping[info.FullMethod]
 		if command != "" {
-			client.SendUsage(metrics.Command{
+			client.SendUsage(metrics.CommandUsage{
 				Command: command,
 				Context: contextType,
 				Source:  metrics.APISource,
