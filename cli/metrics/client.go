@@ -26,13 +26,26 @@ import (
 // specified file path.
 const EnvVarDebugMetricsPath = "DOCKER_METRICS_DEBUG_LOG"
 
-type CmdMeta struct {
+// Timeout is the maximum amount of time we'll wait for metrics sending to be
+// acknowledged before giving up.
+const Timeout = 50 * time.Millisecond
+
+// CmdResult provides details about process execution.
+type CmdResult struct {
+	// ContextType is `moby` for Docker or the name of a cloud provider.
 	ContextType string
-	Args        []string
-	Status      string
-	ExitCode    int
-	Start       time.Time
-	Duration    time.Duration
+	// Args minus the process name (argv[0] aka `docker`).
+	Args []string
+	// Status based on exit code as a descriptive value.
+	//
+	// Deprecated: used for usage, events rely exclusively on exit code.
+	Status string
+	// ExitCode is 0 on success; otherwise, failure.
+	ExitCode int
+	// Start time of the process (UTC).
+	Start time.Time
+	// Duration of process execution.
+	Duration time.Duration
 }
 
 type client struct {
@@ -44,8 +57,8 @@ type cliversion struct {
 	f func() string
 }
 
-// Command is a command
-type Command struct {
+// CommandUsage reports a CLI invocation for aggregation.
+type CommandUsage struct {
 	Command string `json:"command"`
 	Context string `json:"context"`
 	Source  string `json:"source"`
@@ -69,9 +82,9 @@ type Client interface {
 	// SendUsage sends the command to Docker Desktop.
 	//
 	// Note that metric collection is best-effort, so any errors are ignored.
-	SendUsage(Command)
+	SendUsage(CommandUsage)
 	// Track creates an event for a command execution and reports it.
-	Track(cmd CmdMeta)
+	Track(CmdResult)
 }
 
 // NewClient returns a new metrics client that will send metrics using the
@@ -107,7 +120,7 @@ func (c *client) WithCliVersionFunc(f func() string) {
 	c.cliversion.f = f
 }
 
-func (c *client) SendUsage(command Command) {
+func (c *client) SendUsage(command CommandUsage) {
 	result := make(chan bool, 1)
 	go func() {
 		c.reporter.Heartbeat(command)
@@ -118,6 +131,6 @@ func (c *client) SendUsage(command Command) {
 	// Posting metrics without Desktop listening returns in less than a ms, and a handful of ms (often <2ms) when Desktop is listening
 	select {
 	case <-result:
-	case <-time.After(50 * time.Millisecond):
+	case <-time.After(Timeout):
 	}
 }

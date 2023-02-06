@@ -260,7 +260,7 @@ func main() {
 		handleError(ctx, err, ctype, currentContext, cc, root, start, duration)
 	}
 	metricsClient.Track(
-		metrics.CmdMeta{
+		metrics.CmdResult{
 			ContextType: ctype,
 			Args:        os.Args[1:],
 			Status:      metrics.SuccessStatus,
@@ -298,7 +298,7 @@ func handleError(
 	// if user canceled request, simply exit without any error message
 	if api.IsErrCanceled(err) || errors.Is(ctx.Err(), context.Canceled) {
 		metricsClient.Track(
-			metrics.CmdMeta{
+			metrics.CmdResult{
 				ContextType: ctype,
 				Args:        os.Args[1:],
 				Status:      metrics.CanceledStatus,
@@ -335,7 +335,7 @@ func exit(ctx string, err error, ctype string, start time.Time, duration time.Du
 	if exit, ok := err.(cli.StatusError); ok {
 		// TODO(milas): shouldn't this use the exit code to determine status?
 		metricsClient.Track(
-			metrics.CmdMeta{
+			metrics.CmdResult{
 				ContextType: ctype,
 				Args:        os.Args[1:],
 				Status:      metrics.SuccessStatus,
@@ -358,7 +358,7 @@ func exit(ctx string, err error, ctype string, start time.Time, duration time.Du
 		exitCode = metrics.CommandSyntaxFailure.ExitCode
 	}
 	metricsClient.Track(
-		metrics.CmdMeta{
+		metrics.CmdResult{
 			ContextType: ctype,
 			Args:        os.Args[1:],
 			Status:      metricsStatus,
@@ -400,7 +400,7 @@ func checkIfUnknownCommandExistInDefaultContext(err error, currentContext string
 
 		if mobycli.IsDefaultContextCommand(dockerCommand) {
 			fmt.Fprintf(os.Stderr, "Command %q not available in current context (%s), you can use the \"default\" context to run this command\n", dockerCommand, currentContext)
-			metricsClient.Track(metrics.CmdMeta{
+			metricsClient.Track(metrics.CmdResult{
 				ContextType: contextType,
 				Args:        os.Args[1:],
 				Status:      metrics.FailureStatus,

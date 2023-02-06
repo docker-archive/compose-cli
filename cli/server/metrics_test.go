@@ -60,7 +60,7 @@ func TestAllMethodsHaveCorrespondingCliCommand(t *testing.T) {
 
 func TestTrackSuccess(t *testing.T) {
 	var mockMetrics = &mockMetricsClient{}
-	mockMetrics.On("SendUsage", metrics.Command{Command: "ps", Context: "aci", Status: "success", Source: "api"}).Return()
+	mockMetrics.On("SendUsage", metrics.CommandUsage{Command: "ps", Context: "aci", Status: "success", Source: "api"}).Return()
 	newClient := client.NewClient("aci", noopService{})
 	interceptor := metricsServerInterceptor(mockMetrics)
 
@@ -126,10 +126,10 @@ func (s *mockMetricsClient) WithCliVersionFunc(f func() string) {
 	s.Called(f)
 }
 
-func (s *mockMetricsClient) SendUsage(command metrics.Command) {
+func (s *mockMetricsClient) SendUsage(command metrics.CommandUsage) {
 	s.Called(command)
 }
 
-func (s *mockMetricsClient) Track(cmd metrics.CmdMeta) {
+func (s *mockMetricsClient) Track(cmd metrics.CmdResult) {
 	s.Called(cmd)
 }

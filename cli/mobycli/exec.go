@@ -86,7 +86,7 @@ func Exec(_ *cobra.Command) {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			exitCode := exiterr.ExitCode()
 			metricsClient.Track(
-				metrics.CmdMeta{
+				metrics.CmdResult{
 					ContextType: store.DefaultContextType,
 					Args:        os.Args[1:],
 					Status:      metrics.FailureCategoryFromExitCode(exitCode).MetricsStatus,
@@ -98,7 +98,7 @@ func Exec(_ *cobra.Command) {
 			os.Exit(exitCode)
 		}
 		metricsClient.Track(
-			metrics.CmdMeta{
+			metrics.CmdResult{
 				ContextType: store.DefaultContextType,
 				Args:        os.Args[1:],
 				Status:      metrics.FailureStatus,
@@ -115,7 +115,7 @@ func Exec(_ *cobra.Command) {
 		displayPATSuggestMsg(commandArgs)
 	}
 	metricsClient.Track(
-		metrics.CmdMeta{
+		metrics.CmdResult{
 			ContextType: store.DefaultContextType,
 			Args:        os.Args[1:],
 			Status:      metrics.SuccessStatus,
