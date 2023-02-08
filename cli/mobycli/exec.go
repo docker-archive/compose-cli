@@ -28,7 +28,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/docker/compose/v2/pkg/compose"
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 
@@ -72,7 +71,7 @@ func mustDelegateToMoby(ctxType string) bool {
 }
 
 // Exec delegates to com.docker.cli if on moby context
-func Exec(root *cobra.Command) {
+func Exec(_ *cobra.Command) {
 	metricsClient := metrics.NewDefaultClient()
 	metricsClient.WithCliVersionFunc(func() string {
 		return CliVersion()
@@ -83,10 +82,14 @@ func Exec(root *cobra.Command) {
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			exitCode := exiterr.ExitCode()
-			metricsClient.Track(store.DefaultContextType, os.Args[1:], compose.ByExitCode(exitCode).MetricsStatus)
+			metricsClient.Track(
+				store.DefaultContextType,
+				os.Args[1:],
+				metrics.FailureCategoryFromExitCode(exitCode).MetricsStatus,
+			)
 			os.Exit(exitCode)
 		}
-		metricsClient.Track(store.DefaultContextType, os.Args[1:], compose.FailureStatus)
+		metricsClient.Track(store.DefaultContextType, os.Args[1:], metrics.FailureStatus)
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -95,7 +98,7 @@ func Exec(root *cobra.Command) {
 	if command == "login" && !metrics.HasQuietFlag(commandArgs) {
 		displayPATSuggestMsg(commandArgs)
 	}
-	metricsClient.Track(store.DefaultContextType, os.Args[1:], compose.SuccessStatus)
+	metricsClient.Track(store.DefaultContextType, os.Args[1:], metrics.SuccessStatus)
 
 	os.Exit(0)
 }
