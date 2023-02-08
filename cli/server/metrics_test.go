@@ -130,6 +130,6 @@ func (s *mockMetricsClient) SendUsage(command metrics.Command) {
 	s.Called(command)
 }
 
-func (s *mockMetricsClient) Track(context string, args []string, status string) {
-	s.Called(context, args, status)
+func (s *mockMetricsClient) Track(cmd metrics.CmdMeta) {
+	s.Called(cmd)
 }

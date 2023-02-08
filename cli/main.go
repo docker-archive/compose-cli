@@ -253,10 +253,20 @@ func main() {
 
 	root.AddCommand(command)
 
-	if err = root.ExecuteContext(ctx); err != nil {
-		handleError(ctx, err, ctype, currentContext, cc, root)
+	start := time.Now().UTC()
+	err = root.ExecuteContext(ctx)
+	duration := time.Since(start)
+	if err != nil {
+		handleError(ctx, err, ctype, currentContext, cc, root, start, duration)
 	}
-	metricsClient.Track(ctype, os.Args[1:], metrics.SuccessStatus)
+	metricsClient.Track(
+		metrics.CmdMeta{
+			ContextType: ctype,
+			Args:        os.Args[1:],
+			Status:      metrics.SuccessStatus,
+			Start:       start,
+			Duration:    duration,
+		})
 }
 
 func customizeCliForACI(command *cobra.Command, proxy *api.ServiceProxy) {
@@ -275,33 +285,64 @@ func customizeCliForACI(command *cobra.Command, proxy *api.ServiceProxy) {
 	}
 }
 
-func handleError(ctx context.Context, err error, ctype string, currentContext string, cc *store.DockerContext, root *cobra.Command) {
+func handleError(
+	ctx context.Context,
+	err error,
+	ctype string,
+	currentContext string,
+	cc *store.DockerContext,
+	root *cobra.Command,
+	start time.Time,
+	duration time.Duration,
+) {
 	// if user canceled request, simply exit without any error message
 	if api.IsErrCanceled(err) || errors.Is(ctx.Err(), context.Canceled) {
-		metricsClient.Track(ctype, os.Args[1:], metrics.CanceledStatus)
+		metricsClient.Track(
+			metrics.CmdMeta{
+				ContextType: ctype,
+				Args:        os.Args[1:],
+				Status:      metrics.CanceledStatus,
+				Start:       start,
+				Duration:    duration,
+			},
+		)
 		os.Exit(130)
 	}
 	if ctype == store.AwsContextType {
-		exit(currentContext, errors.Errorf(`%q context type has been renamed. Recreate the context by running:
-$ docker context create %s <name>`, cc.Type(), store.EcsContextType), ctype)
+		exit(
+			currentContext,
+			errors.Errorf(`%q context type has been renamed. Recreate the context by running:
+$ docker context create %s <name>`, cc.Type(), store.EcsContextType),
+			ctype,
+			start,
+			duration,
+		)
 	}
 
 	// Context should always be handled by new CLI
 	requiredCmd, _, _ := root.Find(os.Args[1:])
 	if requiredCmd != nil && isContextAgnosticCommand(requiredCmd) {
-		exit(currentContext, err, ctype)
+		exit(currentContext, err, ctype, start, duration)
 	}
 	mobycli.ExecIfDefaultCtxType(ctx, root)
 
 	checkIfUnknownCommandExistInDefaultContext(err, currentContext, ctype)
 
-	exit(currentContext, err, ctype)
+	exit(currentContext, err, ctype, start, duration)
 }
 
-func exit(ctx string, err error, ctype string) {
+func exit(ctx string, err error, ctype string, start time.Time, duration time.Duration) {
 	if exit, ok := err.(cli.StatusError); ok {
 		// TODO(milas): shouldn't this use the exit code to determine status?
-		metricsClient.Track(ctype, os.Args[1:], metrics.SuccessStatus)
+		metricsClient.Track(
+			metrics.CmdMeta{
+				ContextType: ctype,
+				Args:        os.Args[1:],
+				Status:      metrics.SuccessStatus,
+				Start:       start,
+				Duration:    duration,
+			},
+		)
 		os.Exit(exit.StatusCode)
 	}
 
@@ -316,7 +357,15 @@ func exit(ctx string, err error, ctype string) {
 		metricsStatus = metrics.CommandSyntaxFailure.MetricsStatus
 		exitCode = metrics.CommandSyntaxFailure.ExitCode
 	}
-	metricsClient.Track(ctype, os.Args[1:], metricsStatus)
+	metricsClient.Track(
+		metrics.CmdMeta{
+			ContextType: ctype,
+			Args:        os.Args[1:],
+			Status:      metricsStatus,
+			Start:       start,
+			Duration:    duration,
+		},
+	)
 
 	if errors.Is(err, api.ErrLoginRequired) {
 		fmt.Fprintln(os.Stderr, err)
@@ -351,7 +400,11 @@ func checkIfUnknownCommandExistInDefaultContext(err error, currentContext string
 
 		if mobycli.IsDefaultContextCommand(dockerCommand) {
 			fmt.Fprintf(os.Stderr, "Command %q not available in current context (%s), you can use the \"default\" context to run this command\n", dockerCommand, currentContext)
-			metricsClient.Track(contextType, os.Args[1:], metrics.FailureStatus)
+			metricsClient.Track(metrics.CmdMeta{
+				ContextType: contextType,
+				Args:        os.Args[1:],
+				Status:      metrics.FailureStatus,
+			})
 			os.Exit(1)
 		}
 	}

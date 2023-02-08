@@ -25,17 +25,17 @@ import (
 	"github.com/docker/compose-cli/cli/metrics/metadata"
 )
 
-func (c *client) Track(context string, args []string, status string) {
+func (c *client) Track(cmd CmdMeta) {
 	if isInvokedAsCliBackend() {
 		return
 	}
-	command := GetCommand(args)
+	command := GetCommand(cmd.Args)
 	if command != "" {
 		c.SendUsage(Command{
 			Command: command,
-			Context: context,
-			Source:  c.getMetadata(CLISource, args),
-			Status:  status,
+			Context: cmd.ContextType,
+			Source:  c.getMetadata(CLISource, cmd.Args),
+			Status:  cmd.Status,
 		})
 	}
 }

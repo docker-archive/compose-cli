@@ -26,6 +26,15 @@ import (
 // specified file path.
 const EnvVarDebugMetricsPath = "DOCKER_METRICS_DEBUG_LOG"
 
+type CmdMeta struct {
+	ContextType string
+	Args        []string
+	Status      string
+	ExitCode    int
+	Start       time.Time
+	Duration    time.Duration
+}
+
 type client struct {
 	cliversion *cliversion
 	reporter   Reporter
@@ -62,7 +71,7 @@ type Client interface {
 	// Note that metric collection is best-effort, so any errors are ignored.
 	SendUsage(Command)
 	// Track creates an event for a command execution and reports it.
-	Track(context string, args []string, status string)
+	Track(cmd CmdMeta)
 }
 
 // NewClient returns a new metrics client that will send metrics using the
