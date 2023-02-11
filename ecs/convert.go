@@ -29,8 +29,8 @@ import (
 	"github.com/docker/compose-cli/ecs/secrets"
 
 	ecsapi "github.com/aws/aws-sdk-go/service/ecs"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/ecs"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/ecs"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/cli/opts"
 	"github.com/joho/godotenv"
@@ -67,7 +67,7 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 	initContainers = append(initContainers, ecs.TaskDefinition_ContainerDefinition{
 		Name:             fmt.Sprintf("%s_ResolvConf_InitContainer", normalizeResourceName(service.Name)),
 		Image:            searchDomainInitContainerImage,
-		Essential:        false,
+		Essential:        cloudformation.Bool(false),
 		Command:          []string{b.Region + ".compute.internal", project.Name + ".local"},
 		LogConfiguration: logConfiguration,
 	})
@@ -75,8 +75,8 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 	var dependencies []ecs.TaskDefinition_ContainerDependency
 	for _, c := range initContainers {
 		dependencies = append(dependencies, ecs.TaskDefinition_ContainerDependency{
-			Condition:     ecsapi.ContainerConditionSuccess,
-			ContainerName: c.Name,
+			Condition:     cloudformation.String(ecsapi.ContainerConditionSuccess),
+			ContainerName: cloudformation.String(c.Name),
 		})
 	}
 
@@ -85,18 +85,18 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 		volumes = append(volumes, ecs.TaskDefinition_Volume{
 			EFSVolumeConfiguration: &ecs.TaskDefinition_EFSVolumeConfiguration{
 				AuthorizationConfig: &ecs.TaskDefinition_AuthorizationConfig{
-					AccessPointId: cloudformation.Ref(n),
-					IAM:           "ENABLED",
+					AccessPointId: cloudformation.RefPtr(n),
+					IAM:           cloudformation.String("ENABLED"),
 				},
 				FilesystemId:      resources.filesystems[v.Source].ID(),
-				TransitEncryption: "ENABLED",
+				TransitEncryption: cloudformation.String("ENABLED"),
 			},
-			Name: v.Source,
+			Name: cloudformation.String(v.Source),
 		})
 		mounts = append(mounts, ecs.TaskDefinition_MountPoint{
-			ContainerPath: v.Target,
-			ReadOnly:      v.ReadOnly,
-			SourceVolume:  v.Source,
+			ContainerPath: cloudformation.String(v.Target),
+			ReadOnly:      cloudformation.Bool(v.ReadOnly),
+			SourceVolume:  cloudformation.String(v.Source),
 		})
 	}
 
@@ -111,7 +111,7 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 
 	containers := append(initContainers, ecs.TaskDefinition_ContainerDefinition{
 		Command:                service.Command,
-		DisableNetworking:      service.NetworkMode == "none",
+		DisableNetworking:      cloudformation.Bool(service.NetworkMode == "none"),
 		DependsOnProp:          dependencies,
 		DnsSearchDomains:       service.DNSSearch,
 		DnsServers:             service.DNS,
@@ -119,32 +119,32 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 		DockerSecurityOptions:  service.SecurityOpt,
 		EntryPoint:             service.Entrypoint,
 		Environment:            pairs,
-		Essential:              true,
+		Essential:              cloudformation.Bool(true),
 		ExtraHosts:             toHostEntryPtr(service.ExtraHosts),
 		FirelensConfiguration:  nil,
 		HealthCheck:            toHealthCheck(service.HealthCheck),
-		Hostname:               service.Hostname,
+		Hostname:               cloudformation.String(service.Hostname),
 		Image:                  service.Image,
-		Interactive:            false,
+		Interactive:            cloudformation.Bool(false),
 		Links:                  nil,
 		LinuxParameters:        toLinuxParameters(service),
 		LogConfiguration:       logConfiguration,
-		MemoryReservation:      memReservation,
+		MemoryReservation:      cloudformation.Int(memReservation),
 		MountPoints:            mounts,
 		Name:                   service.Name,
 		PortMappings:           toPortMappings(service.Ports),
-		Privileged:             service.Privileged,
-		PseudoTerminal:         service.Tty,
-		ReadonlyRootFilesystem: service.ReadOnly,
+		Privileged:             cloudformation.Bool(service.Privileged),
+		PseudoTerminal:         cloudformation.Bool(service.Tty),
+		ReadonlyRootFilesystem: cloudformation.Bool(service.ReadOnly),
 		RepositoryCredentials:  credential,
 		ResourceRequirements:   toTaskResourceRequirements(reservations),
-		StartTimeout:           0,
-		StopTimeout:            durationToInt(service.StopGracePeriod),
+		StartTimeout:           cloudformation.Int(0),
+		StopTimeout:            cloudformation.Int(durationToInt(service.StopGracePeriod)),
 		SystemControls:         toSystemControls(service.Sysctls),
 		Ulimits:                toUlimits(service.Ulimits),
-		User:                   service.User,
+		User:                   cloudformation.String(service.User),
 		VolumesFrom:            nil,
-		WorkingDirectory:       service.WorkingDir,
+		WorkingDirectory:       cloudformation.String(service.WorkingDir),
 	})
 
 	launchType := ecsapi.LaunchTypeFargate
@@ -154,12 +154,12 @@ func (b *ecsAPIService) createTaskDefinition(project *types.Project, service typ
 
 	return &ecs.TaskDefinition{
 		ContainerDefinitions: containers,
-		Cpu:                  cpu,
-		Family:               fmt.Sprintf("%s-%s", project.Name, service.Name),
-		IpcMode:              service.Ipc,
-		Memory:               mem,
-		NetworkMode:          ecsapi.NetworkModeAwsvpc, // FIXME could be set by service.NetworkMode, Fargate only supports network mode ‘awsvpc’.
-		PidMode:              service.Pid,
+		Cpu:                  cloudformation.String(cpu),
+		Family:               cloudformation.String(fmt.Sprintf("%s-%s", project.Name, service.Name)),
+		IpcMode:              cloudformation.String(service.Ipc),
+		Memory:               cloudformation.String(mem),
+		NetworkMode:          cloudformation.String(ecsapi.NetworkModeAwsvpc), // FIXME could be set by service.NetworkMode, Fargate only supports network mode ‘awsvpc’.
+		PidMode:              cloudformation.String(service.Pid),
 		PlacementConstraints: toPlacementConstraints(service.Deploy),
 		ProxyConfiguration:   nil,
 		RequiresCompatibilities: []string{
@@ -211,12 +211,12 @@ func createSecretsSideCar(project *types.Project, service types.ServiceConfig, l
 	error) {
 	initContainerName := fmt.Sprintf("%s_Secrets_InitContainer", normalizeResourceName(service.Name))
 	secretsVolume := ecs.TaskDefinition_Volume{
-		Name: "secrets",
+		Name: cloudformation.String("secrets"),
 	}
 	secretsMount := ecs.TaskDefinition_MountPoint{
-		ContainerPath: "/run/secrets/",
-		ReadOnly:      true,
-		SourceVolume:  "secrets",
+		ContainerPath: cloudformation.String("/run/secrets/"),
+		ReadOnly:      cloudformation.Bool(true),
+		SourceVolume:  cloudformation.String("secrets"),
 	}
 
 	var (
@@ -255,13 +255,13 @@ func createSecretsSideCar(project *types.Project, service types.ServiceConfig, l
 		Name:             initContainerName,
 		Image:            secretsInitContainerImage,
 		Command:          []string{string(command)},
-		Essential:        false, // FIXME this will be ignored, see https://github.com/awslabs/goformation/issues/61#issuecomment-625139607
+		Essential:        cloudformation.Bool(false),
 		LogConfiguration: logConfiguration,
 		MountPoints: []ecs.TaskDefinition_MountPoint{
 			{
-				ContainerPath: "/run/secrets/",
-				ReadOnly:      false,
-				SourceVolume:  "secrets",
+				ContainerPath: cloudformation.String("/run/secrets/"),
+				ReadOnly:      cloudformation.Bool(false),
+				SourceVolume:  cloudformation.String("secrets"),
 			},
 		},
 		Secrets: taskSecrets,
@@ -304,15 +304,15 @@ func createEnvironment(project *types.Project, service types.ServiceConfig) ([]e
 			value = *v
 		}
 		pairs = append(pairs, ecs.TaskDefinition_KeyValuePair{
-			Name:  name,
-			Value: value,
+			Name:  cloudformation.String(name),
+			Value: cloudformation.String(value),
 		})
 	}
 
 	//order env keys for idempotence between calls
 	//to avoid unnecessary resource recreations on CloudFormation
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
+		return cloudformation.StringValue(pairs[i].Name) < cloudformation.StringValue(pairs[j].Name)
 	})
 
 	return pairs, nil
@@ -342,8 +342,8 @@ func toSystemControls(sysctls types.Mapping) []ecs.TaskDefinition_SystemControl 
 	sys := []ecs.TaskDefinition_SystemControl{}
 	for k, v := range sysctls {
 		sys = append(sys, ecs.TaskDefinition_SystemControl{
-			Namespace: k,
-			Value:     v,
+			Namespace: cloudformation.String(k),
+			Value:     cloudformation.String(v),
 		})
 	}
 	return sys
@@ -449,7 +449,7 @@ func toPlacementConstraints(deploy *types.DeployConfig) []ecs.TaskDefinition_Tas
 	pl := []ecs.TaskDefinition_TaskDefinitionPlacementConstraint{}
 	for _, c := range deploy.Placement.Constraints {
 		pl = append(pl, ecs.TaskDefinition_TaskDefinitionPlacementConstraint{
-			Expression: c,
+			Expression: cloudformation.String(c),
 			Type:       "",
 		})
 	}
@@ -463,9 +463,9 @@ func toPortMappings(ports []types.ServicePortConfig) []ecs.TaskDefinition_PortMa
 	m := []ecs.TaskDefinition_PortMapping{}
 	for _, p := range ports {
 		m = append(m, ecs.TaskDefinition_PortMapping{
-			ContainerPort: int(p.Target),
-			HostPort:      int(p.Published),
-			Protocol:      p.Protocol,
+			ContainerPort: cloudformation.Int(int(p.Target)),
+			HostPort:      cloudformation.Int(int(p.Published)),
+			Protocol:      cloudformation.String(p.Protocol),
 		})
 	}
 	return m
@@ -490,10 +490,10 @@ func toLinuxParameters(service types.ServiceConfig) *ecs.TaskDefinition_LinuxPar
 	return &ecs.TaskDefinition_LinuxParameters{
 		Capabilities:       toKernelCapabilities(service.CapAdd, service.CapDrop),
 		Devices:            nil,
-		InitProcessEnabled: service.Init != nil && *service.Init,
-		MaxSwap:            0,
+		InitProcessEnabled: cloudformation.Bool(service.Init != nil && *service.Init),
+		MaxSwap:            cloudformation.Int(0),
 		// FIXME SharedMemorySize:   service.ShmSize,
-		Swappiness: 0,
+		Swappiness: cloudformation.Int(0),
 		Tmpfs:      toTmpfs(service.Tmpfs),
 	}
 }
@@ -505,7 +505,7 @@ func toTmpfs(tmpfs types.StringList) []ecs.TaskDefinition_Tmpfs {
 	o := []ecs.TaskDefinition_Tmpfs{}
 	for _, path := range tmpfs {
 		o = append(o, ecs.TaskDefinition_Tmpfs{
-			ContainerPath: path,
+			ContainerPath: cloudformation.String(path),
 			Size:          100, // size is required on ECS, unlimited by the compose spec
 		})
 	}
@@ -533,10 +533,10 @@ func toHealthCheck(check *types.HealthCheckConfig) *ecs.TaskDefinition_HealthChe
 	}
 	return &ecs.TaskDefinition_HealthCheck{
 		Command:     check.Test,
-		Interval:    durationToInt(check.Interval),
-		Retries:     retries,
-		StartPeriod: durationToInt(check.StartPeriod),
-		Timeout:     durationToInt(check.Timeout),
+		Interval:    cloudformation.Int(durationToInt(check.Interval)),
+		Retries:     cloudformation.Int(retries),
+		StartPeriod: cloudformation.Int(durationToInt(check.StartPeriod)),
+		Timeout:     cloudformation.Int(durationToInt(check.Timeout)),
 	}
 }
 
@@ -556,8 +556,8 @@ func toHostEntryPtr(hosts types.HostsList) []ecs.TaskDefinition_HostEntry {
 	for _, h := range hosts {
 		parts := strings.SplitN(h, ":", 2) // FIXME this should be handled by compose-go
 		e = append(e, ecs.TaskDefinition_HostEntry{
-			Hostname:  parts[0],
-			IpAddress: parts[1],
+			Hostname:  cloudformation.String(parts[0]),
+			IpAddress: cloudformation.String(parts[1]),
 		})
 	}
 	return e
@@ -565,7 +565,7 @@ func toHostEntryPtr(hosts types.HostsList) []ecs.TaskDefinition_HostEntry {
 
 func getRepoCredentials(service types.ServiceConfig) *ecs.TaskDefinition_RepositoryCredentials {
 	if value, ok := service.Extensions[extensionPullCredentials]; ok {
-		return &ecs.TaskDefinition_RepositoryCredentials{CredentialsParameter: value.(string)}
+		return &ecs.TaskDefinition_RepositoryCredentials{CredentialsParameter: cloudformation.String(value.(string))}
 	}
 	return nil
 }

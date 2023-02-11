@@ -26,14 +26,14 @@ import (
 	ecsapi "github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	cloudmapapi "github.com/aws/aws-sdk-go/service/servicediscovery"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/ec2"
-	"github.com/awslabs/goformation/v4/cloudformation/ecs"
-	"github.com/awslabs/goformation/v4/cloudformation/elasticloadbalancingv2"
-	"github.com/awslabs/goformation/v4/cloudformation/iam"
-	"github.com/awslabs/goformation/v4/cloudformation/logs"
-	"github.com/awslabs/goformation/v4/cloudformation/secretsmanager"
-	cloudmap "github.com/awslabs/goformation/v4/cloudformation/servicediscovery"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/ec2"
+	"github.com/awslabs/goformation/v7/cloudformation/ecs"
+	"github.com/awslabs/goformation/v7/cloudformation/elasticloadbalancingv2"
+	"github.com/awslabs/goformation/v7/cloudformation/iam"
+	"github.com/awslabs/goformation/v7/cloudformation/logs"
+	"github.com/awslabs/goformation/v7/cloudformation/secretsmanager"
+	cloudmap "github.com/awslabs/goformation/v7/cloudformation/servicediscovery"
 	"github.com/cnabio/cnab-to-oci/remotes"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/distribution/distribution/v3/reference"
@@ -183,9 +183,9 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 	if err != nil {
 		return err
 	}
-	definition.ExecutionRoleArn = cloudformation.Ref(taskExecutionRole)
+	definition.ExecutionRoleArn = cloudformation.RefPtr(taskExecutionRole)
 	if taskRole != "" {
-		definition.TaskRoleArn = cloudformation.Ref(taskRole)
+		definition.TaskRoleArn = cloudformation.RefPtr(taskRole)
 	}
 
 	taskDefinition := fmt.Sprintf("%sTaskDefinition", normalizeResourceName(service.Name))
@@ -212,9 +212,9 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		listenerName := b.createListener(service, port, template, targetGroupName, resources.loadBalancer, protocol)
 		dependsOn = append(dependsOn, listenerName)
 		serviceLB = append(serviceLB, ecs.Service_LoadBalancer{
-			ContainerName:  service.Name,
-			ContainerPort:  int(port.Target),
-			TargetGroupArn: cloudformation.Ref(targetGroupName),
+			ContainerName:  cloudformation.String(service.Name),
+			ContainerPort:  cloudformation.Int(int(port.Target)),
+			TargetGroupArn: cloudformation.RefPtr(targetGroupName),
 		})
 	}
 
@@ -247,31 +247,31 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 
 	template.Resources[serviceResourceName(service.Name)] = &ecs.Service{
 		AWSCloudFormationDependsOn: dependsOn,
-		Cluster:                    resources.cluster.ARN(),
-		DesiredCount:               desiredCount,
+		Cluster:                    cloudformation.String(resources.cluster.ARN()),
+		DesiredCount:               cloudformation.Int(desiredCount),
 		DeploymentController: &ecs.Service_DeploymentController{
-			Type: ecsapi.DeploymentControllerTypeEcs,
+			Type: cloudformation.String(ecsapi.DeploymentControllerTypeEcs),
 		},
 		DeploymentConfiguration: &ecs.Service_DeploymentConfiguration{
-			MaximumPercent:        maxPercent,
-			MinimumHealthyPercent: minPercent,
+			MaximumPercent:        cloudformation.Int(maxPercent),
+			MinimumHealthyPercent: cloudformation.Int(minPercent),
 		},
-		LaunchType: launchType,
+		LaunchType: cloudformation.String(launchType),
 		// TODO we miss support for https://github.com/aws/containers-roadmap/issues/631 to select a capacity provider
 		LoadBalancers: serviceLB,
 		NetworkConfiguration: &ecs.Service_NetworkConfiguration{
 			AwsvpcConfiguration: &ecs.Service_AwsVpcConfiguration{
-				AssignPublicIp: assignPublicIP,
+				AssignPublicIp: cloudformation.String(assignPublicIP),
 				SecurityGroups: resources.serviceSecurityGroups(service),
 				Subnets:        resources.subnetsIDs(),
 			},
 		},
-		PlatformVersion:    platformVersion,
-		PropagateTags:      ecsapi.PropagateTagsService,
-		SchedulingStrategy: ecsapi.SchedulingStrategyReplica,
+		PlatformVersion:    cloudformation.String(platformVersion),
+		PropagateTags:      cloudformation.String(ecsapi.PropagateTagsService),
+		SchedulingStrategy: cloudformation.String(ecsapi.SchedulingStrategyReplica),
 		ServiceRegistries:  []ecs.Service_ServiceRegistry{serviceRegistry},
 		Tags:               serviceTags(project, service),
-		TaskDefinition:     cloudformation.Ref(normalizeResourceName(taskDefinition)),
+		TaskDefinition:     cloudformation.RefPtr(normalizeResourceName(taskDefinition)),
 	}
 	return nil
 }
@@ -285,12 +285,12 @@ func (b *ecsAPIService) createIngress(service types.ServiceConfig, net string, p
 	}
 	ingress := fmt.Sprintf("%s%dIngress", normalizeResourceName(net), port.Target)
 	template.Resources[ingress] = &ec2.SecurityGroupIngress{
-		CidrIp:      "0.0.0.0/0",
-		Description: fmt.Sprintf("%s:%d/%s on %s network", service.Name, port.Target, port.Protocol, net),
-		GroupId:     resources.securityGroups[net],
-		FromPort:    int(port.Target),
+		CidrIp:      cloudformation.String("0.0.0.0/0"),
+		Description: cloudformation.String(fmt.Sprintf("%s:%d/%s on %s network", service.Name, port.Target, port.Protocol, net)),
+		GroupId:     cloudformation.String(resources.securityGroups[net]),
+		FromPort:    cloudformation.Int(int(port.Target)),
 		IpProtocol:  protocol,
-		ToPort:      int(port.Target),
+		ToPort:      cloudformation.Int(int(port.Target)),
 	}
 }
 
@@ -305,8 +305,8 @@ func (b *ecsAPIService) createSecret(project *types.Project, name string, s type
 
 	resource := fmt.Sprintf("%sSecret", normalizeResourceName(s.Name))
 	template.Resources[resource] = &secretsmanager.Secret{
-		Description:  fmt.Sprintf("Secret %s", s.Name),
-		SecretString: string(sensitiveData),
+		Description:  cloudformation.String(fmt.Sprintf("Secret %s", s.Name)),
+		SecretString: cloudformation.String(string(sensitiveData)),
 		Tags:         projectTags(project),
 	}
 	s.Name = cloudformation.Ref(resource)
@@ -321,8 +321,8 @@ func (b *ecsAPIService) createLogGroup(project *types.Project, template *cloudfo
 	}
 	logGroup := fmt.Sprintf("/docker-compose/%s", project.Name)
 	template.Resources["LogGroup"] = &logs.LogGroup{
-		LogGroupName:    logGroup,
-		RetentionInDays: retention,
+		LogGroupName:    cloudformation.String(logGroup),
+		RetentionInDays: cloudformation.Int(retention),
 	}
 }
 
@@ -383,7 +383,7 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 				ForwardConfig: &elasticloadbalancingv2.Listener_ForwardConfig{
 					TargetGroups: []elasticloadbalancingv2.Listener_TargetGroupTuple{
 						{
-							TargetGroupArn: cloudformation.Ref(targetGroupName),
+							TargetGroupArn: cloudformation.RefPtr(targetGroupName),
 						},
 					},
 				},
@@ -391,8 +391,8 @@ func (b *ecsAPIService) createListener(service types.ServiceConfig, port types.S
 			},
 		},
 		LoadBalancerArn: loadBalancer.ARN(),
-		Protocol:        protocol,
-		Port:            int(port.Target),
+		Protocol:        cloudformation.String(protocol),
+		Port:            cloudformation.Int(int(port.Target)),
 	}
 	return listenerName
 }
@@ -405,11 +405,11 @@ func (b *ecsAPIService) createTargetGroup(project *types.Project, service types.
 		port.Published,
 	)
 	template.Resources[targetGroupName] = &elasticloadbalancingv2.TargetGroup{
-		Port:       int(port.Target),
-		Protocol:   protocol,
+		Port:       cloudformation.Int(int(port.Target)),
+		Protocol:   cloudformation.String(protocol),
 		Tags:       projectTags(project),
-		TargetType: elbv2.TargetTypeEnumIp,
-		VpcId:      vpc,
+		TargetType: cloudformation.String(elbv2.TargetTypeEnumIp),
+		VpcId:      cloudformation.String(vpc),
 	}
 	return targetGroupName
 }
@@ -417,17 +417,17 @@ func (b *ecsAPIService) createTargetGroup(project *types.Project, service types.
 func (b *ecsAPIService) createServiceRegistry(service types.ServiceConfig, template *cloudformation.Template, healthCheck *cloudmap.Service_HealthCheckConfig) ecs.Service_ServiceRegistry {
 	serviceRegistration := fmt.Sprintf("%sServiceDiscoveryEntry", normalizeResourceName(service.Name))
 	serviceRegistry := ecs.Service_ServiceRegistry{
-		RegistryArn: cloudformation.GetAtt(serviceRegistration, "Arn"),
+		RegistryArn: cloudformation.GetAttPtr(serviceRegistration, "Arn"),
 	}
 
 	template.Resources[serviceRegistration] = &cloudmap.Service{
-		Description:       fmt.Sprintf("%q service discovery entry in Cloud Map", service.Name),
+		Description:       cloudformation.String(fmt.Sprintf("%q service discovery entry in Cloud Map", service.Name)),
 		HealthCheckConfig: healthCheck,
 		HealthCheckCustomConfig: &cloudmap.Service_HealthCheckCustomConfig{
-			FailureThreshold: 1,
+			FailureThreshold: cloudformation.Float64(1),
 		},
-		Name:        service.Name,
-		NamespaceId: cloudformation.Ref("CloudMap"),
+		Name:        cloudformation.String(service.Name),
+		NamespaceId: cloudformation.RefPtr("CloudMap"),
 		DnsConfig: &cloudmap.Service_DnsConfig{
 			DnsRecords: []cloudmap.Service_DnsRecord{
 				{
@@ -435,7 +435,7 @@ func (b *ecsAPIService) createServiceRegistry(service types.ServiceConfig, templ
 					Type: cloudmapapi.RecordTypeA,
 				},
 			},
-			RoutingPolicy: cloudmapapi.RoutingPolicyMultivalue,
+			RoutingPolicy: cloudformation.String(cloudmapapi.RoutingPolicyMultivalue),
 		},
 	}
 	return serviceRegistry
@@ -498,7 +498,7 @@ func (b *ecsAPIService) createTaskRole(project *types.Project, service types.Ser
 
 func (b *ecsAPIService) createCloudMap(project *types.Project, template *cloudformation.Template, vpc string) {
 	template.Resources["CloudMap"] = &cloudmap.PrivateDnsNamespace{
-		Description: fmt.Sprintf("Service Map for Docker Compose project %s", project.Name),
+		Description: cloudformation.String(fmt.Sprintf("Service Map for Docker Compose project %s", project.Name)),
 		Name:        fmt.Sprintf("%s.local", project.Name),
 		Vpc:         vpc,
 	}

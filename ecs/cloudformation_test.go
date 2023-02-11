@@ -25,13 +25,13 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/ec2"
-	"github.com/awslabs/goformation/v4/cloudformation/ecs"
-	"github.com/awslabs/goformation/v4/cloudformation/efs"
-	"github.com/awslabs/goformation/v4/cloudformation/elasticloadbalancingv2"
-	"github.com/awslabs/goformation/v4/cloudformation/iam"
-	"github.com/awslabs/goformation/v4/cloudformation/logs"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/ec2"
+	"github.com/awslabs/goformation/v7/cloudformation/ecs"
+	"github.com/awslabs/goformation/v7/cloudformation/efs"
+	"github.com/awslabs/goformation/v7/cloudformation/elasticloadbalancingv2"
+	"github.com/awslabs/goformation/v7/cloudformation/iam"
+	"github.com/awslabs/goformation/v7/cloudformation/logs"
 	"github.com/compose-spec/compose-go/loader"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/compose/v2/pkg/api"
@@ -71,7 +71,7 @@ x-aws-logs_retention: 10
 	}
 
 	logGroup := template.Resources["LogGroup"].(*logs.LogGroup)
-	assert.Equal(t, logGroup.RetentionInDays, 10)
+	assert.Equal(t, cloudformation.IntValue(logGroup.RetentionInDays), 10)
 }
 
 func TestEnvFile(t *testing.T) {
@@ -86,8 +86,8 @@ services:
 	env := getMainContainer(def, t).Environment
 	var found bool
 	for _, pair := range env {
-		if pair.Name == "FOO" {
-			assert.Equal(t, pair.Value, "BAR")
+		if cloudformation.StringValue(pair.Name) == "FOO" {
+			assert.Equal(t, cloudformation.StringValue(pair.Value), "BAR")
 			found = true
 		}
 	}
@@ -108,8 +108,8 @@ services:
 	env := getMainContainer(def, t).Environment
 	var found bool
 	for _, pair := range env {
-		if pair.Name == "FOO" {
-			assert.Equal(t, pair.Value, "ZOT")
+		if cloudformation.StringValue(pair.Name) == "FOO" {
+			assert.Equal(t, cloudformation.StringValue(pair.Value), "ZOT")
 			found = true
 		}
 	}
@@ -122,13 +122,13 @@ services:
   foo:
     image: hello_world
     deploy:
-      replicas: 4 
+      replicas: 4
       update_config:
         parallelism: 2
 `, nil, useDefaultVPC)
 	service := template.Resources["FooService"].(*ecs.Service)
-	assert.Check(t, service.DeploymentConfiguration.MaximumPercent == 150)
-	assert.Check(t, service.DeploymentConfiguration.MinimumHealthyPercent == 50)
+	assert.Check(t, cloudformation.IntValue(service.DeploymentConfiguration.MaximumPercent) == 150)
+	assert.Check(t, cloudformation.IntValue(service.DeploymentConfiguration.MinimumHealthyPercent) == 50)
 }
 
 func TestRollingUpdateExtension(t *testing.T) {
@@ -142,8 +142,8 @@ services:
         x-aws-max_percent: 125
 `, nil, useDefaultVPC)
 	service := template.Resources["FooService"].(*ecs.Service)
-	assert.Check(t, service.DeploymentConfiguration.MaximumPercent == 125)
-	assert.Check(t, service.DeploymentConfiguration.MinimumHealthyPercent == 25)
+	assert.Check(t, cloudformation.IntValue(service.DeploymentConfiguration.MaximumPercent) == 125)
+	assert.Check(t, cloudformation.IntValue(service.DeploymentConfiguration.MinimumHealthyPercent) == 25)
 }
 
 func TestRolePolicy(t *testing.T) {
@@ -187,7 +187,7 @@ networks:
 	i := template.Resources["FronttierNetworkIngress"]
 	assert.Check(t, i != nil)
 	ingress := *i.(*ec2.SecurityGroupIngress)
-	assert.Check(t, ingress.SourceSecurityGroupId == cloudformation.Ref("FronttierNetwork"))
+	assert.Check(t, cloudformation.StringValue(ingress.SourceSecurityGroupId) == cloudformation.Ref("FronttierNetwork"))
 
 }
 
@@ -212,8 +212,8 @@ func TestLoadBalancerTypeApplication(t *testing.T) {
 		lb := template.Resources["LoadBalancer"]
 		assert.Check(t, lb != nil)
 		loadBalancer := *lb.(*elasticloadbalancingv2.LoadBalancer)
-		assert.Check(t, len(loadBalancer.Name) <= 32)
-		assert.Check(t, loadBalancer.Type == elbv2.LoadBalancerTypeEnumApplication)
+		assert.Check(t, len(cloudformation.StringValue(loadBalancer.Name)) <= 32)
+		assert.Check(t, cloudformation.StringValue(loadBalancer.Type) == elbv2.LoadBalancerTypeEnumApplication)
 		assert.Check(t, len(loadBalancer.SecurityGroups) > 0)
 	}
 }
@@ -244,7 +244,7 @@ services:
 	s := template.Resources["TestService"]
 	assert.Check(t, s != nil)
 	service := *s.(*ecs.Service)
-	assert.Check(t, service.DesiredCount == 10)
+	assert.Check(t, cloudformation.IntValue(service.DesiredCount) == 10)
 }
 
 func TestTaskSizeConvert(t *testing.T) {
@@ -254,8 +254,8 @@ services:
     image: nginx
 `, nil, useDefaultVPC)
 	def := template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
-	assert.Equal(t, def.Cpu, "256")
-	assert.Equal(t, def.Memory, "512")
+	assert.Equal(t, cloudformation.StringValue(def.Cpu), "256")
+	assert.Equal(t, cloudformation.StringValue(def.Memory), "512")
 
 	template = convertYaml(t, `
 services:
@@ -268,8 +268,8 @@ services:
           memory: 2048M
 `, nil, useDefaultVPC)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
-	assert.Equal(t, def.Cpu, "512")
-	assert.Equal(t, def.Memory, "2048")
+	assert.Equal(t, cloudformation.StringValue(def.Cpu), "512")
+	assert.Equal(t, cloudformation.StringValue(def.Memory), "2048")
 
 	template = convertYaml(t, `
 services:
@@ -282,8 +282,8 @@ services:
           memory: 8192M
 `, nil, useDefaultVPC)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
-	assert.Equal(t, def.Cpu, "4096")
-	assert.Equal(t, def.Memory, "8192")
+	assert.Equal(t, cloudformation.StringValue(def.Cpu), "4096")
+	assert.Equal(t, cloudformation.StringValue(def.Memory), "8192")
 
 	template = convertYaml(t, `
 services:
@@ -295,14 +295,14 @@ services:
           cpus: '4'
           memory: 792Mb
         reservations:
-          generic_resources: 
+          generic_resources:
             - discrete_resource_spec:
                 kind: gpus
                 value: 2
 `, nil, useDefaultVPC, useGPU)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
-	assert.Equal(t, def.Cpu, "4000")
-	assert.Equal(t, def.Memory, "792")
+	assert.Equal(t, cloudformation.StringValue(def.Cpu), "4000")
+	assert.Equal(t, cloudformation.StringValue(def.Memory), "792")
 
 	template = convertYaml(t, `
 services:
@@ -311,14 +311,14 @@ services:
     deploy:
       resources:
         reservations:
-          generic_resources: 
+          generic_resources:
             - discrete_resource_spec:
                 kind: gpus
                 value: 2
 `, nil, useDefaultVPC, useGPU)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
-	assert.Equal(t, def.Cpu, "")
-	assert.Equal(t, def.Memory, "")
+	assert.Equal(t, cloudformation.StringValue(def.Cpu), "")
+	assert.Equal(t, cloudformation.StringValue(def.Memory), "")
 
 	template = convertYaml(t, `
 services:
@@ -327,13 +327,13 @@ services:
     deploy:
       resources:
         reservations:
-          devices: 
+          devices:
             - capabilities: [gpu]
               count: 2
 `, nil, useDefaultVPC, useGPU)
 	def = template.Resources["TestTaskDefinition"].(*ecs.TaskDefinition)
-	assert.Equal(t, def.Cpu, "")
-	assert.Equal(t, def.Memory, "")
+	assert.Equal(t, cloudformation.StringValue(def.Cpu), "")
+	assert.Equal(t, cloudformation.StringValue(def.Memory), "")
 }
 
 func TestLoadBalancerTypeNetwork(t *testing.T) {
@@ -348,7 +348,7 @@ services:
 	lb := template.Resources["LoadBalancer"]
 	assert.Check(t, lb != nil)
 	loadBalancer := *lb.(*elasticloadbalancingv2.LoadBalancer)
-	assert.Check(t, loadBalancer.Type == elbv2.LoadBalancerTypeEnumNetwork)
+	assert.Check(t, cloudformation.StringValue(loadBalancer.Type) == elbv2.LoadBalancerTypeEnumNetwork)
 }
 
 func TestUseExternalNetwork(t *testing.T) {
@@ -397,7 +397,7 @@ services:
   test:
     image: nginx
 volumes:
-  db-data: 
+  db-data:
     driver_opts:
         backup_policy: ENABLED
         lifecycle_policy: AFTER_30_DAYS
@@ -412,12 +412,12 @@ volumes:
 	})
 	n := volumeResourceName("db-data")
 	f := template.Resources[n].(*efs.FileSystem)
-	assert.Check(t, f != nil)                                               //nolint:staticcheck
-	assert.Equal(t, f.BackupPolicy.Status, "ENABLED")                       //nolint:staticcheck
-	assert.Equal(t, f.LifecyclePolicies[0].TransitionToIA, "AFTER_30_DAYS") //nolint:staticcheck
-	assert.Equal(t, f.PerformanceMode, "maxIO")                             //nolint:staticcheck
-	assert.Equal(t, f.ThroughputMode, "provisioned")                        //nolint:staticcheck
-	assert.Equal(t, f.ProvisionedThroughputInMibps, float64(1024))          //nolint:staticcheck
+	assert.Check(t, f != nil)                                                                           //nolint:staticcheck
+	assert.Equal(t, f.BackupPolicy.Status, "ENABLED")                                                   //nolint:staticcheck
+	assert.Equal(t, cloudformation.StringValue(f.LifecyclePolicies[0].TransitionToIA), "AFTER_30_DAYS") //nolint:staticcheck
+	assert.Equal(t, cloudformation.StringValue(f.PerformanceMode), "maxIO")                             //nolint:staticcheck
+	assert.Equal(t, cloudformation.StringValue(f.ThroughputMode), "provisioned")                        //nolint:staticcheck
+	assert.Equal(t, cloudformation.Float64Value(f.ProvisionedThroughputInMibps), float64(1024))         //nolint:staticcheck
 
 	s := template.Resources["DbdataNFSMountTargetOnSubnet1"].(*efs.MountTarget)
 	assert.Check(t, s != nil)                              //nolint:staticcheck
@@ -507,17 +507,17 @@ services:
 	assert.Equal(t, container.Command[0], "command")
 	assert.Equal(t, container.EntryPoint[0], "entrypoint")
 	assert.Equal(t, get(container.Environment, "FOO"), "BAR")
-	assert.Check(t, container.LinuxParameters.InitProcessEnabled)
+	assert.Check(t, cloudformation.BoolValue(container.LinuxParameters.InitProcessEnabled))
 	assert.Equal(t, container.LinuxParameters.Capabilities.Add[0], "SYS_PTRACE")
 	assert.Equal(t, container.LinuxParameters.Capabilities.Drop[0], "SYSLOG")
-	assert.Equal(t, container.User, "user")
-	assert.Equal(t, container.WorkingDirectory, "working_dir")
+	assert.Equal(t, cloudformation.StringValue(container.User), "user")
+	assert.Equal(t, cloudformation.StringValue(container.WorkingDirectory), "working_dir")
 }
 
 func get(l []ecs.TaskDefinition_KeyValuePair, name string) string {
 	for _, e := range l {
-		if e.Name == name {
-			return e.Value
+		if cloudformation.StringValue(e.Name) == name {
+			return cloudformation.StringValue(e.Value)
 		}
 	}
 	return ""
@@ -618,7 +618,7 @@ func loadConfig(t *testing.T, yaml string) *types.Project {
 
 func getMainContainer(def *ecs.TaskDefinition, t *testing.T) ecs.TaskDefinition_ContainerDefinition {
 	for _, c := range def.ContainerDefinitions {
-		if c.Essential {
+		if cloudformation.BoolValue(c.Essential) {
 			return c
 		}
 	}

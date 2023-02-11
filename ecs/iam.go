@@ -19,7 +19,7 @@ package ecs
 import (
 	"fmt"
 
-	"github.com/awslabs/goformation/v4/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation"
 )
 
 const (

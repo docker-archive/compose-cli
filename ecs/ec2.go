@@ -22,10 +22,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/autoscaling"
-	"github.com/awslabs/goformation/v4/cloudformation/ecs"
-	"github.com/awslabs/goformation/v4/cloudformation/iam"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/autoscaling"
+	"github.com/awslabs/goformation/v7/cloudformation/ecs"
+	"github.com/awslabs/goformation/v7/cloudformation/iam"
 	"github.com/compose-spec/compose-go/types"
 )
 
@@ -73,14 +73,14 @@ func (b *ecsAPIService) createCapacityProvider(ctx context.Context, project *typ
 		AutoScalingGroupProvider: &ecs.CapacityProvider_AutoScalingGroupProvider{
 			AutoScalingGroupArn: cloudformation.Ref("AutoscalingGroup"),
 			ManagedScaling: &ecs.CapacityProvider_ManagedScaling{
-				TargetCapacity: 100,
+				TargetCapacity: cloudformation.Int(100),
 			},
 		},
 		Tags: projectTags(project),
 	}
 
 	template.Resources["AutoscalingGroup"] = &autoscaling.AutoScalingGroup{
-		LaunchConfigurationName: cloudformation.Ref("LaunchConfiguration"),
+		LaunchConfigurationName: cloudformation.RefPtr("LaunchConfiguration"),
 		MaxSize:                 "10", //TODO
 		MinSize:                 "1",
 		VPCZoneIdentifier:       resources.subnetsIDs(),
@@ -93,8 +93,8 @@ func (b *ecsAPIService) createCapacityProvider(ctx context.Context, project *typ
 		ImageId:            ami,
 		InstanceType:       machineType,
 		SecurityGroups:     resources.allSecurityGroups(),
-		IamInstanceProfile: cloudformation.Ref("EC2InstanceProfile"),
-		UserData:           userData,
+		IamInstanceProfile: cloudformation.RefPtr("EC2InstanceProfile"),
+		UserData:           cloudformation.String(userData),
 	}
 
 	template.Resources["EC2InstanceProfile"] = &iam.InstanceProfile{

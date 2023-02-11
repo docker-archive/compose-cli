@@ -24,11 +24,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/ec2"
-	"github.com/awslabs/goformation/v4/cloudformation/ecs"
-	"github.com/awslabs/goformation/v4/cloudformation/efs"
-	"github.com/awslabs/goformation/v4/cloudformation/elasticloadbalancingv2"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/ec2"
+	"github.com/awslabs/goformation/v7/cloudformation/ecs"
+	"github.com/awslabs/goformation/v7/cloudformation/efs"
+	"github.com/awslabs/goformation/v7/cloudformation/elasticloadbalancingv2"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/pkg/errors"
@@ -322,7 +322,7 @@ func (b *ecsAPIService) ensureCluster(r *awsResources, project *types.Project, t
 		return
 	}
 	template.Resources["Cluster"] = &ecs.Cluster{
-		ClusterName: project.Name,
+		ClusterName: cloudformation.String(project.Name),
 		Tags:        projectTags(project),
 	}
 	r.cluster = cloudformationResource{logicalName: "Cluster"}
@@ -339,16 +339,16 @@ func (b *ecsAPIService) ensureNetworks(r *awsResources, project *types.Project, 
 		securityGroup := networkResourceName(name)
 		template.Resources[securityGroup] = &ec2.SecurityGroup{
 			GroupDescription: fmt.Sprintf("%s Security Group for %s network", project.Name, name),
-			VpcId:            r.vpc,
+			VpcId:            cloudformation.String(r.vpc),
 			Tags:             networkTags(project, net),
 		}
 
 		ingress := securityGroup + "Ingress"
 		template.Resources[ingress] = &ec2.SecurityGroupIngress{
-			Description:           fmt.Sprintf("Allow communication within network %s", name),
+			Description:           cloudformation.String(fmt.Sprintf("Allow communication within network %s", name)),
 			IpProtocol:            allProtocols,
-			GroupId:               cloudformation.Ref(securityGroup),
-			SourceSecurityGroupId: cloudformation.Ref(securityGroup),
+			GroupId:               cloudformation.RefPtr(securityGroup),
+			SourceSecurityGroupId: cloudformation.RefPtr(securityGroup),
 		}
 
 		r.securityGroups[name] = cloudformation.Ref(securityGroup)
@@ -371,7 +371,7 @@ func (b *ecsAPIService) ensureVolumes(r *awsResources, project *types.Project, t
 		var lifecyclePolicies []efs.FileSystem_LifecyclePolicy
 		if policy, ok := volume.DriverOpts["lifecycle_policy"]; ok {
 			lifecyclePolicies = append(lifecyclePolicies, efs.FileSystem_LifecyclePolicy{
-				TransitionToIA: strings.TrimSpace(policy),
+				TransitionToIA: cloudformation.String(strings.TrimSpace(policy)),
 			})
 		}
 
@@ -391,7 +391,7 @@ func (b *ecsAPIService) ensureVolumes(r *awsResources, project *types.Project, t
 		n := volumeResourceName(name)
 		template.Resources[n] = &efs.FileSystem{
 			BackupPolicy:     backupPolicy,
-			Encrypted:        true,
+			Encrypted:        cloudformation.Bool(true),
 			FileSystemPolicy: nil,
 			FileSystemTags: []efs.FileSystem_ElasticFileSystemTag{
 				{
@@ -407,11 +407,11 @@ func (b *ecsAPIService) ensureVolumes(r *awsResources, project *types.Project, t
 					Value: volume.Name,
 				},
 			},
-			KmsKeyId:                        kmsKeyID,
+			KmsKeyId:                        cloudformation.String(kmsKeyID),
 			LifecyclePolicies:               lifecyclePolicies,
-			PerformanceMode:                 performanceMode,
-			ProvisionedThroughputInMibps:    provisionedThroughputInMibps,
-			ThroughputMode:                  throughputMode,
+			PerformanceMode:                 cloudformation.String(performanceMode),
+			ProvisionedThroughputInMibps:    cloudformation.Float64(provisionedThroughputInMibps),
+			ThroughputMode:                  cloudformation.String(throughputMode),
 			AWSCloudFormationDeletionPolicy: "Retain",
 		}
 		r.filesystems[name] = cloudformationResource{logicalName: n}
@@ -443,17 +443,17 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 		loadBalancerAttributes = append(
 			loadBalancerAttributes,
 			elasticloadbalancingv2.LoadBalancer_LoadBalancerAttribute{
-				Key:   "load_balancing.cross_zone.enabled",
-				Value: "true",
+				Key:   cloudformation.String("load_balancing.cross_zone.enabled"),
+				Value: cloudformation.String("true"),
 			})
 	}
 
 	template.Resources["LoadBalancer"] = &elasticloadbalancingv2.LoadBalancer{
-		Scheme:                 elbv2.LoadBalancerSchemeEnumInternetFacing,
+		Scheme:                 cloudformation.String(elbv2.LoadBalancerSchemeEnumInternetFacing),
 		SecurityGroups:         securityGroups,
 		Subnets:                r.subnetsIDs(),
 		Tags:                   projectTags(project),
-		Type:                   balancerType,
+		Type:                   cloudformation.String(balancerType),
 		LoadBalancerAttributes: loadBalancerAttributes,
 	}
 	r.loadBalancer = cloudformationARNResource{

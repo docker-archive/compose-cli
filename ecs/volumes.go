@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/efs"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/efs"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/pkg/errors"
@@ -62,16 +62,16 @@ func (b *ecsAPIService) createAccessPoints(project *types.Project, r awsResource
 		ap := efs.AccessPoint{
 			AccessPointTags: []efs.AccessPoint_AccessPointTag{
 				{
-					Key:   api.ProjectLabel,
-					Value: project.Name,
+					Key:   cloudformation.String(api.ProjectLabel),
+					Value: cloudformation.String(project.Name),
 				},
 				{
-					Key:   api.VolumeLabel,
-					Value: name,
+					Key:   cloudformation.String(api.VolumeLabel),
+					Value: cloudformation.String(name),
 				},
 				{
-					Key:   "Name",
-					Value: volume.Name,
+					Key:   cloudformation.String("Name"),
+					Value: cloudformation.String(volume.Name),
 				},
 			},
 			FileSystemId: r.filesystems[name].ID(),
@@ -85,7 +85,7 @@ func (b *ecsAPIService) createAccessPoints(project *types.Project, r awsResource
 		}
 		if path != "" {
 			root := efs.AccessPoint_RootDirectory{
-				Path: path,
+				Path: cloudformation.String(path),
 			}
 			ap.RootDirectory = &root
 			if uid != "" {

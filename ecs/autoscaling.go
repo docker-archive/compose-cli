@@ -21,9 +21,9 @@ import (
 	"fmt"
 
 	applicationautoscaling2 "github.com/aws/aws-sdk-go/service/applicationautoscaling"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/awslabs/goformation/v4/cloudformation/applicationautoscaling"
-	"github.com/awslabs/goformation/v4/cloudformation/iam"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"github.com/awslabs/goformation/v7/cloudformation/applicationautoscaling"
+	"github.com/awslabs/goformation/v7/cloudformation/iam"
 	"github.com/compose-spec/compose-go/types"
 )
 
@@ -63,7 +63,7 @@ func (b *ecsAPIService) createAutoscalingPolicy(project *types.Project, resource
 	role := fmt.Sprintf("%sAutoScalingRole", normalizeResourceName(service.Name))
 	template.Resources[role] = &iam.Role{
 		AssumeRolePolicyDocument: ausocalingAssumeRolePolicyDocument,
-		Path:                     "/",
+		Path:                     cloudformation.String("/"),
 		Policies: []iam.Role_Policy{
 			{
 				PolicyDocument: &PolicyDocument{
@@ -113,14 +113,14 @@ func (b *ecsAPIService) createAutoscalingPolicy(project *types.Project, resource
 	template.Resources[policy] = &applicationautoscaling.ScalingPolicy{
 		PolicyType:                     "TargetTrackingScaling",
 		PolicyName:                     policy,
-		ScalingTargetId:                cloudformation.Ref(target),
+		ScalingTargetId:                cloudformation.RefPtr(target),
 		StepScalingPolicyConfiguration: nil,
 		TargetTrackingScalingPolicyConfiguration: &applicationautoscaling.ScalingPolicy_TargetTrackingScalingPolicyConfiguration{
 			PredefinedMetricSpecification: &applicationautoscaling.ScalingPolicy_PredefinedMetricSpecification{
 				PredefinedMetricType: metric,
 			},
-			ScaleOutCooldown: 60,
-			ScaleInCooldown:  60,
+			ScaleOutCooldown: cloudformation.Int(60),
+			ScaleInCooldown:  cloudformation.Int(60),
 			TargetValue:      float64(targetPercent),
 		},
 	}

@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/sanathkr/go-yaml"
+	"github.com/awslabs/goformation/v7/cloudformation"
+	"gopkg.in/yaml.v3"
 )
 
 func marshall(template *cloudformation.Template, format string) ([]byte, error) {

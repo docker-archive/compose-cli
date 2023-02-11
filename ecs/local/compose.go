@@ -26,7 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/pkg/errors"
-	"github.com/sanathkr/go-yaml"
+	"gopkg.in/yaml.v3"
 
 	"github.com/docker/compose/v2/pkg/api"
 )

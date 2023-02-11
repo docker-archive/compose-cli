@@ -19,7 +19,7 @@ package ecs
 import (
 	"testing"
 
-	"github.com/awslabs/goformation/v4/cloudformation/autoscaling"
+	"github.com/awslabs/goformation/v7/cloudformation/autoscaling"
 	"gotest.tools/v3/assert"
 )
 
