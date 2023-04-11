@@ -386,3 +386,29 @@ func TestBuild(t *testing.T) {
 		})
 	}
 }
+
+func TestScout(t *testing.T) {
+	testCases := []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			name:     "scout",
+			args:     []string{"scout"},
+			expected: "scout",
+		},
+		{
+			name:     "scout - cves ",
+			args:     []string{"scout", "cves", "alpine"},
+			expected: "scout cves",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			result := GetCommand(testCase.args)
+			assert.Equal(t, testCase.expected, result)
+		})
+	}
+}
