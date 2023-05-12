@@ -17,6 +17,8 @@
 package aci
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
@@ -67,6 +69,7 @@ func init() {
 }
 
 func service() (backend.Service, error) {
+	fmt.Fprintln(os.Stderr, "Cloud integration is DEPRECATED. Read more on https://docs.docker.com/cloud/aci-integration/")
 	contextStore := store.Instance()
 	currentContext := apicontext.Current()
 	var aciContext store.AciContext
