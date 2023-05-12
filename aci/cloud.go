@@ -18,6 +18,8 @@ package aci
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 
@@ -47,6 +49,7 @@ func (cs *aciCloudService) Logout(ctx context.Context) error {
 }
 
 func (cs *aciCloudService) CreateContextData(ctx context.Context, params interface{}) (interface{}, string, error) {
+	fmt.Fprintln(os.Stderr, "Cloud integration is DEPRECATED. Read more on https://docs.docker.com/cloud/aci-integration/")
 	contextHelper := newContextCreateHelper()
 	createOpts := params.(ContextParams)
 	return contextHelper.createContextData(ctx, createOpts)

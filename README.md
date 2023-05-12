@@ -1,7 +1,15 @@
+## :warning: "Cloud Integrations" is DEPRECATED
+
+Compose CLI a.k.a "Cloud Integrations" has been deprecated. Critical security fixes only will be considered for this repository. Compose CLI will be considered End of Live on January 1st 2024.
+
+ECS user should consider using https://github.com/docker/compose-ecs
+
+
 # Docker Compose "Cloud Integrations"
 
 [![Actions Status](https://github.com/docker/compose-cli/workflows/Continuous%20integration/badge.svg)](https://github.com/docker/compose-cli/actions)
 [![Actions Status](https://github.com/docker/compose-cli/workflows/Windows%20CI/badge.svg)](https://github.com/docker/compose-cli/actions)
+
 
 This Compose CLI tool makes it easy to run Docker containers and Docker Compose applications in the cloud using either :
 - Amazon Elastic Container Service
