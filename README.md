@@ -1,8 +1,8 @@
-## :warning: "Cloud Integrations" is DEPRECATED
+## :warning: Retirement Date Pending
 
-Compose CLI a.k.a "Cloud Integrations" has been deprecated. Critical security fixes only will be considered for this repository. Compose CLI will be considered End of Live on January 1st 2024.
+Docker Compose's integration for ECS and ACI will be retired in November 2023. For now, our main priority in this repository are critical security fixes.
 
-ECS user should consider using https://github.com/docker/compose-ecs
+ECS users can consider using [compose-ecs](https://github.com/docker/compose-ecs).
 
 
 # Docker Compose "Cloud Integrations"

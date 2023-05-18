@@ -63,7 +63,7 @@ func init() {
 }
 
 func service() (backend.Service, error) {
-	fmt.Fprintln(os.Stderr, "Cloud integration is DEPRECATED. Read more on https://docs.docker.com/cloud/ecs-integration/")
+	fmt.Fprintln(os.Stderr, "Docker Compose's integration for ECS and ACI will be retired in November 2023. Learn more: https://docs.docker.com/go/compose-ecs-eol/")
 	contextStore := store.Instance()
 	currentContext := apicontext.Current()
 	var ecsContext store.EcsContext
@@ -157,7 +157,7 @@ func (a ecsCloudService) Logout(ctx context.Context) error {
 }
 
 func (a ecsCloudService) CreateContextData(ctx context.Context, params interface{}) (interface{}, string, error) {
-	fmt.Fprintln(os.Stderr, "Cloud integration is DEPRECATED. Read more on https://docs.docker.com/cloud/ecs-integration/")
+	fmt.Fprintln(os.Stderr, "Docker Compose's integration for ECS and ACI will be retired in November 2023. Learn more: https://docs.docker.com/go/compose-ecs-eol/")
 	contextHelper := newContextCreateHelper()
 	createOpts := params.(ContextParams)
 	return contextHelper.createContextData(ctx, createOpts)
