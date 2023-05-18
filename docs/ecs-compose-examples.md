@@ -3,9 +3,13 @@ title: ECS integration composefile examples
 description: Examples of ECS compose files
 keywords: Docker, Amazon, Integration, ECS, Compose, cli, deploy, cloud, sample
 ---
+
+> **Important**
+>
+> Docker Compose's integration for ECS and ACI is retiring in November 2023.
+{: .important}
+
 # Compose file samples - ECS specific
-
-
 
 ## Service
 
