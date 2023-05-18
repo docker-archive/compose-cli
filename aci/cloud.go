@@ -18,6 +18,8 @@ package aci
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 
@@ -47,6 +49,7 @@ func (cs *aciCloudService) Logout(ctx context.Context) error {
 }
 
 func (cs *aciCloudService) CreateContextData(ctx context.Context, params interface{}) (interface{}, string, error) {
+	fmt.Fprintln(os.Stderr, "Docker Compose's integration for ECS and ACI will be retired in November 2023. Learn more: https://docs.docker.com/go/compose-ecs-eol/")
 	contextHelper := newContextCreateHelper()
 	createOpts := params.(ContextParams)
 	return contextHelper.createContextData(ctx, createOpts)
