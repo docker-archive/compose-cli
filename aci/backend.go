@@ -17,9 +17,10 @@
 package aci
 
 import (
-	"fmt"
 	"os"
 	"strings"
+
+	"github.com/docker/compose-cli/utils"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -69,7 +70,7 @@ func init() {
 }
 
 func service() (backend.Service, error) {
-	fmt.Fprintln(os.Stderr, "Docker Compose's integration for ECS and ACI will be retired in November 2023. Learn more: https://docs.docker.com/go/compose-ecs-eol/")
+	utils.ShowDeprecationWarning(os.Stderr)
 	contextStore := store.Instance()
 	currentContext := apicontext.Current()
 	var aciContext store.AciContext
