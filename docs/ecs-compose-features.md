@@ -3,6 +3,12 @@ title: ECS integration Compose features
 description: Reference list of compose ECS features
 keywords: Docker, Amazon, Integration, ECS, Compose, cli, deploy, cloud
 ---
+
+> **Important**
+>
+> Docker Compose's integration for ECS and ACI is retiring in November 2023.
+{: .important}
+
 # Compose - Amazon ECS mapping
 
 This document outlines the conversion of an application defined in a Compose file to AWS resources.
