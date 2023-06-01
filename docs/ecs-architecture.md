@@ -3,6 +3,12 @@ title: ECS integration architecture
 description: Mapping of Docker compose entities to Amazon constructs
 keywords: Docker, Amazon, Integration, ECS, Compose, architecture, mapping
 ---
+
+> **Important**
+>
+> Docker Compose's integration for ECS and ACI is retiring in November 2023.
+{: .important}
+
 # Architecture
 
 ECS integration relies on CloudFormation to manage AWS resources as an atomic operation.
