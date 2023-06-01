@@ -68,6 +68,11 @@ func NewDockerCLIEvent(cmd CmdResult) *DockerCLIEvent {
 		subcommand = strings.Join(subcommandParts, "-")
 	}
 
+	cmdOrPlugin := cmdPath[1]
+	if cmdOrPlugin.plugin && subcommand == "" {
+		return nil
+	}
+
 	var usage bool
 	for _, arg := range cmd.Args {
 		// TODO(milas): also support `docker help build` syntax
@@ -81,7 +86,7 @@ func NewDockerCLIEvent(cmd CmdResult) *DockerCLIEvent {
 	}
 
 	event := &DockerCLIEvent{
-		Command:      cmdPath[1].name,
+		Command:      cmdOrPlugin.name,
 		Subcommand:   subcommand,
 		ExitCode:     int32(cmd.ExitCode),
 		Usage:        usage,
@@ -161,32 +166,6 @@ var cmdHierarchy = &cmdNode{
 						{name: "dryrun"},
 					},
 				},
-				{name: "build"},
-				{name: "config"},
-				{name: "convert"},
-				{name: "cp"},
-				{name: "create"},
-				{name: "down"},
-				{name: "events"},
-				{name: "exec"},
-				{name: "images"},
-				{name: "kill"},
-				{name: "logs"},
-				{name: "ls"},
-				{name: "pause"},
-				{name: "port"},
-				{name: "ps"},
-				{name: "pull"},
-				{name: "push"},
-				{name: "restart"},
-				{name: "rm"},
-				{name: "run"},
-				{name: "start"},
-				{name: "stop"},
-				{name: "top"},
-				{name: "unpause"},
-				{name: "up"},
-				{name: "version"},
 			},
 		},
 	},
