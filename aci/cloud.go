@@ -18,6 +18,9 @@ package aci
 
 import (
 	"context"
+	"os"
+
+	"github.com/docker/compose-cli/utils"
 
 	"github.com/pkg/errors"
 
@@ -47,6 +50,7 @@ func (cs *aciCloudService) Logout(ctx context.Context) error {
 }
 
 func (cs *aciCloudService) CreateContextData(ctx context.Context, params interface{}) (interface{}, string, error) {
+	utils.ShowDeprecationWarning(os.Stderr)
 	contextHelper := newContextCreateHelper()
 	createOpts := params.(ContextParams)
 	return contextHelper.createContextData(ctx, createOpts)

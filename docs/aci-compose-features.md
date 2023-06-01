@@ -4,6 +4,11 @@ description: Reference list of compose ACI features
 keywords: Docker, Azure, Integration, ACI, Compose, cli, deploy, cloud
 ---
 
+> **Important**
+>
+> Docker Compose's integration for ECS and ACI is retiring in November 2023.
+{: .important}
+
 # Compose - Azure Container Instances mapping
 
 This document outlines the conversion of an application defined in a Compose file to ACI objects.
