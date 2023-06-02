@@ -132,8 +132,9 @@ func NewCommandUsage(cmd CmdResult) *CommandUsage {
 	}
 
 	return &CommandUsage{
-		Command: command,
-		Context: cmd.ContextType,
-		Status:  cmd.Status,
+		Command:  command,
+		Context:  cmd.ContextType,
+		Status:   cmd.Status,
+		ExitCode: cmd.ExitCode,
 	}
 }
