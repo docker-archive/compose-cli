@@ -26,6 +26,7 @@ var commandFlags = []string{
 // Generated with generatecommands/main.go
 var managementCommands = []string{
 	"help",
+	"alpha",
 	"app",
 	"builder",
 	"buildx",
@@ -160,4 +161,5 @@ var commands = []string{
 	"validate",
 	"version",
 	"wait",
+	"watch",
 }

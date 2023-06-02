@@ -43,30 +43,35 @@ func TestCmdCompose(t *testing.T) {
 		{
 			name:     "Compose - Base",
 			input:    "docker compose",
-			expected: &DockerCLIEvent{Command: "compose"},
+			expected: nil,
+		},
+		{
+			name:     "Compose - Ignored",
+			input:    "docker compose up",
+			expected: nil,
 		},
 		{
 			name:  "Compose - Root Args",
-			input: "docker --host 127.0.0.1 --debug=true compose ls",
+			input: "docker --host 127.0.0.1 --debug=true compose alpha watch",
 			expected: &DockerCLIEvent{
 				Command:    "compose",
-				Subcommand: "ls",
+				Subcommand: "alpha-watch",
 			},
 		},
 		{
 			name:  "Compose - Base Args",
-			input: "docker compose -p myproject build myservice",
+			input: "docker compose -p myproject alpha watch myservice",
 			expected: &DockerCLIEvent{
 				Command:    "compose",
-				Subcommand: "build",
+				Subcommand: "alpha-watch",
 			},
 		},
 		{
 			name:  "Compose - Usage",
-			input: "docker compose --file=mycompose.yaml up --help myservice",
+			input: "docker compose --file=mycompose.yaml alpha watch --help myservice",
 			expected: &DockerCLIEvent{
 				Command:    "compose",
-				Subcommand: "up",
+				Subcommand: "alpha-watch",
 				Usage:      true,
 			},
 		},
