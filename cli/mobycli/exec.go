@@ -111,6 +111,18 @@ func Exec(_ *cobra.Command) {
 	}
 	commandArgs := os.Args[1:]
 	command := metrics.GetCommand(commandArgs)
+	if (command == "build" || command == "pull") && !metrics.HasQuietFlag(commandArgs) {
+		var image string
+		if command == "pull" {
+			for _, a := range commandArgs[1:] {
+				if !strings.HasPrefix(a, "--") {
+					image = a
+					break
+				}
+			}
+		}
+		displayScoutQuickViewSuggestMsg(image)
+	}
 	if command == "login" && !metrics.HasQuietFlag(commandArgs) {
 		displayPATSuggestMsg(commandArgs)
 	}
