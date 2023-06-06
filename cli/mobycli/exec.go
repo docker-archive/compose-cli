@@ -114,12 +114,7 @@ func Exec(_ *cobra.Command) {
 	if (command == "build" || command == "pull") && !metrics.HasQuietFlag(commandArgs) {
 		var image string
 		if command == "pull" {
-			for _, a := range commandArgs[1:] {
-				if !strings.HasPrefix(a, "--") {
-					image = a
-					break
-				}
-			}
+			image = pulledImageFromArgs(commandArgs)
 		}
 		displayScoutQuickViewSuggestMsg(image)
 	}

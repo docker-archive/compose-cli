@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -46,4 +47,20 @@ func displayScoutQuickViewSuggestMsg(image string) {
 	_, _ = b.Fprintln(out, "What's Next?")
 	_, _ = fmt.Fprintf(out, "  View summary of image vulnerabilities and recommendations → %s", color.CyanString("docker scout quickview%s", image))
 	_, _ = fmt.Fprintln(out)
+}
+
+func pulledImageFromArgs(args []string) string {
+	var image string
+	var pull bool
+	for _, a := range args {
+		if a == "pull" {
+			pull = true
+			continue
+		}
+		if pull && !strings.HasPrefix(a, "--") {
+			image = a
+			break
+		}
+	}
+	return image
 }
