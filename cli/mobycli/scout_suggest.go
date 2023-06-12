@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/docker/compose/v2/pkg/utils"
+
 	"github.com/fatih/color"
 )
 
@@ -32,6 +34,21 @@ const (
 func isDockerScoutHintsEnabled() bool {
 	enabled, err := strconv.ParseBool(os.Getenv(scoutHintEnvVarName))
 	return err != nil || enabled
+}
+
+func displayScoutQuickViewSuggestMsgOnPull(args []string) {
+	image := pulledImageFromArgs(args)
+	displayScoutQuickViewSuggestMsg(image)
+}
+
+func displayScoutQuickViewSuggestMsgOnBuild(args []string) {
+	// only display the hint in the main case, build command and not buildx build, no output flag, no progress flag, no push flag
+	if utils.StringContains(args, "--output") || utils.StringContains(args, "-o") ||
+		utils.StringContains(args, "--progress") ||
+		utils.StringContains(args, "--push") {
+		return
+	}
+	displayScoutQuickViewSuggestMsg("")
 }
 
 func displayScoutQuickViewSuggestMsg(image string) {
