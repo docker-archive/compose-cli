@@ -64,7 +64,7 @@ func pulledImageFromArgs(args []string) string {
 			pull = true
 			continue
 		}
-		if pull && !strings.HasPrefix(a, "--") {
+		if pull && !strings.HasPrefix(a, "-") {
 			image = a
 			break
 		}
