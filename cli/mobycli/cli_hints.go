@@ -17,8 +17,8 @@
 package mobycli
 
 import (
+	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/docker/compose-cli/api/config"
 )
@@ -26,11 +26,16 @@ import (
 const (
 	cliHintsEnvVarName       = "DOCKER_CLI_HINTS"
 	cliHintsDefaultBehaviour = true
+
+	cliHintsPluginName  = "-x-cli-hints"
+	cliHintsEnabledName = "enabled"
+	cliHintsEnabled     = "true"
+	cliHintsDisabled    = "false"
 )
 
 func CliHintsEnabled() bool {
 	if envValue, ok := os.LookupEnv(cliHintsEnvVarName); ok {
-		if enabled, err := strconv.ParseBool(envValue); err == nil {
+		if enabled, err := parseCliHintFlag(envValue); err == nil {
 			return enabled
 		}
 	}
@@ -40,9 +45,24 @@ func CliHintsEnabled() bool {
 		// can't read the config file, use the default behaviour
 		return cliHintsDefaultBehaviour
 	}
-	if conf.CliHints != nil {
-		return *conf.CliHints
+	if cliHintsPluginConfig, ok := conf.Plugins[cliHintsPluginName]; ok {
+		if cliHintsValue, ok := cliHintsPluginConfig[cliHintsEnabledName]; ok {
+			if cliHints, err := parseCliHintFlag(cliHintsValue); err == nil {
+				return cliHints
+			}
+		}
 	}
 
 	return cliHintsDefaultBehaviour
+}
+
+func parseCliHintFlag(value string) (bool, error) {
+	switch value {
+	case cliHintsEnabled:
+		return true, nil
+	case cliHintsDisabled:
+		return false, nil
+	default:
+		return cliHintsDefaultBehaviour, fmt.Errorf("could not parse CLI hints enabled flag")
+	}
 }
