@@ -38,23 +38,23 @@ func TestCliHintsEnabled(t *testing.T) {
 			true,
 		},
 		{
-			"handle true value",
+			"enabled from environment variable",
 			func() {
-				t.Setenv(cliHintsEnvVarName, "t")
+				t.Setenv(cliHintsEnvVarName, "true")
 			},
 			true,
 		},
 		{
-			"handle false value",
+			"disabled from environment variable",
 			func() {
-				t.Setenv(cliHintsEnvVarName, "FALSE")
+				t.Setenv(cliHintsEnvVarName, "false")
 			},
 			false,
 		},
 		{
-			"handle error",
+			"unsupported value",
 			func() {
-				t.Setenv(cliHintsEnvVarName, "123")
+				t.Setenv(cliHintsEnvVarName, "maybe")
 			},
 			true,
 		},
@@ -63,6 +63,23 @@ func TestCliHintsEnabled(t *testing.T) {
 			func() {
 				d := testConfigDir(t)
 				writeSampleConfig(t, d, configEnabled)
+			},
+			true,
+		},
+		{
+			"plugin defined in config file but no enabled entry",
+			func() {
+				d := testConfigDir(t)
+				writeSampleConfig(t, d, configPartial)
+			},
+			true,
+		},
+
+		{
+			"unsupported value",
+			func() {
+				d := testConfigDir(t)
+				writeSampleConfig(t, d, configOnce)
 			},
 			true,
 		},
@@ -79,7 +96,7 @@ func TestCliHintsEnabled(t *testing.T) {
 			func() {
 				d := testConfigDir(t)
 				writeSampleConfig(t, d, configEnabled)
-				t.Setenv(cliHintsEnvVarName, "FALSE")
+				t.Setenv(cliHintsEnvVarName, "false")
 			},
 			false,
 		},
@@ -120,9 +137,32 @@ func writeSampleConfig(t *testing.T, d string, conf []byte) {
 }
 
 var configEnabled = []byte(`{
-	"cliHints": true
+	"plugins": {
+		"-x-cli-hints": {
+			"enabled": "true"
+		}
+	}
 }`)
 
 var configDisabled = []byte(`{
-	"cliHints": false
+	"plugins": {
+		"-x-cli-hints": {
+			"enabled": "false"
+		}
+	}
+}`)
+
+var configPartial = []byte(`{
+	"plugins": {
+		"-x-cli-hints": {
+		}
+	}
+}`)
+
+var configOnce = []byte(`{
+	"plugins": {
+		"-x-cli-hints": {
+			"enabled": "maybe"
+		}
+	}
 }`)
