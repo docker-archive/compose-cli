@@ -19,22 +19,12 @@ package mobycli
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/docker/compose/v2/pkg/utils"
 
 	"github.com/fatih/color"
 )
-
-const (
-	scoutHintEnvVarName = "DOCKER_SCOUT_HINTS"
-)
-
-func isDockerScoutHintsEnabled() bool {
-	enabled, err := strconv.ParseBool(os.Getenv(scoutHintEnvVarName))
-	return err != nil || enabled
-}
 
 func displayScoutQuickViewSuggestMsgOnPull(args []string) {
 	image := pulledImageFromArgs(args)
@@ -52,7 +42,7 @@ func displayScoutQuickViewSuggestMsgOnBuild(args []string) {
 }
 
 func displayScoutQuickViewSuggestMsg(image string) {
-	if !isDockerScoutHintsEnabled() {
+	if !CliHintsEnabled() {
 		return
 	}
 	if len(image) > 0 {
