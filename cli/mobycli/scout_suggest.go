@@ -38,6 +38,9 @@ func displayScoutQuickViewSuggestMsgOnBuild(args []string) {
 		utils.StringContains(args, "--push") {
 		return
 	}
+	if _, ok := os.LookupEnv("BUILDKIT_PROGRESS"); ok {
+		return
+	}
 	displayScoutQuickViewSuggestMsg("")
 }
 
