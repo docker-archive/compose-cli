@@ -30,6 +30,10 @@ const (
 	gb = 1024 * mb
 )
 
+var (
+	ch chan bool
+)
+
 func TestMemBytes(t *testing.T) {
 	var m MemBytes
 	assert.Assert(t, cmp.Nil(m.Set("42")))
@@ -57,4 +61,26 @@ func TestMemBytes(t *testing.T) {
 	assert.Equal(t, "42GiB", m.String())
 
 	assert.Error(t, m.Set("###"), "invalid size: '###'")
+}
+
+func TestIsNil(t *testing.T) {
+	testCases := []struct {
+		input    any
+		expected bool
+	}{
+		{nil, true},
+		{(*int)(nil), true},
+		{map[string]int(nil), true},
+		{[5]int{}, false},
+		{ch, true},
+		{[]int(nil), true},
+		{make(chan int), false},
+		{10, false},
+		{struct{ Name string }{"Test"}, false},
+	}
+
+	for _, tc := range testCases {
+		actual := isNil(tc.input)
+		assert.Equal(t, tc.expected, actual)
+	}
 }
