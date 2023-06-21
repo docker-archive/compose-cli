@@ -100,5 +100,6 @@ func configFilePath(dir string) string {
 
 // File contains the current context from the docker configuration file
 type File struct {
-	CurrentContext string `json:"currentContext,omitempty"`
+	CurrentContext string                       `json:"currentContext,omitempty"`
+	Plugins        map[string]map[string]string `json:"plugins,omitempty"`
 }

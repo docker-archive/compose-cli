@@ -111,9 +111,18 @@ func Exec(_ *cobra.Command) {
 	}
 	commandArgs := os.Args[1:]
 	command := metrics.GetCommand(commandArgs)
-	if command == "login" && !metrics.HasQuietFlag(commandArgs) {
-		displayPATSuggestMsg(commandArgs)
+	if !metrics.HasQuietFlag(commandArgs) {
+		switch command {
+		case "build": // only on regular build, not on buildx build
+			displayScoutQuickViewSuggestMsgOnBuild(commandArgs)
+		case "pull":
+			displayScoutQuickViewSuggestMsgOnPull(commandArgs)
+		case "login":
+			displayPATSuggestMsg(commandArgs)
+		default:
+		}
 	}
+
 	metricsClient.Track(
 		metrics.CmdResult{
 			ContextType: store.DefaultContextType,
