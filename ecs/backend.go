@@ -47,6 +47,7 @@ type ContextParams struct {
 	SecretKey    string
 	Profile      string
 	Region       string
+	SessionToken string
 	CredsFromEnv bool
 }
 

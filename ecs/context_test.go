@@ -56,10 +56,11 @@ func TestCreateContextDataByKeys(t *testing.T) {
 	}
 
 	data, _, err := c.createContextData(context.TODO(), ContextParams{
-		Name:      "test",
-		AccessKey: "ABCD",
-		SecretKey: "X&123",
-		Region:    "eu-west-3",
+		Name:         "test",
+		AccessKey:    "ABCD",
+		SecretKey:    "X&123",
+		SessionToken: "X&123",
+		Region:       "eu-west-3",
 	})
 	assert.NilError(t, err)
 	assert.Equal(t, data.(store.EcsContext).Profile, "default")
@@ -134,6 +135,7 @@ func TestCreateContextDataByKeysInteractive(t *testing.T) {
 	ui.EXPECT().Select("Create a Docker context using:", gomock.Any()).Return(0, nil)
 	ui.EXPECT().Input("AWS Access Key ID", gomock.Any()).Return("ABCD", nil)
 	ui.EXPECT().Password("Enter AWS Secret Access Key").Return("X&123", nil)
+	ui.EXPECT().Password("AWS Session Token (optional)").Return("X&123", nil)
 	ui.EXPECT().Select("Region", []string{"us-east-1", "eu-west-3"}).Return(1, nil)
 
 	data, _, err := c.createContextData(context.TODO(), ContextParams{})
