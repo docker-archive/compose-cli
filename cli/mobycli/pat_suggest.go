@@ -30,9 +30,10 @@ const (
 	// patSuggestMsg is a message to suggest the use of PAT (personal access tokens).
 	patSuggestMsg = `Logging in with your password grants your terminal complete access to your account. 
 For better security, log in with a limited-privilege personal access token. Learn more at https://docs.docker.com/go/access-tokens/`
+)
 
-	// patPrefix represents a docker personal access token prefix.
-	patPrefix = "dckrp_"
+var (
+	patPrefixes = []string{"dckrp_", "dckr_pat_"}
 )
 
 // displayPATSuggestMsg displays a message suggesting users to use PATs instead of passwords to reduce scope.
@@ -71,8 +72,10 @@ func isUsingPassword(pass string) bool {
 	if _, err := uuid.ParseUUID(pass); err == nil {
 		return false
 	}
-	if strings.HasPrefix(pass, patPrefix) {
-		return false
+	for _, patPrefix := range patPrefixes {
+		if strings.HasPrefix(pass, patPrefix) {
+			return false
+		}
 	}
 	return true
 }

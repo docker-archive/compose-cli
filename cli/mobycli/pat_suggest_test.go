@@ -89,6 +89,11 @@ func TestIsUsingPassword(t *testing.T) {
 			"dckrp_ee5607c41bcd",
 			false,
 		},
+		{
+			"prefixed personal access token",
+			"dckr_pat_ee5607c41bcd",
+			false,
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
