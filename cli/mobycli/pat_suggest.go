@@ -17,42 +17,15 @@
 package mobycli
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
-	"github.com/docker/cli/cli/config"
 	"github.com/docker/docker/registry"
 	"github.com/hashicorp/go-uuid"
-)
-
-const (
-	// patSuggestMsg is a message to suggest the use of PAT (personal access tokens).
-	patSuggestMsg = `Logging in with your password grants your terminal complete access to your account. 
-For better security, log in with a limited-privilege personal access token. Learn more at https://docs.docker.com/go/access-tokens/`
 )
 
 var (
 	patPrefixes = []string{"dckrp_", "dckr_pat_"}
 )
-
-// displayPATSuggestMsg displays a message suggesting users to use PATs instead of passwords to reduce scope.
-func displayPATSuggestMsg(cmdArgs []string) {
-	if os.Getenv("DOCKER_PAT_SUGGEST") == "false" {
-		return
-	}
-	if !isUsingDefaultRegistry(cmdArgs) {
-		return
-	}
-	authCfg, err := config.LoadDefaultConfigFile(os.Stderr).GetAuthConfig(registry.IndexServer)
-	if err != nil {
-		return
-	}
-	if !isUsingPassword(authCfg.Password) {
-		return
-	}
-	fmt.Fprintf(os.Stderr, "\n"+patSuggestMsg+"\n")
-}
 
 func isUsingDefaultRegistry(cmdArgs []string) bool {
 	for i := 1; i < len(cmdArgs); i++ {
