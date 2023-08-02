@@ -117,8 +117,6 @@ func Exec(_ *cobra.Command) {
 			displayScoutQuickViewSuggestMsgOnBuild(commandArgs)
 		case "pull":
 			displayScoutQuickViewSuggestMsgOnPull(commandArgs)
-		case "login":
-			displayPATSuggestMsg(commandArgs)
 		default:
 		}
 	}
