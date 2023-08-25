@@ -20,8 +20,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/docker/cli/cli/config"
 	"github.com/docker/compose/v2/pkg/utils"
+	"github.com/docker/docker/registry"
 
 	"github.com/fatih/color"
 )
@@ -53,10 +56,14 @@ func displayScoutQuickViewSuggestMsg(image string) {
 	}
 	out := os.Stderr
 	b := color.New(color.Bold)
-	_, _ = fmt.Fprintln(out)
-	_, _ = b.Fprintln(out, "What's Next?")
-	_, _ = fmt.Fprintf(out, "  View summary of image vulnerabilities and recommendations → %s", color.CyanString("docker scout quickview%s", image))
-	_, _ = fmt.Fprintln(out)
+
+	_, _ = b.Fprintln(out, "\nWhat's Next?")
+	if !hubLoggedIn() {
+		_, _ = fmt.Fprintln(out, "  1. Sign in to your Docker account → "+color.CyanString("docker login"))
+		_, _ = fmt.Fprintln(out, "  2. View a summary of image vulnerabilities and recommendations → "+color.CyanString("docker scout quickview"+image))
+	} else {
+		_, _ = fmt.Fprintln(out, "  View a summary of image vulnerabilities and recommendations → "+color.CyanString("docker scout quickview"+image))
+	}
 }
 
 func pulledImageFromArgs(args []string) string {
@@ -73,4 +80,28 @@ func pulledImageFromArgs(args []string) string {
 		}
 	}
 	return image
+}
+
+// hubLoggedIn checks whether the user has credentials configured
+// for Docker Hub. If it fails to get a result within 100ms, it
+// short-circuits and returns `true`.
+// This can be an expensive operation, so use it mindfully.
+func hubLoggedIn() bool {
+	result := make(chan bool)
+	go func() {
+		creds, err := config.LoadDefaultConfigFile(nil).GetAllCredentials()
+		if err != nil {
+			// preserve original behaviour if we fail to fetch creds
+			result <- true
+		}
+		_, ok := creds[registry.IndexServer]
+		result <- ok
+	}()
+	select {
+	case loggedIn := <-result:
+		return loggedIn
+	case <-time.After(100 * time.Millisecond):
+		// preserve original behaviour if we time out
+		return true
+	}
 }
