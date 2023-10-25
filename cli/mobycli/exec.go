@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -135,34 +134,12 @@ func Exec(_ *cobra.Command) {
 	os.Exit(0)
 }
 
-// RunDocker runs a docker command, and forward signals to the shellout command (stops listening to signals when an event is sent to childExit)
+// RunDocker runs a docker command
 func RunDocker(childExit chan bool, args ...string) error {
 	cmd := exec.Command(comDockerCli(), args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals) // catch all signals
-	go func() {
-		for {
-			select {
-			case sig := <-signals:
-				if cmd.Process == nil {
-					continue // can happen if receiving signal before the process is actually started
-				}
-				// In go1.14+, the go runtime issues SIGURG as an interrupt to
-				// support preemptable system calls on Linux. Since we can't
-				// forward that along we'll check that here.
-				if isRuntimeSig(sig) {
-					continue
-				}
-				_ = cmd.Process.Signal(sig)
-			case <-childExit:
-				return
-			}
-		}
-	}()
 
 	return cmd.Run()
 }
