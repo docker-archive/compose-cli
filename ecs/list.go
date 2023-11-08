@@ -71,6 +71,12 @@ func (b *ecsAPIService) checkStackState(ctx context.Context, name string) error 
 			svcNames[r.ARN] = r.LogicalID
 		}
 	}
+	if len(cluster) == 0 {
+		cluster, err = b.aws.GetStackMetadataClusterID(ctx, name)
+		if err != nil {
+			return err
+		}
+	}
 	if len(svcArns) == 0 {
 		return nil
 	}
