@@ -58,6 +58,7 @@ func getEnvVars() ContextParams {
 	}
 	c.AccessKey = creds.AccessKeyID
 	c.SecretKey = creds.SecretAccessKey
+	c.SessionToken = creds.SessionToken
 	return c
 }
 
@@ -166,12 +167,13 @@ func (h contextCreateAWSHelper) selectFromLocalProfile(opts *ContextParams) erro
 func (h contextCreateAWSHelper) createProfileFromCredentials(opts *ContextParams) error {
 	if opts.AccessKey == "" || opts.SecretKey == "" {
 		fmt.Println("Retrieve or create AWS Access Key and Secret on https://console.aws.amazon.com/iam/home?#security_credential")
-		accessKey, secretKey, err := h.askCredentials()
+		accessKey, secretKey, sessionToken, err := h.askCredentials()
 		if err != nil {
 			return err
 		}
 		opts.AccessKey = accessKey
 		opts.SecretKey = secretKey
+		opts.SessionToken = sessionToken
 	}
 
 	if opts.Region == "" {
@@ -185,14 +187,14 @@ func (h contextCreateAWSHelper) createProfileFromCredentials(opts *ContextParams
 		opts.Profile = "default"
 	}
 	// context name used as profile name
-	err := h.saveCredentials(opts.Profile, opts.AccessKey, opts.SecretKey)
+	err := h.saveCredentials(opts.Profile, opts.AccessKey, opts.SecretKey, opts.SessionToken)
 	if err != nil {
 		return err
 	}
 	return h.saveRegion(opts.Profile, opts.Region)
 }
 
-func (h contextCreateAWSHelper) saveCredentials(profile string, accessKeyID string, secretAccessKey string) error {
+func (h contextCreateAWSHelper) saveCredentials(profile string, accessKeyID string, secretAccessKey string, sessionToken string) error {
 	file := getAWSCredentialsFile()
 	err := os.MkdirAll(filepath.Dir(file), 0700)
 	if err != nil {
@@ -218,6 +220,12 @@ func (h contextCreateAWSHelper) saveCredentials(profile string, accessKeyID stri
 	_, err = section.NewKey("aws_secret_access_key", secretAccessKey)
 	if err != nil {
 		return err
+	}
+	if sessionToken != "" {
+		_, err = section.NewKey("aws_session_token", sessionToken)
+		if err != nil {
+			return err
+		}
 	}
 	return credentials.SaveTo(file)
 }
@@ -355,7 +363,7 @@ func listAvailableRegions(opts *ContextParams) ([]string, error) {
 	// Setup SDK with credentials, will also validate those
 	session, err := session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{
-			Credentials: credentials.NewStaticCredentials(opts.AccessKey, opts.SecretKey, ""),
+			Credentials: credentials.NewStaticCredentials(opts.AccessKey, opts.SecretKey, opts.SessionToken),
 			Region:      aws.String("us-east-1"),
 		},
 	})
@@ -374,20 +382,21 @@ func listAvailableRegions(opts *ContextParams) ([]string, error) {
 	return regions, nil
 }
 
-func (h contextCreateAWSHelper) askCredentials() (string, string, error) {
+func (h contextCreateAWSHelper) askCredentials() (string, string, string, error) {
 	accessKeyID, err := h.user.Input("AWS Access Key ID", "")
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	secretAccessKey, err := h.user.Password("Enter AWS Secret Access Key")
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
+	sessionToken, err := h.user.Password("AWS Session Token (optional)")
 	// validate access ID and password
 	if len(accessKeyID) < 3 || len(secretAccessKey) < 3 {
-		return "", "", fmt.Errorf("AWS Access/Secret Access Key must have more than 3 characters")
+		return "", "", "", fmt.Errorf("AWS Access/Secret Access Key must have more than 3 characters")
 	}
-	return accessKeyID, secretAccessKey, nil
+	return accessKeyID, secretAccessKey, sessionToken, nil
 }
 
 func contains(values []string, value string) bool {
