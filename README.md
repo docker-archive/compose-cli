@@ -1,6 +1,6 @@
 ## :warning: Retirement Date Pending
 
-Docker Compose's integration for ECS and ACI will be retired in November 2023. For now, our main priority in this repository are critical security fixes.
+Docker Compose's integration for ECS and ACI retired in November 2023. For now, our main priority in this repository are critical security fixes.
 
 ECS users can consider using [compose-ecs](https://github.com/docker/compose-ecs).
 

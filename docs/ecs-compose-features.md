@@ -6,7 +6,7 @@ keywords: Docker, Amazon, Integration, ECS, Compose, cli, deploy, cloud
 
 > **Important**
 >
-> Docker Compose's integration for ECS and ACI is retiring in November 2023.
+> Docker Compose's integration for ECS and ACI retired in November 2023.
 {: .important}
 
 # Compose - Amazon ECS mapping
