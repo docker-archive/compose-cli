@@ -505,6 +505,10 @@ func (s sdk) GetStackClusterID(ctx context.Context, stack string) (string, error
 		token = response.NextToken
 	}
 	// stack is using user-provided cluster
+	return s.GetStackMetadataClusterID(ctx, stack)
+}
+
+func (s sdk) GetStackMetadataClusterID(ctx context.Context, stack string) (string, error) {
 	res, err := s.CF.GetTemplateSummaryWithContext(ctx, &cloudformation.GetTemplateSummaryInput{
 		StackName: aws.String(stack),
 	})

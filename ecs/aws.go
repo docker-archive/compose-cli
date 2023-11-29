@@ -51,6 +51,7 @@ type API interface {
 	GetStackID(ctx context.Context, name string) (string, error)
 	ListStacks(ctx context.Context) ([]api.Stack, error)
 	GetStackClusterID(ctx context.Context, stack string) (string, error)
+	GetStackMetadataClusterID(ctx context.Context, stack string) (string, error)
 	GetServiceTaskDefinition(ctx context.Context, cluster string, serviceArns []string) (map[string]string, error)
 	ListStackServices(ctx context.Context, stack string) ([]string, error)
 	GetServiceTasks(ctx context.Context, cluster string, service string, stopped bool) ([]*ecs.Task, error)
