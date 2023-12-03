@@ -53,12 +53,12 @@ func (m *MemBytes) Value() int64 {
 	return int64(*m)
 }
 
-func isNil(i interface{}) bool {
+func isNil(i any) bool {
 	if i == nil {
 		return true
 	}
 	switch reflect.TypeOf(i).Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+	case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Slice:
 		return reflect.ValueOf(i).IsNil()
 	}
 	return false
