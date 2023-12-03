@@ -48,9 +48,10 @@ services:
           memory: 2048M
 ```
 
-###### IAM roles
 
-Assign an existing user role to a task:
+###### IAM policies
+
+Assign an in-line IAM policy to a task:
 
 ```yaml
 services:
@@ -59,9 +60,10 @@ services:
       - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 ```
 
-###### IAM policies
 
-Assign an in-line IAM policy to a task:
+###### IAM roles
+
+Assign an existing user role to a task:
 
 ```yaml
 services:
@@ -73,6 +75,7 @@ services:
           Action: sqs:*
           Resource: arn:aws:sqs:us-east-1:12345678:myqueue
 ```
+
 
 ###### Logging
 Pass options to awslogs driver
