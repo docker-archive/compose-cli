@@ -227,7 +227,10 @@ func (s sdk) IsPublicSubnet(ctx context.Context, subNetID string) (bool, error) 
 	if len(tables.RouteTables) == 0 {
 		// If a subnet is not explicitly associated with any route table, it is implicitly associated with the main route table.
 		// https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-route-tables.html
-		return true, nil
+		
+		// Normally main route tables are used for the private subnets, so this should be FALSE and not TRUE
+		// regular setup is 3 public subnets + N number of private subnets
+		return false, nil
 	}
 	for _, routeTable := range tables.RouteTables {
 		for _, route := range routeTable.Routes {

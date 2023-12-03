@@ -39,6 +39,7 @@ import (
 type awsResources struct {
 	vpc              string // shouldn't this also be an awsResource ?
 	subnets          []awsResource
+	pubSubnets		 []awsResource
 	cluster          awsResource
 	loadBalancer     awsResource
 	loadBalancerType string
@@ -221,6 +222,7 @@ func (b *ecsAPIService) parseVPCExtension(ctx context.Context, project *types.Pr
 
 	r.vpc = vpc
 	r.subnets = subNets
+	r.pubSubnets = publicSubNets
 	return nil
 }
 
