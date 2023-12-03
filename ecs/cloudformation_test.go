@@ -51,6 +51,17 @@ func TestSimpleConvert(t *testing.T) {
 	golden.Assert(t, result, expected)
 }
 
+func TestSlightlyComplexConvert(t *testing.T) {
+	bytes, err := ioutil.ReadFile("testdata/input/slightly-complex-service.yaml")
+	assert.NilError(t, err)
+	template := convertYaml(t, string(bytes), nil, useDefaultVPC)
+	resultAsJSON, err := marshall(template, "yaml")
+	assert.NilError(t, err)
+	result := fmt.Sprintf("%s\n", string(resultAsJSON))
+	expected := "slightly-complex-cloudformation-conversion.golden"
+	golden.Assert(t, result, expected)
+}
+
 func TestLogging(t *testing.T) {
 	template := convertYaml(t, `
 services:

@@ -236,7 +236,10 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		return err
 	}
 
-	assignPublicIP := ecsapi.AssignPublicIpEnabled
+	assignPublicIP := "DISABLED"
+	if assignPublicIPSetting, ok := service.Extensions[extensionAssignPublicIP]; ok && assignPublicIPSetting.(bool) {
+		assignPublicIP = ecsapi.AssignPublicIpEnabled
+	}
 	launchType := ecsapi.LaunchTypeFargate
 	platformVersion := "1.4.0" // LATEST which is set to 1.3.0 (?) which doesn’t allow efs volumes.
 	if requireEC2(service) {

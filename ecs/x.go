@@ -31,4 +31,5 @@ const (
 	extensionManagedPolicies = "x-aws-policies"
 	extensionAutoScaling     = "x-aws-autoscaling"
 	extensionCloudFormation  = "x-aws-cloudformation"
+	extensionAssignPublicIP  = "x-aws-assign_public_ip"
 )

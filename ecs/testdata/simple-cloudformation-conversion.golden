@@ -81,7 +81,7 @@ Resources:
           Ref: SimpleTCP80TargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
+          AssignPublicIp: DISABLED
           SecurityGroups:
           - Ref: DefaultNetwork
           Subnets:
