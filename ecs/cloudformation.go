@@ -198,11 +198,15 @@ func (b *ecsAPIService) createService(project *types.Project, service types.Serv
 		dependsOn []string
 		serviceLB []ecs.Service_LoadBalancer
 	)
-	for _, port := range service.Ports {
-		for net := range service.Networks {
-			b.createIngress(service, net, port, template, resources)
-		}
 
+	for _, port := range service.Ports {
+		lbSecurityGroupName := serviceIngressSecGroupName(service.Name, true)
+		serviceSecurityGroupName := serviceIngressSecGroupName(service.Name, false)
+		// outside to ingress
+		b.createIngress(service, lbSecurityGroupName, port, template, resources)
+		// ingress to service
+		b.createCrossGroupIngress(service, lbSecurityGroupName, serviceSecurityGroupName, port, template, resources)
+		// TODO attach new secgroup to this service
 		protocol := strings.ToUpper(port.Protocol)
 		if resources.loadBalancerType == elbv2.LoadBalancerTypeEnumApplication {
 			// we don't set Https as a certificate must be specified for HTTPS listeners
@@ -291,6 +295,22 @@ func (b *ecsAPIService) createIngress(service types.ServiceConfig, net string, p
 		FromPort:    int(port.Target),
 		IpProtocol:  protocol,
 		ToPort:      int(port.Target),
+	}
+}
+
+func (b *ecsAPIService) createCrossGroupIngress(service types.ServiceConfig, source string, dest string, port types.ServicePortConfig, template *cloudformation.Template, resources awsResources) {
+	protocol := strings.ToUpper(port.Protocol)
+	if protocol == "" {
+		protocol = allProtocols
+	}
+	ingress := fmt.Sprintf("%s%d%sIngress", normalizeResourceName(source), port.Target, normalizeResourceName(dest))
+	template.Resources[ingress] = &ec2.SecurityGroupIngress{
+		SourceSecurityGroupId: resources.securityGroups[source],
+		Description:           fmt.Sprintf("LB connectivity on %d", port.Target),
+		GroupId:               resources.securityGroups[dest],
+		FromPort:              int(port.Target),
+		IpProtocol:            protocol,
+		ToPort:                int(port.Target),
 	}
 }
 
@@ -533,6 +553,16 @@ func (b *ecsAPIService) createPolicies(project *types.Project, service types.Ser
 
 func networkResourceName(network string) string {
 	return fmt.Sprintf("%sNetwork", normalizeResourceName(network))
+}
+
+func serviceIngressSecGroupName(service string, isLBSide bool) string {
+	var header string
+	if isLBSide {
+		header = "LB"
+	} else {
+		header = "Service"
+	}
+	return fmt.Sprintf("%s%sIngressSecurityGroup", normalizeResourceName(service), header)
 }
 
 func serviceResourceName(service string) string {

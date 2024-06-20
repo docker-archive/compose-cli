@@ -51,6 +51,9 @@ func (r *awsResources) serviceSecurityGroups(service types.ServiceConfig) []stri
 	for net := range service.Networks {
 		groups = append(groups, r.securityGroups[net])
 	}
+	if len(service.Ports) > 0 {
+		groups = append(groups, r.securityGroups[serviceIngressSecGroupName(service.Name, false)])
+	}
 	return groups
 }
 
@@ -330,6 +333,7 @@ func (b *ecsAPIService) ensureCluster(r *awsResources, project *types.Project, t
 
 func (b *ecsAPIService) ensureNetworks(r *awsResources, project *types.Project, template *cloudformation.Template) {
 	if r.securityGroups == nil {
+		// TODO NITZ change the size hint?
 		r.securityGroups = make(map[string]string, len(project.Networks))
 	}
 	for name, net := range project.Networks {
@@ -352,6 +356,27 @@ func (b *ecsAPIService) ensureNetworks(r *awsResources, project *types.Project, 
 		}
 
 		r.securityGroups[name] = cloudformation.Ref(securityGroup)
+	}
+
+	for _, service := range project.Services {
+		if len(service.Ports) == 0 {
+			continue
+		}
+		lbSecurityGroup := serviceIngressSecGroupName(service.Name, true)
+		template.Resources[lbSecurityGroup] = &ec2.SecurityGroup{
+			GroupDescription: fmt.Sprintf("%s Security Group for service %s ingress, LB side", project.Name, service.Name),
+			VpcId:            r.vpc,
+			Tags:             serviceTags(project, service),
+		}
+		r.securityGroups[lbSecurityGroup] = cloudformation.Ref(lbSecurityGroup)
+
+		serviceSecurityGroup := serviceIngressSecGroupName(service.Name, false)
+		template.Resources[serviceSecurityGroup] = &ec2.SecurityGroup{
+			GroupDescription: fmt.Sprintf("%s Security Group for service %s ingress, Service side", project.Name, service.Name),
+			VpcId:            r.vpc,
+			Tags:             serviceTags(project, service),
+		}
+		r.securityGroups[serviceSecurityGroup] = cloudformation.Ref(serviceSecurityGroup)
 	}
 }
 
@@ -465,9 +490,9 @@ func (b *ecsAPIService) ensureLoadBalancer(r *awsResources, project *types.Proje
 
 func (r *awsResources) getLoadBalancerSecurityGroups(project *types.Project) []string {
 	securityGroups := []string{}
-	for name, network := range project.Networks {
-		if !network.Internal {
-			securityGroups = append(securityGroups, r.securityGroups[name])
+	for _, service := range project.Services {
+		if len(service.Ports) > 0 {
+			securityGroups = append(securityGroups, r.securityGroups[serviceIngressSecGroupName(service.Name, true)])
 		}
 	}
 	return securityGroups

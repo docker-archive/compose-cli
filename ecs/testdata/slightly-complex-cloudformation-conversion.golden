@@ -1,0 +1,354 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  CloudMap:
+    Properties:
+      Description: Service Map for Docker Compose project TestSlightlyComplexConvert
+      Name: TestSlightlyComplexConvert.local
+      Vpc: vpc-123
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+  Cluster:
+    Properties:
+      ClusterName: TestSlightlyComplexConvert
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+    Type: AWS::ECS::Cluster
+  DefaultNetwork:
+    Properties:
+      GroupDescription: TestSlightlyComplexConvert Security Group for default network
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.network
+        Value: TestSlightlyComplexConvert_default
+      VpcId: vpc-123
+    Type: AWS::EC2::SecurityGroup
+  DefaultNetworkIngress:
+    Properties:
+      Description: Allow communication within network default
+      GroupId:
+        Ref: DefaultNetwork
+      IpProtocol: "-1"
+      SourceSecurityGroupId:
+        Ref: DefaultNetwork
+    Type: AWS::EC2::SecurityGroupIngress
+  EntranceLBIngressSecurityGroup:
+    Properties:
+      GroupDescription: TestSlightlyComplexConvert Security Group for service entrance
+        ingress, LB side
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.service
+        Value: entrance
+      VpcId: vpc-123
+    Type: AWS::EC2::SecurityGroup
+  EntranceLBIngressSecurityGroup80EntranceServiceIngressSecurityGroupIngress:
+    Properties:
+      Description: LB connectivity on 80
+      FromPort: 80
+      GroupId:
+        Ref: EntranceServiceIngressSecurityGroup
+      IpProtocol: TCP
+      SourceSecurityGroupId:
+        Ref: EntranceLBIngressSecurityGroup
+      ToPort: 80
+    Type: AWS::EC2::SecurityGroupIngress
+  EntranceLBIngressSecurityGroup80Ingress:
+    Properties:
+      CidrIp: 0.0.0.0/0
+      Description: entrance:80/tcp on EntranceLBIngressSecurityGroup network
+      FromPort: 80
+      GroupId:
+        Ref: EntranceLBIngressSecurityGroup
+      IpProtocol: TCP
+      ToPort: 80
+    Type: AWS::EC2::SecurityGroupIngress
+  EntranceService:
+    DependsOn:
+    - EntranceTCP80Listener
+    Properties:
+      Cluster:
+        Fn::GetAtt:
+        - Cluster
+        - Arn
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 1
+      LaunchType: FARGATE
+      LoadBalancers:
+      - ContainerName: entrance
+        ContainerPort: 80
+        TargetGroupArn:
+          Ref: EntranceTCP80TargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+          - Ref: DefaultNetwork
+          - Ref: EntranceServiceIngressSecurityGroup
+          Subnets:
+          - subnet1
+          - subnet2
+      PlatformVersion: 1.4.0
+      PropagateTags: SERVICE
+      SchedulingStrategy: REPLICA
+      ServiceRegistries:
+      - RegistryArn:
+          Fn::GetAtt:
+          - EntranceServiceDiscoveryEntry
+          - Arn
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.service
+        Value: entrance
+      TaskDefinition:
+        Ref: EntranceTaskDefinition
+    Type: AWS::ECS::Service
+  EntranceServiceDiscoveryEntry:
+    Properties:
+      Description: '"entrance" service discovery entry in Cloud Map'
+      DnsConfig:
+        DnsRecords:
+        - TTL: 60
+          Type: A
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: entrance
+      NamespaceId:
+        Ref: CloudMap
+    Type: AWS::ServiceDiscovery::Service
+  EntranceServiceIngressSecurityGroup:
+    Properties:
+      GroupDescription: TestSlightlyComplexConvert Security Group for service entrance
+        ingress, Service side
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.service
+        Value: entrance
+      VpcId: vpc-123
+    Type: AWS::EC2::SecurityGroup
+  EntranceTCP80Listener:
+    Properties:
+      DefaultActions:
+      - ForwardConfig:
+          TargetGroups:
+          - TargetGroupArn:
+              Ref: EntranceTCP80TargetGroup
+        Type: forward
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 80
+      Protocol: HTTP
+    Type: AWS::ElasticLoadBalancingV2::Listener
+  EntranceTCP80TargetGroup:
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      TargetType: ip
+      VpcId: vpc-123
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  EntranceTaskDefinition:
+    Properties:
+      ContainerDefinitions:
+      - Command:
+        - .compute.internal
+        - TestSlightlyComplexConvert.local
+        Essential: false
+        Image: docker/ecs-searchdomain-sidecar:1.0
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: LogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: TestSlightlyComplexConvert
+        Name: Entrance_ResolvConf_InitContainer
+      - DependsOn:
+        - Condition: SUCCESS
+          ContainerName: Entrance_ResolvConf_InitContainer
+        Essential: true
+        Image: nginx
+        LinuxParameters: {}
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: LogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: TestSlightlyComplexConvert
+        Name: entrance
+        PortMappings:
+        - ContainerPort: 80
+          HostPort: 80
+          Protocol: tcp
+      Cpu: "256"
+      ExecutionRoleArn:
+        Ref: EntranceTaskExecutionRole
+      Family: TestSlightlyComplexConvert-entrance
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+    Type: AWS::ECS::TaskDefinition
+  EntranceTaskExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Condition: {}
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.service
+        Value: entrance
+    Type: AWS::IAM::Role
+  LoadBalancer:
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups:
+      - Ref: EntranceLBIngressSecurityGroup
+      Subnets:
+      - subnet1
+      - subnet2
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      Type: application
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  LogGroup:
+    Properties:
+      LogGroupName: /docker-compose/TestSlightlyComplexConvert
+    Type: AWS::Logs::LogGroup
+  SensitiveService:
+    Properties:
+      Cluster:
+        Fn::GetAtt:
+        - Cluster
+        - Arn
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+          - Ref: DefaultNetwork
+          Subnets:
+          - subnet1
+          - subnet2
+      PlatformVersion: 1.4.0
+      PropagateTags: SERVICE
+      SchedulingStrategy: REPLICA
+      ServiceRegistries:
+      - RegistryArn:
+          Fn::GetAtt:
+          - SensitiveServiceDiscoveryEntry
+          - Arn
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.service
+        Value: sensitive
+      TaskDefinition:
+        Ref: SensitiveTaskDefinition
+    Type: AWS::ECS::Service
+  SensitiveServiceDiscoveryEntry:
+    Properties:
+      Description: '"sensitive" service discovery entry in Cloud Map'
+      DnsConfig:
+        DnsRecords:
+        - TTL: 60
+          Type: A
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: sensitive
+      NamespaceId:
+        Ref: CloudMap
+    Type: AWS::ServiceDiscovery::Service
+  SensitiveTaskDefinition:
+    Properties:
+      ContainerDefinitions:
+      - Command:
+        - .compute.internal
+        - TestSlightlyComplexConvert.local
+        Essential: false
+        Image: docker/ecs-searchdomain-sidecar:1.0
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: LogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: TestSlightlyComplexConvert
+        Name: Sensitive_ResolvConf_InitContainer
+      - DependsOn:
+        - Condition: SUCCESS
+          ContainerName: Sensitive_ResolvConf_InitContainer
+        Essential: true
+        Image: httpd
+        LinuxParameters: {}
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: LogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: TestSlightlyComplexConvert
+        Name: sensitive
+      Cpu: "256"
+      ExecutionRoleArn:
+        Ref: SensitiveTaskExecutionRole
+      Family: TestSlightlyComplexConvert-sensitive
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+    Type: AWS::ECS::TaskDefinition
+  SensitiveTaskExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Condition: {}
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      Tags:
+      - Key: com.docker.compose.project
+        Value: TestSlightlyComplexConvert
+      - Key: com.docker.compose.service
+        Value: sensitive
+    Type: AWS::IAM::Role
+
